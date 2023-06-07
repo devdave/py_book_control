@@ -17,29 +17,41 @@ export interface ListChaptersProps {
 export const ListChapters:React.FC<ListChaptersProps> = ({boundary, chapters, setChapters, activeChapter, setActiveChapter}) => {
 
 
-
     const showChapterCreate = () => {
 
-        const [chapterName, setChapterName] = useState("");
+        let chapterName =" ";
 
         const handleClose = () => {
+            //Do validation?
             modals.closeAll();
+            console.log(`name is ${chapterName}`);
             createChapter(chapterName);
 
         };
 
+        const detectEnter = (evt:React.KeyboardEvent<HTMLInputElement>) => {
+            if(evt.key == "Enter"){
+                evt.preventDefault();
+                handleClose();
+            }
+        }
+
+
         modals.open({
             title: "Create a new chapter",
+            withinPortal: false,
+            centered: true,
+
             children: (
-                <>
-                    <TextInput name="chapterName"
-                               label="Chapter title"
-                               placeholder="New chapter name"
-                               data-autofocusa
-                               onChange={(evt)=>setChapterName(evt.currentTarget.value)}
+
+                    <TextInput
+                        name="chapterName"
+                        placeholder="New chapter name"
+                        data-autofocus
+                        onChange={(evt) => chapterName = evt.currentTarget.value}
+                        onKeyDown={detectEnter}
                     />
-                    <Button fullWidth onClick={handleClose} mt="md">Create</Button>
-                </>
+
             )
         })
 
@@ -49,7 +61,7 @@ export const ListChapters:React.FC<ListChaptersProps> = ({boundary, chapters, se
 
         const my_id = GenerateRandomString(12);
 
-        const order_pos = Object.entries(chapters).length;
+        const order_pos = chapters.length;
 
         const new_chapter: Chapter = {
             id: my_id,
@@ -58,6 +70,8 @@ export const ListChapters:React.FC<ListChaptersProps> = ({boundary, chapters, se
             words: 0,
             scenes: []
         };
+
+        console.log(new_chapter);
 
         setActiveChapter(my_id);
         setChapters([...chapters, new_chapter]);
