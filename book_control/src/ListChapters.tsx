@@ -2,61 +2,34 @@ import {Chapter} from "./types.ts";
 import {GenerateRandomString} from "./lib/utils.ts";
 import {Boundary} from "./lib/boundary.ts";
 
-import {Button, Text, TextInput} from '@mantine/core';
-import { modals } from '@mantine/modals';
-import {useState} from "react";
+import React, {useState} from "react";
+import {InputModal} from "./lib/input_modal.tsx";
+
+type DS<Type> = React.Dispatch<React.SetStateAction<Type>>
 
 export interface ListChaptersProps {
     boundary: Boundary,
     chapters: Chapter[],
-    setChapters:  React.Dispatch<React.SetStateAction<Chapter[]>>,
-    activeChapter: string,
-    setActiveChapter: React.Dispatch<React.SetStateAction<string>>
+    setChapters: DS<Chapter[]>,
+    activeChapter: string | null,
+    setActiveChapter: DS<String | null>
 }
 
-export const ListChapters:React.FC<ListChaptersProps> = ({boundary, chapters, setChapters, activeChapter, setActiveChapter}) => {
+export const ListChapters: React.FC<ListChaptersProps> = ({
+                                                              boundary,
+                                                              chapters,
+                                                              setChapters,
+                                                              activeChapter,
+                                                              setActiveChapter
+                                                          }) => {
 
+
+    let newChapterModal = new InputModal();
 
     const showChapterCreate = () => {
-
-        let chapterName =" ";
-
-        const handleClose = () => {
-            //Do validation?
-            modals.closeAll();
-            console.log(`name is ${chapterName}`);
-            createChapter(chapterName);
-
-        };
-
-        const detectEnter = (evt:React.KeyboardEvent<HTMLInputElement>) => {
-            if(evt.key == "Enter"){
-                evt.preventDefault();
-                handleClose();
-            }
-        }
-
-
-        modals.open({
-            title: "Create a new chapter",
-            withinPortal: false,
-            centered: true,
-
-            children: (
-
-                    <TextInput
-                        name="chapterName"
-                        placeholder="New chapter name"
-                        data-autofocus
-                        onChange={(evt) => chapterName = evt.currentTarget.value}
-                        onKeyDown={detectEnter}
-                    />
-
-            )
-        })
-
+        newChapterModal.run(createChapter);
     }
-    const createChapter = (chapterName:string) => {
+    const createChapter = (chapterName: string) => {
 
 
         const my_id = GenerateRandomString(12);
@@ -79,23 +52,25 @@ export const ListChapters:React.FC<ListChaptersProps> = ({boundary, chapters, se
 
     }
 
-    const deleteChapter = (chapterId:string) => {
-        setChapters(chapters.filter(chapter=>chapter.id !== chapterId));
+    const deleteChapter = (chapterId: string) => {
+        setChapters(chapters.filter(chapter => chapter.id !== chapterId));
     }
 
     const renderChapterContent = () => {
 
 
-        if(Object.keys(chapters).length > 0) {
+        if (Object.keys(chapters).length > 0) {
 
-            const sortedChapters: Chapter[] = [].concat(chapters).sort((chapterA, chapterB)=>chapterA.order-chapterB.order);
+            const sortedChapters: Chapter[] = [].concat(chapters).sort((chapterA, chapterB) => chapterA.order - chapterB.order);
 
-            return sortedChapters.map( (chapter, idx) =>
+            return sortedChapters.map((chapter, idx) =>
                 <tr key={idx}>
-                    <td>{chapter.name}</td>
+                    <td title="Double click to edit">{chapter.name}</td>
                     <td>{chapter.words}</td>
                     <td>{chapter.scenes.length}</td>
-                    <td><button data-id={idx} onClick={()=>deleteChapter(chapter.id)}>Delete</button></td>
+                    <td>
+                        <button data-id={idx} onClick={() => deleteChapter(chapter.id)}>Delete</button>
+                    </td>
                 </tr>
             );
         } else {
@@ -111,17 +86,17 @@ export const ListChapters:React.FC<ListChaptersProps> = ({boundary, chapters, se
         return (
             <table>
                 <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Words</th>
-                        <th>Scenes</th>
-                    </tr>
+                <tr>
+                    <th>Title</th>
+                    <th>Words</th>
+                    <th>Scenes</th>
+                </tr>
                 </thead>
                 <tbody>
-                    {renderChapterContent()}
+                {renderChapterContent()}
                 </tbody>
             </table>
-            );
+        );
     }
 
 
