@@ -6,16 +6,14 @@ import {Chapter} from "./types.ts";
 import {Boundary} from "./lib/boundary.ts";
 
 import {ListChapters} from "./ListChapters.tsx";
+import {useState} from "react";
 
 function App() {
 
     const [chapters, setChapters] = useImmer<Chapter[]>([]);
-    const [activeChapter, setActiveChapter] = useImmer<string>("");
+    const [activeChapter, setActiveChapter] = useState<string|null>(null);
 
     const boundary = new Boundary();
-
-
-
 
     return (
         <>
