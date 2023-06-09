@@ -6,12 +6,58 @@ import argparse
 import webview
 
 class BCApplication:
-    pass
+
+    chapters: []
+    main_window:webview.Window
+    def __init__(self):
+        self.main_window = None
+
+    def set_window(self, main_window):
+        self.main_window = main_window
 
 class BCAPI:
 
+    app:BCApplication
+    FILE_TYPES = ('Database file (*.sqlite;*.sqlite3)',)
     def __init__(self, app:BCApplication):
         self.app = app
+
+    def info(self, message):
+        print(f"Frontend says `{message}`")
+
+    def alert(self, message):
+        return self.app.main_window.create_confirmation_dialog("Problem", message )
+    def find_source(self):
+
+        result = self.app.main_window.create_file_dialog(webview.OPEN_DIALOG, allow_multiple=False, file_types=self.FILE_TYPES)
+        print(result, repr(result))
+
+    def create_source(self):
+        result = self.app.main_window.create_file_dialog(webview.SAVE_DIALOG, allow_multiple=False, file_types=self.FILE_TYPES)
+        if result is None:
+            self.alert("No file was loaded or created, a save dialog will appear the next time you try to save.")
+
+
+
+
+    def fetch_chapters(self):
+        return [chapter.to_dict() for chapter in self.app.chapters]
+
+    def create_chapter(self, chapter_dict):
+        print(chapter_dict, repr(chapter_dict))
+
+    def save_reordered_chapters(self, chapters):
+        print(chapters)
+
+
+    def boot_up(self):
+        result = self.app.main_window.create_confirmation_dialog("Startup", "Click yes/confirm to open an existing book.")
+        if result:
+            self.find_source()
+            return True
+        else:
+            self.create_source()
+            return False
 
 
 def spinup_pnpm():
@@ -34,7 +80,7 @@ def spinup_pnpm():
 def main():
     args = argparse.ArgumentParser("OpenAI API talker")
 
-    args.add_argument("--url", type=pathlib.Path, default=pathlib.Path("./potui/dist/index.html"))
+    args.add_argument("--url", type=pathlib.Path, default=pathlib.Path("./book_control/dist/index.html"))
     args.add_argument("--dev", action="store_true", default=False)
 
     result = args.parse_args()

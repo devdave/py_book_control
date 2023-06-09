@@ -2,8 +2,9 @@ import {Chapter} from "./types.ts";
 import {GenerateRandomString} from "./lib/utils.ts";
 import {Boundary} from "./lib/boundary.ts";
 
-import React, {useState} from "react";
+import React, {useMemo} from "react";
 import {InputModal} from "./lib/input_modal.tsx";
+import {MantineReactTable, MRT_ColumnDef, MRT_Row} from "mantine-react-table";
 
 type DS<Type> = React.Dispatch<React.SetStateAction<Type>>
 
@@ -12,7 +13,7 @@ export interface ListChaptersProps {
     chapters: Chapter[],
     setChapters: DS<Chapter[]>,
     activeChapter: string | null,
-    setActiveChapter: DS<String | null>
+    setActiveChapter: DS<string | null>
 }
 
 export const ListChapters: React.FC<ListChaptersProps> = ({
@@ -22,6 +23,43 @@ export const ListChapters: React.FC<ListChaptersProps> = ({
                                                               activeChapter,
                                                               setActiveChapter
                                                           }) => {
+
+    const columns = useMemo<MRT_ColumnDef<Chapter>[]>(
+        () => [
+            // {
+            //     accessorKey: "id",
+            //     header: "ID",
+            //     enableEditing: false,
+            //     enableColumnOrdering: false,
+            //     enableSorting: false,
+            //     enableHiding: true
+            // },
+            // {
+            //     accessorKey: "order",
+            //     header: "Order",
+            //     enableEditing: false,
+            //     enableColumnOrdering: false,
+            //     enableSorting: false,
+            //
+            // },
+            {
+                accessorKey: "name",
+                header: "Name",
+                maxSize: 80
+            },
+            {
+                accessorKey: "scenes",
+                header: "S",
+                maxSize: 25
+            },
+            {
+                accessorKey: "words",
+                header: "W",
+                maxSize: 25
+            }
+        ],
+        []
+    );
 
 
     let newChapterModal = new InputModal();
@@ -45,9 +83,16 @@ export const ListChapters: React.FC<ListChaptersProps> = ({
         };
 
         console.log(new_chapter);
+        boundary.remote("create_chapter", new_chapter).then(
+            ()=>{
+                setActiveChapter(my_id);
+                setChapters([...chapters, new_chapter]);
+            }
+        ).catch(()=>{
+            alert("Failed to save new chapter!")
+        });
 
-        setActiveChapter(my_id);
-        setChapters([...chapters, new_chapter]);
+
 
 
     }
@@ -56,54 +101,65 @@ export const ListChapters: React.FC<ListChaptersProps> = ({
         setChapters(chapters.filter(chapter => chapter.id !== chapterId));
     }
 
-    const renderChapterContent = () => {
+    const onDragEnd = (draggedRow: MRT_Row<Chapter>, hoveredRow: MRT_Row<Chapter>) => {
 
+        let copiedChapters: Chapter[] = ([] as Chapter[]).concat(chapters);
 
-        if (Object.keys(chapters).length > 0) {
+        copiedChapters.splice( hoveredRow.index,0, copiedChapters.splice(draggedRow.index, 1)[0]);
 
-            const sortedChapters: Chapter[] = [].concat(chapters).sort((chapterA, chapterB) => chapterA.order - chapterB.order);
+        const reorderedChapters = copiedChapters.map<Chapter>((value, key)=> {
+            value.order = key;
+            return value;
+        });
+        setChapters(reorderedChapters);
+        boundary.remote("save_reordered_chapters", reorderedChapters);
 
-            return sortedChapters.map((chapter, idx) =>
-                <tr key={idx}>
-                    <td title="Double click to edit">{chapter.name}</td>
-                    <td>{chapter.words}</td>
-                    <td>{chapter.scenes.length}</td>
-                    <td>
-                        <button data-id={idx} onClick={() => deleteChapter(chapter.id)}>Delete</button>
-                    </td>
-                </tr>
-            );
-        } else {
-            return (
-                <tr>
-                    <td colSpan={3}>No chapters</td>
-                </tr>
-            )
-        }
-    }
-
-    const renderChapterList = () => {
-        return (
-            <table>
-                <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Words</th>
-                    <th>Scenes</th>
-                </tr>
-                </thead>
-                <tbody>
-                {renderChapterContent()}
-                </tbody>
-            </table>
-        );
     }
 
 
     return (
         <>
-            <button onClick={showChapterCreate}>New Chapter</button>
-            {renderChapterList()}
+
+
+            <MantineReactTable
+                columns={columns}
+                data={chapters}
+                enableRowOrdering={true}
+                enableMultiRowSelection={false}
+                enableRowSelection={true}
+                enableSelectAll={false}
+                getRowId={(originalRow)=> originalRow.id}
+                enableRowDragging={true}
+                mantineRowDragHandleProps={({table}) => ({
+                    onDragEnd: () => {
+                        const {draggingRow, hoveredRow} = table.getState();
+                        if (draggingRow && hoveredRow) {
+                            onDragEnd(draggingRow, hoveredRow as MRT_Row<Chapter>);
+                        }
+                    }
+                })
+                }
+                initialState={{columnVisibility: {
+                        id: false,
+                        order: false,
+                    }
+                }}
+                renderTopToolbarCustomActions={()=> (
+                    <button onClick={showChapterCreate}>New Chapter</button>
+                )}
+
+
+                enableColumnActions={false}
+                enableColumnFilters={false}
+                enablePagination={false}
+                enableSorting={false}
+                enableBottomToolbar={false}
+                enableTopToolbar={true}
+                mantineTableProps={{
+                    highlightOnHover: false,
+                    withColumnBorders: true,
+                }}
+            />
         </>
     )
 }
