@@ -4,6 +4,15 @@ import signal
 import time
 import argparse
 import webview
+from dataclasses import asdict
+import random
+import string
+
+from lib.types import Character, Location, Scene, Chapter, Book, TargetedElement
+
+def generate_id(length):
+    alphanum = string.ascii_letters + string.digits
+    return "".join(random.choice(alphanum) for _ in range(length))
 
 class BCApplication:
 
@@ -41,7 +50,27 @@ class BCAPI:
 
 
     def fetch_chapters(self):
-        return [chapter.to_dict() for chapter in self.app.chapters]
+
+        fake = [
+            TargetedElement("Chapter 1", 0, "Chapter", "123", [
+                TargetedElement("Scene 1", 0, "Scene", "abc123", []),
+                TargetedElement("Scene 2", 0, "Scene", "abc456", []),
+                TargetedElement("Scene 3", 0, "Scene", "abc789", []),
+            ]),
+            TargetedElement("Chapter 2", 0, "Chapter", "456", [
+                TargetedElement("Scene 1", 0, "Scene", "abc123", []),
+                TargetedElement("Scene 2", 0, "Scene", "abc456", []),
+                TargetedElement("Scene 3", 0, "Scene", "abc789", []),
+            ]),
+            TargetedElement("Chapter 3", 0, "Chapter", "789", [
+                TargetedElement("Scene 1", 0, "Scene", "abc123", []),
+                TargetedElement("Scene 2", 0, "Scene", "abc456", []),
+                TargetedElement("Scene 3", 0, "Scene", "abc789", []),
+            ])
+
+        ]
+
+        return [asdict(element) for element in fake]
 
     def create_chapter(self, chapter_dict):
         print(chapter_dict, repr(chapter_dict))
@@ -51,13 +80,11 @@ class BCAPI:
 
 
     def boot_up(self):
-        result = self.app.main_window.create_confirmation_dialog("Startup", "Click yes/confirm to open an existing book.")
+        result = self.app.main_window.create_confirmation_dialog("Startup", "Click Ok to open an existing book.")
         if result:
-            self.find_source()
+            # self.find_source()
             return True
-        else:
-            self.create_source()
-            return False
+
 
 
 def spinup_pnpm():

@@ -1,4 +1,4 @@
-import {useImmer} from 'use-immer';
+
 
 import './App.css'
 import {Chapter} from "./types.ts";
@@ -6,12 +6,11 @@ import {Boundary} from "./lib/boundary.ts";
 
 import {ListChapters} from "./ListChapters.tsx";
 import {useEffect, useState} from "react";
-import {AppShell, Group, Navbar} from "@mantine/core";
+import {AppShell, Navbar} from "@mantine/core";
 
 function App() {
 
-    const [chapters, setChapters] = useImmer<Chapter[]>([]);
-    const [activeChapter, setActiveChapter] = useState<string | null>(null);
+    const [chapters, setChapters] = useState<Chapter[]>([]);
 
     const boundary = new Boundary();
 
@@ -23,8 +22,8 @@ function App() {
 
                 if (status === true) {
                     boundary.remote("fetch_chapters").then(
-                        (chapters: Chapter[]) => {
-                            setChapters(chapters);
+                        (fetched: Chapter[]) => {
+                            setChapters(fetched);
                         }
                     );
 
@@ -42,11 +41,7 @@ function App() {
 
     const leftPanel = (
         <Navbar width={{base: 350}}>
-            <ListChapters
-                boundary={boundary}
-                chapters={chapters} setChapters={setChapters}
-                activeChapter={activeChapter} setActiveChapter={setActiveChapter}
-            />
+
         </Navbar>
     )
 

@@ -1,56 +1,36 @@
-import {Chapter} from "./types.ts";
+import {Chapter, TargetedElement} from "./types.ts";
 import {GenerateRandomString} from "./lib/utils.ts";
 import {Boundary} from "./lib/boundary.ts";
 
-import React, {useMemo} from "react";
+import React, {useMemo, useState} from "react";
 import {InputModal} from "./lib/input_modal.tsx";
 import {MantineReactTable, MRT_ColumnDef, MRT_Row} from "mantine-react-table";
+
 
 type DS<Type> = React.Dispatch<React.SetStateAction<Type>>
 
 export interface ListChaptersProps {
     boundary: Boundary,
-    chapters: Chapter[],
-    setChapters: DS<Chapter[]>,
-    activeChapter: string | null,
-    setActiveChapter: DS<string | null>
+    elements: TargetedElement[]
+    setElements: DS<TargetedElement[]>,
+    setActiveElement: DS<TargetedElement>
+
 }
 
 export const ListChapters: React.FC<ListChaptersProps> = ({
                                                               boundary,
-                                                              chapters,
-                                                              setChapters,
-                                                              activeChapter,
-                                                              setActiveChapter
+                                                              elements,
+                                                              setElements,
+                                                              setActiveElement
                                                           }) => {
 
-    const columns = useMemo<MRT_ColumnDef<Chapter>[]>(
+
+    const columns = useMemo<MRT_ColumnDef<TargetedElement>[]>(
         () => [
-            // {
-            //     accessorKey: "id",
-            //     header: "ID",
-            //     enableEditing: false,
-            //     enableColumnOrdering: false,
-            //     enableSorting: false,
-            //     enableHiding: true
-            // },
-            // {
-            //     accessorKey: "order",
-            //     header: "Order",
-            //     enableEditing: false,
-            //     enableColumnOrdering: false,
-            //     enableSorting: false,
-            //
-            // },
             {
                 accessorKey: "name",
-                header: "Name",
-                maxSize: 80
-            },
-            {
-                accessorKey: "scenes",
-                header: "S",
-                maxSize: 25
+                header: "Chapter->Scenes",
+                maxSize: 80,
             },
             {
                 accessorKey: "words",
@@ -72,47 +52,68 @@ export const ListChapters: React.FC<ListChaptersProps> = ({
 
         const my_id = GenerateRandomString(12);
 
-        const order_pos = chapters.length;
-
-        const new_chapter: Chapter = {
-            id: my_id,
+        const new_chapter: TargetedElement = {
             name: chapterName,
-            order: order_pos,
             words: 0,
-            scenes: []
-        };
-
-        console.log(new_chapter);
-        boundary.remote("create_chapter", new_chapter).then(
-            ()=>{
-                setActiveChapter(my_id);
-                setChapters([...chapters, new_chapter]);
-            }
-        ).catch(()=>{
-            alert("Failed to save new chapter!")
-        });
+            targetType: "Chapter",
+            targetId: my_id,
+            children: [
+                {
+                    name: "Scene 1",
+                    words: 0,
+                    targetType: "Scene",
+                    targetId: "abs123",
+                    children: []
+                },
 
 
+            ]
+        }
 
+        setElements([...elements, new_chapter]);
 
-    }
+        // const new_chapter: Chapter = {
+        //     id: my_id,
+        //     name: chapterName,
+        //     order: order_pos,
+        //     words: 0,
+        //     scenes: [
+        //         {
+        //             id: GenerateRandomString(7),
+        //             name: "Scene1",
+        //             words: 0,
+        //             locations: [],
+        //             characters: [],
+        //             desc: "A blank chapter",
+        //             content:"",
+        //             order: 0,
+        //             notes: "no notes"
+        //
+        //         },
+        //         {
+        //             id: GenerateRandomString(7),
+        //             name: "Scene2",
+        //             words: 0,
+        //             locations: [],
+        //             characters: [],
+        //             desc: "A blank chapter",
+        //             content:"",
+        //             order: 1,
+        //             notes: "no notes"
+        //         },
+        //     ]
+        // };
 
-    const deleteChapter = (chapterId: string) => {
-        setChapters(chapters.filter(chapter => chapter.id !== chapterId));
-    }
+        // console.log(new_chapter);
+        // boundary.remote("create_chapter", new_chapter).then(
+        //     () => {
+        //         setActiveChapter(my_id);
+        //         setChapters([...chapters, new_chapter]);
+        //     }
+        // ).catch(() => {
+        //     alert("Failed to save new chapter!")
+        // });
 
-    const onDragEnd = (draggedRow: MRT_Row<Chapter>, hoveredRow: MRT_Row<Chapter>) => {
-
-        let copiedChapters: Chapter[] = ([] as Chapter[]).concat(chapters);
-
-        copiedChapters.splice( hoveredRow.index,0, copiedChapters.splice(draggedRow.index, 1)[0]);
-
-        const reorderedChapters = copiedChapters.map<Chapter>((value, key)=> {
-            value.order = key;
-            return value;
-        });
-        setChapters(reorderedChapters);
-        boundary.remote("save_reordered_chapters", reorderedChapters);
 
     }
 
@@ -120,33 +121,27 @@ export const ListChapters: React.FC<ListChaptersProps> = ({
     return (
         <>
 
-
             <MantineReactTable
                 columns={columns}
-                data={chapters}
-                enableRowOrdering={true}
+                data={elements}
+                enableRowOrdering={false}
                 enableMultiRowSelection={false}
                 enableRowSelection={true}
                 enableSelectAll={false}
-                getRowId={(originalRow)=> originalRow.id}
-                enableRowDragging={true}
-                mantineRowDragHandleProps={({table}) => ({
-                    onDragEnd: () => {
-                        const {draggingRow, hoveredRow} = table.getState();
-                        if (draggingRow && hoveredRow) {
-                            onDragEnd(draggingRow, hoveredRow as MRT_Row<Chapter>);
-                        }
-                    }
-                })
-                }
-                initialState={{columnVisibility: {
-                        id: false,
-                        order: false,
-                    }
+
+
+                initialState={{
+                    columnVisibility: {
+                        children: false,
+                    },
+                    expanded: true
                 }}
-                renderTopToolbarCustomActions={()=> (
+                renderTopToolbarCustomActions={() => (
                     <button onClick={showChapterCreate}>New Chapter</button>
                 )}
+                enableExpanding={true}
+                enableExpandAll={false}
+                getSubRows={(row, index) => row.children}
 
 
                 enableColumnActions={false}
@@ -157,8 +152,17 @@ export const ListChapters: React.FC<ListChaptersProps> = ({
                 enableTopToolbar={true}
                 mantineTableProps={{
                     highlightOnHover: false,
-                    withColumnBorders: true,
+                    withColumnBorders: true
                 }}
+                mantineTableBodyRowProps={({
+                                               row
+                                           }) => ({
+                    onClick: row.getToggleSelectedHandler(),
+                    sx: {
+                        cursor: 'pointer'
+                    }
+                })}
+
             />
         </>
     )
