@@ -1,5 +1,5 @@
 
-import {React} from "react";
+import React from "react";
 import {Chapter} from "./types.ts";
 import {Textarea} from "@mantine/core";
 
@@ -7,7 +7,6 @@ interface ChapterDetailProps {
     activeElement:Chapter,
 }
 
-// @ts-ignore
 export const ChapterDetail:React.FC<ChapterDetailProps> = ({activeElement}) => {
 
     return (
