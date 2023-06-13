@@ -15,8 +15,11 @@ declare global {
 }
 
 
+export const PYWEBVIEWREADY:string = "pywebviewready";
 
 export class Boundary {
+
+
 
     isConnected: boolean;
     backendHooks: remoteMethods;
