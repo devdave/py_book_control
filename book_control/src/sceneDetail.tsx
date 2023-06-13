@@ -1,13 +1,13 @@
 import {Accordion, Grid, Textarea, TextInput} from "@mantine/core";
 import React from "react";
-import {SceneRecord} from "./types.ts";
+import {Chapter, SceneRecord} from "./types.ts";
 import {Boundary} from "./lib/boundary.ts";
 
 import {useForm} from "@mantine/form";
 
 
 interface SceneProps {
-    activeElement: SceneRecord,
+    activeElement: SceneRecord | Chapter,
     boundary: Boundary
 }
 export const SceneDetail:React.FC<SceneProps> = ({activeElement, boundary}) => {

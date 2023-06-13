@@ -1,16 +1,16 @@
 import {Boundary} from "./lib/boundary.ts";
 import React from "react";
-import {TargetedElement} from "./types.ts";
+import {Chapter, SceneRecord} from "./types.ts";
 import {SceneDetail} from "./sceneDetail.tsx";
 import {ChapterDetail} from "./chapterDetail.tsx";
 
 
 interface RightPanelProps {
     boundary: Boundary;
-    activeElement: TargetedElement | null,
+    activeElement: Chapter | SceneRecord,
 }
 
-export const RightPanel: React.FC<RightPanelProps> = ({boundary, activeElement,updateActiveElement}) => {
+export const RightPanel: React.FC<RightPanelProps> = ({boundary, activeElement}) => {
 
 
     console.log(activeElement);
@@ -18,7 +18,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({boundary, activeElement,u
 
     if(activeElement?.type=="scene"){
         return (
-            <SceneDetail activeElement={activeElement} updateActiveElement={updateActiveElement} boundary={boundary}/>
+            <SceneDetail activeElement={activeElement} boundary={boundary}/>
         )
     } else if (activeElement?.type === "chapter") {
         return (

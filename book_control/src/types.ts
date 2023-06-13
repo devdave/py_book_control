@@ -2,7 +2,8 @@
 export interface BaseElement {
     id: string,
     name: string,
-    order: number
+    order: number,
+    type: string
 }
 
 export interface Location extends BaseElement {
