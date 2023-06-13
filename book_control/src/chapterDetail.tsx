@@ -7,6 +7,7 @@ interface ChapterDetailProps {
     activeElement:Chapter,
 }
 
+// @ts-ignore
 export const ChapterDetail:React.FC<ChapterDetailProps> = ({activeElement}) => {
 
     return (

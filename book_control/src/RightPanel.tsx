@@ -18,11 +18,11 @@ export const RightPanel: React.FC<RightPanelProps> = ({boundary, activeElement})
 
     if(activeElement?.type=="scene"){
         return (
-            <SceneDetail activeElement={activeElement} boundary={boundary}/>
+            <SceneDetail activeElement={activeElement as SceneRecord} boundary={boundary}/>
         )
     } else if (activeElement?.type === "chapter") {
         return (
-            <ChapterDetail activeElement={activeElement} />
+            <ChapterDetail activeElement={activeElement as Chapter} />
         )
     } else {
         return (
