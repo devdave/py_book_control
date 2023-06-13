@@ -29,15 +29,17 @@ export interface SceneRecord extends BaseElement {
 
 export interface Chapter extends BaseElement{
     words: number,
-    notes: str,
+    notes: string,
     scenes: SceneRecord[]
 
 }
 
 export interface Chapters {
+    [key: number]:Chapter,
+}
+
+export interface BookRecord {
     id: string,
     name: string,
-    words: number,
-    type: string,
-    scenes: SceneRecord[]
+    notes: string
 }
