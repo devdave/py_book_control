@@ -1,8 +1,8 @@
 
 
 import './App.css'
-import {Chapters, SceneRecord, TargetedElement} from "./types.ts";
-import {Boundary} from "./lib/boundary.ts";
+import {Chapter, Chapters, SceneRecord} from "./types.ts";
+import {Boundary, PYWEBVIEWREADY} from "./lib/boundary.ts";
 
 import {useEffect, useState} from "react";
 import {AppShell, Navbar} from "@mantine/core";
@@ -14,14 +14,14 @@ import {useImmer} from "use-immer";
 function App() {
 
     const [elements, setElements] = useState<Chapters[]>([]);
-    const [activeElement, updateActiveElement] = useImmer<TargetedElement|null>(null);
+    const [activeElement, updateActiveElement] = useImmer<Chapter|SceneRecord|null>(null);
 
     const boundary = new Boundary();
 
 
 
     const doBootup = () => {
-        window.removeEventListener("pywebview", doBootup);
+        window.removeEventListener(PYWEBVIEWREADY, doBootup);
 
         boundary.remote("boot_up").then((status: boolean) => {
                 console.log("backend says: ", status);
@@ -41,7 +41,7 @@ function App() {
 
     useEffect(
         () => {
-            window.addEventListener("pywebviewready", doBootup);
+            window.addEventListener(PYWEBVIEWREADY, doBootup);
         },
         []
     );
