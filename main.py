@@ -9,6 +9,7 @@ import random
 import string
 
 from lib.types import Character, Location, Scene, Chapter, Book, TargetedElement
+from lib import models
 
 def generate_id(length):
     alphanum = string.ascii_letters + string.digits
@@ -16,20 +17,38 @@ def generate_id(length):
 
 class BCApplication:
 
-    chapters: []
+
     main_window:webview.Window
     def __init__(self):
         self.main_window = None
 
+        engine, session = models.connect()
+        self.engine = engine
+        self.session = session
+
+
     def set_window(self, main_window):
         self.main_window = main_window
+
+    def fetch_chapters(self):
+        return models.Chapter.Fetch_all(self.session)
+
+
 
 class BCAPI:
 
     app:BCApplication
+    chapters: dict()
+    scenes: dict()
+
     FILE_TYPES = ('Database file (*.sqlite;*.sqlite3)',)
+
+
     def __init__(self, app:BCApplication):
         self.app = app
+
+        self.data_store = dict()
+
 
     def info(self, message):
         print(f"Frontend says `{message}`")
@@ -49,31 +68,42 @@ class BCAPI:
 
 
 
-    def fetch_chapters(self):
+    def fetch_manifest(self):
 
-        fake = [
-            TargetedElement("Chapter 1", 0, "Chapter", "123", [
-                TargetedElement("Scene 1", 0, "Scene", "abc123", []),
-                TargetedElement("Scene 2", 0, "Scene", "abc456", []),
-                TargetedElement("Scene 3", 0, "Scene", "abc789", []),
-            ]),
-            TargetedElement("Chapter 2", 0, "Chapter", "456", [
-                TargetedElement("Scene 1", 0, "Scene", "abc123", []),
-                TargetedElement("Scene 2", 0, "Scene", "abc456", []),
-                TargetedElement("Scene 3", 0, "Scene", "abc789", []),
-            ]),
-            TargetedElement("Chapter 3", 0, "Chapter", "789", [
-                TargetedElement("Scene 1", 0, "Scene", "abc123", []),
-                TargetedElement("Scene 2", 0, "Scene", "abc456", []),
-                TargetedElement("Scene 3", 0, "Scene", "abc789", []),
-            ])
+        chapters = self.app.fetch_chapters()
 
-        ]
+
+        fake = []
+        chapter = TargetedElement('1', 'chapter 1', 0, "chapter", "1")
+        chapter.add_scene("a1", "Scene 1", 0, 1)
+        chapter.add_scene("b1", "Scene 2", 0, 2)
+        chapter.add_scene("c1", "Scene 3", 0, 3)
+        fake.append(chapter)
+
+        chapter = TargetedElement('2', 'chapter 2', 0, "chapter", "2")
+        chapter.add_scene("a2", "Scene 1", 0, 4)
+        chapter.add_scene("b2", "Scene 2", 0, 5)
+        chapter.add_scene("c2", "Scene 3", 0, 6)
+        fake.append(chapter)
+
+        chapter = TargetedElement('3', 'Chapter 3', 0, "chapter", "3")
+        fake.append(chapter)
+
+
 
         return [asdict(element) for element in fake]
 
+
     def create_chapter(self, chapter_dict):
         print(chapter_dict, repr(chapter_dict))
+
+    def fetch_scene(self, scene_id: str):
+        scene = Scene(scene_id, "Scene from remote", 0, "lorem ipsum", "desc goes here", [], [], "notes", 0);
+        return asdict(scene);
+
+    def update_scene(self, scene_id, property_name, data):
+        print(scene_id, property_name, data);
+        return True
 
     def save_reordered_chapters(self, chapters):
         print(chapters)

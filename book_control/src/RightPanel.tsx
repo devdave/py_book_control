@@ -1,28 +1,39 @@
 import {Boundary} from "./lib/boundary.ts";
 import React from "react";
-import {Tabs} from "@mantine/core";
-import {IconTank} from "@tabler/icons-react";
+import {TargetedElement} from "./types.ts";
+import {Scene} from "./scene.tsx";
+
 
 
 interface RightPanelProps {
     boundary: Boundary;
-    activeChapter: string,
-
+    activeElement: TargetedElement | null,
 }
 
-export const RightPanel:React.FC<RightPanelProps> = () => {
+export const RightPanel: React.FC<RightPanelProps> = ({boundary, activeElement,updateActiveElement}) => {
 
 
+    console.log(activeElement);
 
-    return (
-      <Tabs variant="outline" defaultValue="scenes">
-          <Tabs.List>
-              <Tabs.Tab value="scenes">Scenes</Tabs.Tab>
-              <Tabs.Tab value="notes">Chapter notes</Tabs.Tab>
-              <Tabs.Tab value="Characters">Characters</Tabs.Tab>
-              <Tabs.Tab value="locations">Locations</Tabs.Tab>
-          </Tabs.List>
-      </Tabs>
-    );
+
+    if(activeElement?.targetType=="scene"){
+        return (
+            <Scene activeElement={activeElement} updateActiveElement={updateActiveElement} boundary={boundary}/>
+        )
+    } else if (activeElement?.targetType === "chapter") {
+        return (
+            <>
+                <h1>{activeElement.name}</h1>
+
+            </>
+        )
+    } else {
+        return (
+            <>
+                <h1>Welcome to PyBook control</h1>
+            </>
+        )
+    }
+
 
 }

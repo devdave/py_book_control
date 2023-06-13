@@ -7,6 +7,7 @@ export interface BaseElement {
 
 export interface Location extends BaseElement {
     parent: Location | null
+    notes: string
 }
 
 export interface Character extends BaseElement {
@@ -14,7 +15,7 @@ export interface Character extends BaseElement {
 }
 
 
-export interface Scene extends BaseElement {
+export interface SceneRecord extends BaseElement {
     content: string,
     desc: string,
     locations: Location[],
@@ -27,10 +28,11 @@ export interface Scene extends BaseElement {
 
 export interface Chapter extends BaseElement{
     words: number,
-    scenes: Scene[]
+    scenes: SceneRecord[]
 }
 
 export interface TargetedElement {
+    id: string,
     name: string,
     words: number,
     targetType: string,

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import typing as T
 
 @dataclass()
@@ -42,11 +42,14 @@ class Book:
 
 @dataclass()
 class TargetedElement:
+    id: str
     name: str
     words: int
     targetType: str
     targetedId: str
-    children: T.List['TargetedElement']
+    children: T.List['TargetedElement'] = field(default_factory=list)
 
 
+    def add_scene(self, id, name, words, scene_id):
+        self.children.append(TargetedElement(id, name, words, "scene", scene_id))
 

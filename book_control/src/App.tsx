@@ -1,18 +1,24 @@
 
 
 import './App.css'
-import {Chapter} from "./types.ts";
+import {TargetedElement} from "./types.ts";
 import {Boundary} from "./lib/boundary.ts";
 
-import {ListChapters} from "./ListChapters.tsx";
 import {useEffect, useState} from "react";
 import {AppShell, Navbar} from "@mantine/core";
+import {ContentTree} from "./ContentTree.tsx";
+import {RightPanel} from "./RightPanel.tsx";
+import {useImmer} from "use-immer";
+
 
 function App() {
 
-    const [chapters, setChapters] = useState<Chapter[]>([]);
+    const [elements, setElements] = useState<TargetedElement[]>([]);
+    const [activeElement, updateActiveElement] = useImmer<TargetedElement|null>(null);
 
     const boundary = new Boundary();
+
+
 
     const doBootup = () => {
         window.removeEventListener("pywebview", doBootup);
@@ -21,9 +27,10 @@ function App() {
                 console.log("backend says: ", status);
 
                 if (status === true) {
-                    boundary.remote("fetch_chapters").then(
-                        (fetched: Chapter[]) => {
-                            setChapters(fetched);
+                    boundary.remote("fetch_manifest").then(
+                        (fetched: TargetedElement[]) => {
+                            setElements(fetched);
+                            console.log(fetched);
                         }
                     );
 
@@ -40,15 +47,18 @@ function App() {
     );
 
     const leftPanel = (
-        <Navbar width={{base: 350}}>
-
+        <Navbar width={{base: 150}}>
+            <Navbar.Section grow>
+                <ContentTree elements={elements} setElements={setElements} updateActiveElement={updateActiveElement}/>
+            </Navbar.Section>
         </Navbar>
     )
 
     const appBody = (
-        <h1>Hello World</h1>
+        <RightPanel activeElement={activeElement} updateActiveElement={updateActiveElement} boundary={boundary}/>
     );
 
+    //Going to use https://github.com/brimdata/react-arborist
 
     return (
         <>
