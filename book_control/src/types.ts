@@ -31,11 +31,10 @@ export interface Chapter extends BaseElement{
     scenes: SceneRecord[]
 }
 
-export interface TargetedElement {
+export interface Chapters {
     id: string,
     name: string,
     words: number,
-    targetType: string,
-    targetId: string,
-    children: TargetedElement[]
+    type: string,
+    scenes: SceneRecord[]
 }

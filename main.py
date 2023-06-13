@@ -11,20 +11,30 @@ import string
 from lib.types import Character, Location, Scene, Chapter, Book, TargetedElement
 from lib import models
 
-def generate_id(length):
-    alphanum = string.ascii_letters + string.digits
-    return "".join(random.choice(alphanum) for _ in range(length))
+
 
 class BCApplication:
 
 
     main_window:webview.Window
+    book:models.Book
+    session:models.Session
+
     def __init__(self):
         self.main_window = None
 
         engine, session = models.connect()
-        self.engine = engine
         self.session = session
+
+
+        try:
+            self.book = models.Book.Fetch_book_by_id(self.session, 1)
+        except models.NoResultFound:
+            self.book = models.Book(name="Test1")
+            self.session.add(self.book)
+            self.session.commit()
+
+
 
 
     def set_window(self, main_window):
@@ -70,40 +80,43 @@ class BCAPI:
 
     def fetch_manifest(self):
 
-        chapters = self.app.fetch_chapters()
+        return [chapter.asdict() for chapter in self.app.book.chapters]
 
 
-        fake = []
-        chapter = TargetedElement('1', 'chapter 1', 0, "chapter", "1")
-        chapter.add_scene("a1", "Scene 1", 0, 1)
-        chapter.add_scene("b1", "Scene 2", 0, 2)
-        chapter.add_scene("c1", "Scene 3", 0, 3)
-        fake.append(chapter)
+    def create_chapter(self, chapter_name):
+        chapter = models.Chapter(name=chapter_name, uid=models.generate_id(7))
 
-        chapter = TargetedElement('2', 'chapter 2', 0, "chapter", "2")
-        chapter.add_scene("a2", "Scene 1", 0, 4)
-        chapter.add_scene("b2", "Scene 2", 0, 5)
-        chapter.add_scene("c2", "Scene 3", 0, 6)
-        fake.append(chapter)
+        self.app.book.chapters.append(chapter)
+        self.app.session.add(chapter)
+        self.app.session.commit()
 
-        chapter = TargetedElement('3', 'Chapter 3', 0, "chapter", "3")
-        fake.append(chapter)
+        return chapter.asdict()
 
+    def fetch_scene(self, scene_uid: str):
+        scene = models.Scene.Fetch_by_uid(self.app.session, scene_uid)
+        return scene.asdict()
 
+    def update_scene(self, scene_uid, new_data):
+        scene = models.Scene.Fetch_by_uid(self.app.session, scene_uid)
 
-        return [asdict(element) for element in fake]
+        for key, val in new_data.items():
+            if key in ['id', 'uid']:
+                continue
 
+            setattr(scene, key, val)
 
-    def create_chapter(self, chapter_dict):
-        print(chapter_dict, repr(chapter_dict))
-
-    def fetch_scene(self, scene_id: str):
-        scene = Scene(scene_id, "Scene from remote", 0, "lorem ipsum", "desc goes here", [], [], "notes", 0);
-        return asdict(scene);
-
-    def update_scene(self, scene_id, property_name, data):
-        print(scene_id, property_name, data);
+        self.app.session.commit()
         return True
+
+
+    def create_scene(self, chapter_uid, scene_name):
+        chapter = models.Chapter.Fetch_by_uid(self.app.session, chapter_uid)
+        scene = models.Scene(name=scene_name)
+        chapter.scenes.append(scene)
+        self.app.session.add(scene)
+        self.app.session.commit()
+        return scene.asdict()
+
 
     def save_reordered_chapters(self, chapters):
         print(chapters)

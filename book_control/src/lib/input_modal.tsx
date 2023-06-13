@@ -13,7 +13,7 @@ export class InputModal {
         this.modalId = GenerateRandomString(12);
     }
 
-    run(callback:Callback<string>) {
+    run(callback:Callback<string>, prompt:string) {
 
         let textValue = "";
         const killModal = () => {
@@ -40,14 +40,13 @@ export class InputModal {
 
         modals.open({
             modalId: this.modalId,
-            title: "Create a new chapter",
+            title: prompt,
             withinPortal: false,
             centered: true,
             children: (
                 <Group position="center">
                     <TextInput
-                        name="chapterName"
-                        placeholder="New chapter name"
+                        placeholder={prompt}
                         data-autofocus
                         onChange={(evt) => textValue = evt.currentTarget.value}
                         onKeyDown={detectEnter}

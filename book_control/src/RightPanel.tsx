@@ -1,8 +1,8 @@
 import {Boundary} from "./lib/boundary.ts";
 import React from "react";
 import {TargetedElement} from "./types.ts";
-import {Scene} from "./scene.tsx";
-
+import {SceneDetail} from "./sceneDetail.tsx";
+import {ChapterDetail} from "./chapterDetail.tsx";
 
 
 interface RightPanelProps {
@@ -16,16 +16,13 @@ export const RightPanel: React.FC<RightPanelProps> = ({boundary, activeElement,u
     console.log(activeElement);
 
 
-    if(activeElement?.targetType=="scene"){
+    if(activeElement?.type=="scene"){
         return (
-            <Scene activeElement={activeElement} updateActiveElement={updateActiveElement} boundary={boundary}/>
+            <SceneDetail activeElement={activeElement} updateActiveElement={updateActiveElement} boundary={boundary}/>
         )
-    } else if (activeElement?.targetType === "chapter") {
+    } else if (activeElement?.type === "chapter") {
         return (
-            <>
-                <h1>{activeElement.name}</h1>
-
-            </>
+            <ChapterDetail activeElement={activeElement} />
         )
     } else {
         return (

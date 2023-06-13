@@ -1,7 +1,7 @@
 
 
 import './App.css'
-import {TargetedElement} from "./types.ts";
+import {Chapters, SceneRecord, TargetedElement} from "./types.ts";
 import {Boundary} from "./lib/boundary.ts";
 
 import {useEffect, useState} from "react";
@@ -13,7 +13,7 @@ import {useImmer} from "use-immer";
 
 function App() {
 
-    const [elements, setElements] = useState<TargetedElement[]>([]);
+    const [elements, setElements] = useState<Chapters[]>([]);
     const [activeElement, updateActiveElement] = useImmer<TargetedElement|null>(null);
 
     const boundary = new Boundary();
@@ -28,7 +28,7 @@ function App() {
 
                 if (status === true) {
                     boundary.remote("fetch_manifest").then(
-                        (fetched: TargetedElement[]) => {
+                        (fetched: Chapters[]) => {
                             setElements(fetched);
                             console.log(fetched);
                         }
@@ -49,7 +49,7 @@ function App() {
     const leftPanel = (
         <Navbar width={{base: 150}}>
             <Navbar.Section grow>
-                <ContentTree elements={elements} setElements={setElements} updateActiveElement={updateActiveElement}/>
+                <ContentTree elements={elements} boundary={boundary} setElements={setElements} activeElement={activeElement} updateActiveElement={updateActiveElement}/>
             </Navbar.Section>
         </Navbar>
     )
