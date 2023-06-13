@@ -54,6 +54,8 @@ class Chapter(Base):
     name: Mapped[str]
     order: Mapped[int]
 
+    notes: Mapped[str] = mapped_column(default="")
+
     scenes: Mapped[T.List["Scene"]] = relationship(
         back_populates="chapter", cascade="all, delete-orphan", order_by="Scene.order", collection_class=ordering_list("order")
     )
