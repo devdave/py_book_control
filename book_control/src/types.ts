@@ -29,7 +29,9 @@ export interface SceneRecord extends BaseElement {
 
 export interface Chapter extends BaseElement{
     words: number,
+    notes: str,
     scenes: SceneRecord[]
+
 }
 
 export interface Chapters {
