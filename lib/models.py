@@ -31,6 +31,7 @@ class Base(DeclarativeBase):
 
 class Book(Base):
     name: Mapped[str]
+    notes: Mapped[str]
 
     chapters: Mapped[T.List["Chapter"]] = relationship(
         back_populates="book",
