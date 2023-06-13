@@ -7,7 +7,7 @@ import {ChapterDetail} from "./chapterDetail.tsx";
 
 interface RightPanelProps {
     boundary: Boundary;
-    activeElement: Chapter | SceneRecord,
+    activeElement: Chapter | SceneRecord | null,
 }
 
 export const RightPanel: React.FC<RightPanelProps> = ({boundary, activeElement}) => {
