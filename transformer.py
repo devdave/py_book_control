@@ -2,26 +2,40 @@ import ast
 import pathlib
 import argparse
 import jinja2
+import typing as T
 
 template_body = """
-class APIBridge {
+import {Boundary} from "./lib/boundary.ts";
 
-    constructor(boundary) {
-        this.boundary = boundary;
+export class APIBridge {
+
+    boundary:Boundary
+    
+    constructor(boundary:Boundary) {
+        this.boundary = boundary
     }
 
-    {% for func_name, args in functions|items() %}
-    {{ func_name }}({{args|join(", ") }}) {
-        {%- if args|length > 0 %}
-        return this.boundary.remote("{{ func_name }}", {{ args|join(',') }});
-        {%- else %}
-        return this.boundary.remote("{{ func_name }}");
-        {%- endif %}
+    {% for func_name, func_def in functions|items() %}
+    {%if func_def.doc %}/* {{func_def.doc}} */{% endif%}
+    async {{ func_name }}( {% for key, arg_def in func_def.args|items %}{{key}}:string, {% endfor %}) {
+        
+        return await this.boundary.remote("{{ func_name }}", {% for key, arg_def in func_def.args|items %}{{key}}, {% endfor %});
     }
     {% endfor %}
 
 }
 """
+
+class FuncArg(T.NamedTuple):
+    name:str
+    annotype:str = None
+
+class FuncDef(T.NamedTuple):
+    args:T.List[FuncArg] = []
+    doc: str = ""
+
+
+
 
 def process_body(src_file:pathlib.Path):
 
@@ -47,14 +61,12 @@ def process_class(class_elm: ast.ClassDef):
 
 def process_function(func_elm: ast.FunctionDef):
     # beeline for the args
-    data = []
-    for arg_elm in func_elm.args.args: # type: ast.arg
-        if arg_elm.arg == "self":
-            continue
+    return FuncDef(process_args(func_elm.args.args), ast.get_docstring(func_elm));
 
-        data.append(arg_elm.arg)
 
-    return data
+def process_args(func_args: ast.arguments):
+    return {arg_elm.arg: FuncArg(arg_elm.annotation) for arg_elm in func_args if arg_elm.arg != "self"}
+
 
 
 def transform(payload:(str, set[str])):
