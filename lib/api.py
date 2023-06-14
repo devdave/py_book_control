@@ -1,5 +1,6 @@
 import webview
-from application import BCApplication
+from .application import BCApplication
+from . import models
 
 
 class BCAPI:
@@ -17,10 +18,10 @@ class BCAPI:
         self.data_store = dict()
 
 
-    def info(self, message):
+    def info(self, message:str):
         print(f"Frontend says `{message}`")
 
-    def alert(self, message):
+    def alert(self, message:str):
         return self.app.main_window.create_confirmation_dialog("Problem", message )
     def find_source(self):
 
@@ -32,12 +33,12 @@ class BCAPI:
         if result is None:
             self.alert("No file was loaded or created, a save dialog will appear the next time you try to save.")
 
-    def fetch_manifest(self):
+    def fetch_chapters(self):
 
         return [chapter.asdict() for chapter in self.app.book.chapters]
 
 
-    def create_chapter(self, chapter_name):
+    def create_chapter(self, chapter_name:str):
         chapter = models.Chapter(name=chapter_name, uid=models.generate_id(7))
 
         self.app.book.chapters.append(chapter)
@@ -50,7 +51,7 @@ class BCAPI:
         scene = models.Scene.Fetch_by_uid(self.app.session, scene_uid)
         return scene.asdict()
 
-    def update_scene(self, scene_uid, new_data):
+    def update_scene(self, scene_uid:str, new_data:dict):
         scene = models.Scene.Fetch_by_uid(self.app.session, scene_uid)
 
         for key, val in new_data.items():
@@ -63,7 +64,7 @@ class BCAPI:
         return True
 
 
-    def create_scene(self, chapter_uid, scene_name):
+    def create_scene(self, chapter_uid:str, scene_name:str):
         chapter = models.Chapter.Fetch_by_uid(self.app.session, chapter_uid)
         scene = models.Scene(name=scene_name)
         chapter.scenes.append(scene)
@@ -72,11 +73,15 @@ class BCAPI:
         return scene.asdict()
 
 
-    def save_reordered_chapters(self, chapters):
+    def save_reordered_chapters(self, chapters:[]):
         print(chapters)
 
 
     def boot_up(self):
+        """
+            Will be deprecated, automatically loads up the 1st Book for use with the app.
+                :return: bool
+        """
         result = self.app.main_window.create_confirmation_dialog("Startup", "Click Ok to open an existing book.")
         if result:
             # self.find_source()

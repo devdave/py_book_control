@@ -1,5 +1,5 @@
 import webview
-import models
+from . import models
 
 class BCApplication:
     main_window: webview.Window

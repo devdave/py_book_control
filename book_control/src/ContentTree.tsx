@@ -5,7 +5,6 @@ import {FC, useState} from "react";
 
 import {Tree, NodeRendererProps, NodeApi, MoveHandler} from "react-arborist";
 import {Button, Group} from "@mantine/core";
-import {Boundary} from "./lib/boundary.ts";
 
 
 type setActiveType = (element: Chapter) => void;
@@ -38,9 +37,10 @@ const Node: FC<NodeRendererProps<Chapter>> = ({node, style, dragHandle}) => {
 }
 
 interface ContentTreeProps {
-    boundary: Boundary,
     chaptersData: Chapter[],
-    updateActiveElement: setActiveType
+    updateActiveElement: setActiveType,
+    createChapter: (name:string)=>void,
+    createScene: (chapter_id:string, scene_name:string) => void,
 };
 
 export const ContentTree: FC<ContentTreeProps> = ({createChapter, createScene, chaptersData ,updateActiveElement}) => {
@@ -58,11 +58,6 @@ export const ContentTree: FC<ContentTreeProps> = ({createChapter, createScene, c
 
         console.info("selected", node, typeof node);
         if (node) {
-            //only toggle if the element is already selected
-            if(node.isSelected){
-                // node.toggle();
-            }
-
 
             if (node.data) {
                 setCurrentid(node.data.id);
@@ -82,7 +77,7 @@ export const ContentTree: FC<ContentTreeProps> = ({createChapter, createScene, c
     async function doCreateChapter(chapterName:string) {
         if(chapterName){
             console.log("Creating new chapter", chapterName);
-            createChapter.mutate(chapterName);
+            createChapter(chapterName);
         }
 
     }
@@ -93,8 +88,7 @@ export const ContentTree: FC<ContentTreeProps> = ({createChapter, createScene, c
 
     async function doCreateScene(sceneName:string) {
         if(currentType == "chapter") {
-
-            createScene.mutate([currentId, sceneName]);
+            createScene(currentId, sceneName);
         }
 
     }
@@ -102,18 +96,19 @@ export const ContentTree: FC<ContentTreeProps> = ({createChapter, createScene, c
 
     if(chaptersData == undefined || chaptersData?.length <= 0){
         return (
-            <Group position={"left"}>
-                <Button onClick={onCreateChapter}>Add chapter</Button>
+            <Group  position={"left"}>
+                <Button compact onClick={onCreateChapter}>+ chapter</Button>
             </Group>
         )
     }
 
+
     return (
         <>
             <Group position={"left"}>
-                <Button onClick={onCreateChapter}>Add chapter</Button>
+                <Button compact onClick={onCreateChapter}>+ chapter</Button>
                 {currentType == "chapter" &&
-                <Button onClick={onCreateScene}>Add Scene</Button>
+                <Button onClick={onCreateScene}>+ Scene</Button>
                 }
             </Group>
             <Tree
@@ -123,6 +118,7 @@ export const ContentTree: FC<ContentTreeProps> = ({createChapter, createScene, c
                 onMove={onMove}
                 onSelect={onSelect}
                 disableDrop={false}
+                // @ts-ignore: TS2322 fuck off!
                 childrenAccessor={(data)=>data?.scenes}
             >
                 {Node}

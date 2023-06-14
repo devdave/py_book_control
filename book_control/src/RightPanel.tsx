@@ -1,17 +1,17 @@
-import {Boundary} from "./lib/boundary.ts";
 import React from "react";
 import {Chapter, SceneRecord} from "./types.ts";
 import {SceneDetail} from "./sceneDetail.tsx";
 import {ChapterDetail} from "./chapterDetail.tsx";
+import {APIBridge} from "./bridge.ts";
 
 
 interface RightPanelProps {
-    boundary: Boundary;
+    bridge: APIBridge,
     activeElement: Chapter | SceneRecord | null,
+    updateScene: any
 }
 
 export const RightPanel: React.FC<RightPanelProps> = ({
-                                                          boundary,
                                                           activeElement,
                                                           updateScene
                                                       }) => {
@@ -20,13 +20,15 @@ export const RightPanel: React.FC<RightPanelProps> = ({
     console.log(activeElement);
 
 
-    if (activeElement?.type == "scene") {
+    if (activeElement?.type === "scene") {
         return (
-            <SceneDetail activeElement={activeElement as SceneRecord} boundary={boundary} updateScene={updateScene}/>
+            <SceneDetail key={activeElement.id}
+                         activeElement={activeElement as SceneRecord}
+                         updateScene={updateScene}/>
         )
     } else if (activeElement?.type === "chapter") {
         return (
-            <ChapterDetail activeElement={activeElement as Chapter}/>
+            <ChapterDetail key={activeElement.id} activeElement={activeElement as Chapter}/>
         )
     } else {
         return (

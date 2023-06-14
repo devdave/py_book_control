@@ -1,5 +1,6 @@
 
 import {Boundary} from "./lib/boundary.ts";
+import {SceneRecord} from "./types.ts";
 
 export class APIBridge {
 
@@ -53,7 +54,7 @@ export class APIBridge {
     }
     
     
-    async update_scene( scene_uid:string, new_data:string, ) {
+    async update_scene( scene_uid:string, new_data:SceneRecord, ) {
         
         return await this.boundary.remote("update_scene", scene_uid, new_data, );
     }

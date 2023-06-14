@@ -1,80 +1,75 @@
-import {Accordion, Grid, Textarea, TextInput} from "@mantine/core";
-import React from "react";
+import {Paper, Textarea, TextInput, Tabs} from "@mantine/core";
+import React, {FormEventHandler} from "react";
 import {SceneRecord} from "./types.ts";
-import {Boundary} from "./lib/boundary.ts";
 
-import { useTimeout } from '@mantine/hooks'
+
+import {useTimeout} from '@mantine/hooks'
 import {useForm} from "@mantine/form";
 
+
 //How long to let a dirty record sit before pushing changes
-const MAX_DIRT_LENGTH = 5000;
+const MAX_DIRT_LENGTH = 1200;
 
 
 interface SceneProps {
     activeElement: SceneRecord,
-    boundary: Boundary
+    updateScene: any
 }
-export const SceneDetail:React.FC<SceneProps> = ({activeElement, boundary, updateScene}) => {
 
-    const { start, clear } = useTimeout(whenDirtTimesOut, MAX_DIRT_LENGTH);
+export const SceneDetail: React.FC<SceneProps> = ({activeElement, updateScene}) => {
 
-    const form = useForm({
-        initialValues: {
-            id: activeElement.id,
-            name: activeElement.name,
-            desc: activeElement.desc,
-            content: activeElement.content,
-            notes: activeElement.notes
-        },
-        validate: {
-            name: (value) => (value.length > 0 ? null : "Name cannot be empty"),
+
+    const {start, clear} = useTimeout(whenDirtTimesOut, MAX_DIRT_LENGTH);
+    const myForm = useForm(
+        {
+            initialValues: {...activeElement}
         }
+    )
 
-    })
-
-    function onFormChange() {
-
+    const onFormChange = () => {
+        clear();
         start();
     }
 
-    async function whenDirtTimesOut(){
+    async function whenDirtTimesOut() {
         clear();
 
-        if(form.isDirty()){
-            // const response = await boundary.remote("update_scene", activeElement.id, form.values);
-            updateScene.mutate([activeElement.id, form.values]);
-            // console.log("Scene updated", response);
-            form.resetDirty();
+        if (myForm.isDirty()) {
+            console.log("updating ", myForm.values);
+            updateScene.mutate([activeElement.id, myForm.values]);
+            myForm.resetDirty();
 
         }
     }
 
+    const fuckOff:FormEventHandler<HTMLFormElement> = (evt) => {
+        evt.preventDefault();
+        start();
+
+    }
+
     return (
-        <form onChange={onFormChange} onSubmit={form.onSubmit((values)=>console.log(values))}>
+        <form onSubmit={fuckOff} onChange={onFormChange}>
+            <TextInput label="Scene name" placeholder={"Scene name"} {...myForm.getInputProps("name")}/>
+            <Tabs defaultValue="content">
+                <Tabs.List>
+                    <Tabs.Tab value="content">Content</Tabs.Tab>
+                    <Tabs.Tab value="desc">Description</Tabs.Tab>
+                    <Tabs.Tab value="notes">Notes</Tabs.Tab>
+                </Tabs.List>
+                <Tabs.Panel value="content">
+                    <Paper miw="60vw" shadow="md" p="md" withBorder>
+                        <Textarea autosize minLength={80} minRows={14} {...myForm.getInputProps("content")}/>
+                    </Paper>
+                </Tabs.Panel>
+                <Tabs.Panel value="desc">
+                    <Textarea autosize minRows={14} {...myForm.getInputProps("desc")} />
+                </Tabs.Panel>
+                <Tabs.Panel value="notes">
+                    <Textarea autosize minRows={14} {...myForm.getInputProps("notes")} />
+                </Tabs.Panel>
+            </Tabs>
 
-            <Grid>
-                <Grid.Col span={"auto"}>
-                    <TextInput placeholder={"Scene name"} {...form.getInputProps("name")}/>
-                    <Textarea minRows={5} {...form.getInputProps("content")}/>
-                </Grid.Col>
-                <Grid.Col span={"content"}>
-                    <Accordion multiple={true} defaultValue={["synopsis","notes"]}>
-                        <Accordion.Item value="synopsis">
-                            <Accordion.Control>Description</Accordion.Control>
-                            <Accordion.Panel>
-                                <Textarea {...form.getInputProps("desc")} />
-                            </Accordion.Panel>
-                        </Accordion.Item>
-                        <Accordion.Item value="notes">
-                            <Accordion.Control>Notes</Accordion.Control>
-                            <Accordion.Panel>
-                                <Textarea {...form.getInputProps("notes")} />
-                            </Accordion.Panel>
-                        </Accordion.Item>
-                    </Accordion>
-
-                </Grid.Col>
-            </Grid>
         </form>
 
     );
