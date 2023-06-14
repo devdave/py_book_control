@@ -1,31 +1,36 @@
 import './App.css'
-import {Chapter, Chapters, SceneRecord} from "./types.ts";
+import {Chapter, SceneRecord} from "./types.ts";
 import {Boundary, PYWEBVIEWREADY} from "./lib/boundary.ts";
 
 import {useEffect, useState} from "react";
-import {AppShell, Navbar} from "@mantine/core";
+import {AppShell, LoadingOverlay, Navbar} from "@mantine/core";
 import {ContentTree} from "./ContentTree.tsx";
 import {RightPanel} from "./RightPanel.tsx";
+import {APIBridge} from "./bridge.ts";
 import {useImmer} from "use-immer";
-import {assignWith} from "lodash";
+
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 
 
 function App() {
 
-    const [elements, setElements] = useState<Chapters[]>([]);
+    const [isReady, setIsReady] = useState(false);
     const [activeElement, updateActiveElement] = useImmer<Chapter | SceneRecord | null>(null);
 
-
     const boundary = new Boundary();
+    const bridge: APIBridge  = new APIBridge(boundary);
 
     const queryClient = useQueryClient();
 
-    const chaptersQuery = useQuery({queryKey: ['chapters'], queryFn: fetchChapters});
+    const chaptersQuery = useQuery({queryKey: ['chapters'], queryFn: bridge.fetch_chapters});
+
+    useEffect(()=>{
+        addEventListener(PYWEBVIEWREADY, ()=>setIsReady(true));
+    },[])
 
     const createChapter = useMutation({
         mutationKey: ['chapters'],
-        mutationFn: callCreateChapter,
+        mutationFn: bridge.create_chapter,
         onSuccess: () => {
             queryClient.invalidateQueries(["chapters"]);
         }
@@ -44,38 +49,31 @@ function App() {
             mutationKey: ["chapters", "scene"],
             mutationFn: callUpdateScene,
             onSuccess: () => {
-                queryClient.invalidateQueries(["headers"]);
+                queryClient.invalidateQueries(["chapters"]);
             }
         }
     )
 
-    async function callUpdateScene(scene_data: SceneRecord) {
-        const scene_id = scene_data.id;
+    async function callUpdateScene([scene_id, scene_data] ) {
+
         if (scene_id == undefined) {
             throw Error("Must include scene id to allow editing!");
         }
-        const response = boundary.remote("update_scene", scene_id, scene_data);
+        console.log("callUpdateScene", scene_id, scene_data);
+        const response = await bridge.update_scene(scene_id, scene_data);
         return response;
     }
 
-
-    async function callCreateChapter(chapterName) {
-        const newChapter = await boundary.remote("create_chapter", chapterName);
-        return newChapter
-    }
-
     async function callCreateScene([chapter_id, scene_name]) {
-        const newScene = await boundary.remote("create_scene", chapter_id, scene_name);
-        return newScene;
+        return await bridge.create_scene(chapter_id, scene_name);
     }
 
 
-    async function fetchChapters() {
-        const chapters = await boundary.remote("fetch_manifest");
-        console.log("Fetched", chapters);
-        return chapters;
+    if(isReady == false){
+        return (
+            <LoadingOverlay visible={true}/>
+        );
     }
-
 
     const leftPanel = (
         <Navbar width={{base: 150}}>
@@ -95,7 +93,7 @@ function App() {
             activeElement={activeElement}
             updateActiveElement={updateActiveElement}
             updateScene={updateScene}
-            boundary={boundary}/>
+            bridge={bridge}/>
     );
 
     //Going to use https://github.com/brimdata/react-arborist
