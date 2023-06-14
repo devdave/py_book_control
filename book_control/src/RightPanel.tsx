@@ -10,19 +10,23 @@ interface RightPanelProps {
     activeElement: Chapter | SceneRecord | null,
 }
 
-export const RightPanel: React.FC<RightPanelProps> = ({boundary, activeElement}) => {
+export const RightPanel: React.FC<RightPanelProps> = ({
+                                                          boundary,
+                                                          activeElement,
+                                                          updateScene
+                                                      }) => {
 
 
     console.log(activeElement);
 
 
-    if(activeElement?.type=="scene"){
+    if (activeElement?.type == "scene") {
         return (
-            <SceneDetail activeElement={activeElement as SceneRecord} boundary={boundary}/>
+            <SceneDetail activeElement={activeElement as SceneRecord} boundary={boundary} updateScene={updateScene}/>
         )
     } else if (activeElement?.type === "chapter") {
         return (
-            <ChapterDetail activeElement={activeElement as Chapter} />
+            <ChapterDetail activeElement={activeElement as Chapter}/>
         )
     } else {
         return (

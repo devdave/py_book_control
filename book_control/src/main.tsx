@@ -7,17 +7,18 @@ import {
     QueryClientProvider,
 } from '@tanstack/react-query'
 
-import App from './App.tsx'
+import {AppLoading} from "./AppLoading.tsx";
+
 import './index.css'
 
-const queryClient = QueryClient();
+const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
         <QueryClientProvider client={queryClient}>
             <MantineProvider withGlobalStyles withNormalizeCSS>
                 <ModalsProvider>
-                    <App/>
+                    <AppLoading/>
                 </ModalsProvider>
             </MantineProvider>
         </QueryClientProvider>

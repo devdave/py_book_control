@@ -1,4 +1,4 @@
-import {TargetedElement} from "./types.ts";
+import {Chapter} from "./types.ts";
 import {InputModal} from "./lib/input_modal.tsx";
 
 import {FC, useState} from "react";
@@ -6,14 +6,13 @@ import {FC, useState} from "react";
 import {Tree, NodeRendererProps, NodeApi, MoveHandler} from "react-arborist";
 import {Button, Group} from "@mantine/core";
 import {Boundary} from "./lib/boundary.ts";
-import {act} from "react-dom/test-utils";
-
-type setElementsType = (elements: TargetedElement[]) => void;
-type setActiveType = (element: TargetedElement) => void;
 
 
+type setActiveType = (element: Chapter) => void;
 
-const Node: FC<NodeRendererProps<TargetedElement>> = ({node, style, dragHandle}) => {
+
+
+const Node: FC<NodeRendererProps<Chapter>> = ({node, style, dragHandle}) => {
     /* This node instance can do many things. See the API reference. */
 
     const isSelected = node.isSelected;
@@ -40,20 +39,20 @@ const Node: FC<NodeRendererProps<TargetedElement>> = ({node, style, dragHandle})
 
 interface ContentTreeProps {
     boundary: Boundary,
-    elements: TargetedElement[],
-    setElements: setElementsType,
+    chaptersData: Chapter[],
     updateActiveElement: setActiveType
 };
 
-export const ContentTree: FC<ContentTreeProps> = ({boundary, elements,setElements, activeElement , updateActiveElement}) => {
+export const ContentTree: FC<ContentTreeProps> = ({createChapter, createScene, chaptersData ,updateActiveElement}) => {
 
     const [currentType, setCurrentType] = useState("");
+    const [currentId, setCurrentid] = useState("");
 
-    const onMove: MoveHandler<TargetedElement> = ({dragNodes, parentNode, index}) => {
+    const onMove: MoveHandler<Chapter> = ({dragNodes, parentNode, index}) => {
         console.log("moved", dragNodes, parentNode, index);
     };
 
-    const onSelect = (nodes: NodeApi<TargetedElement>[]) => {
+    const onSelect = (nodes: NodeApi<Chapter>[]) => {
 
         const node = nodes[0];
 
@@ -66,6 +65,7 @@ export const ContentTree: FC<ContentTreeProps> = ({boundary, elements,setElement
 
 
             if (node.data) {
+                setCurrentid(node.data.id);
                 setCurrentType(node.data.type);
                 updateActiveElement(node.data);
             }
@@ -81,13 +81,8 @@ export const ContentTree: FC<ContentTreeProps> = ({boundary, elements,setElement
 
     async function doCreateChapter(chapterName:string) {
         if(chapterName){
-            const newChapter = await boundary.remote("create_chapter", chapterName);
-            console.log("Got ", newChapter);
-            if(newChapter){
-                setElements( oldArray => [...oldArray, newChapter]);
-            } else {
-
-            }
+            console.log("Creating new chapter", chapterName);
+            createChapter.mutate(chapterName);
         }
 
     }
@@ -97,17 +92,15 @@ export const ContentTree: FC<ContentTreeProps> = ({boundary, elements,setElement
     }
 
     async function doCreateScene(sceneName:string) {
-        const newScene = await boundary.remote("create_scene", activeElement.id, sceneName);
-        if(newScene){
-            const manifest = await boundary.remote("fetch_manifest")
-            if(manifest){
-                setElements(manifest);
-            }
+        if(currentType == "chapter") {
+
+            createScene.mutate([currentId, sceneName]);
         }
+
     }
 
 
-    if(elements.length <= 0){
+    if(chaptersData == undefined || chaptersData?.length <= 0){
         return (
             <Group position={"left"}>
                 <Button onClick={onCreateChapter}>Add chapter</Button>
@@ -125,7 +118,7 @@ export const ContentTree: FC<ContentTreeProps> = ({boundary, elements,setElement
             </Group>
             <Tree
                 width={150}
-                data={elements}
+                data={chaptersData}
                 disableMultiSelection={true}
                 onMove={onMove}
                 onSelect={onSelect}

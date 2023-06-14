@@ -3,26 +3,24 @@ import React from "react";
 import {SceneRecord} from "./types.ts";
 import {Boundary} from "./lib/boundary.ts";
 
+import { useTimeout } from '@mantine/hooks'
 import {useForm} from "@mantine/form";
+
+//How long to let a dirty record sit before pushing changes
+const MAX_DIRT_LENGTH = 5000;
 
 
 interface SceneProps {
     activeElement: SceneRecord,
     boundary: Boundary
 }
-export const SceneDetail:React.FC<SceneProps> = ({activeElement, boundary}) => {
-    
-    //How long to let a dirty record sit before pushing changes
-    const MAX_DIRT_LENGTH = 5000;
-    //How long to wait after a user makes a change
-    const DIRT_WAIT_LENGTH = 2000;
+export const SceneDetail:React.FC<SceneProps> = ({activeElement, boundary, updateScene}) => {
 
-
-    let maxDirtTimer: (number| undefined) = undefined;
-    let dirtWaitTimer: (number| undefined) = undefined;
+    const { start, clear } = useTimeout(whenDirtTimesOut, MAX_DIRT_LENGTH);
 
     const form = useForm({
         initialValues: {
+            id: activeElement.id,
             name: activeElement.name,
             desc: activeElement.desc,
             content: activeElement.content,
@@ -36,29 +34,24 @@ export const SceneDetail:React.FC<SceneProps> = ({activeElement, boundary}) => {
 
     function onFormChange() {
 
-        clearTimeout(dirtWaitTimer);
-        dirtWaitTimer = setTimeout(whenDirtTimesOut, DIRT_WAIT_LENGTH);
-
-        if(maxDirtTimer === null){
-            maxDirtTimer = setTimeout(whenDirtTimesOut, MAX_DIRT_LENGTH)
-        }
+        start();
     }
 
     async function whenDirtTimesOut(){
-        clearTimeout(dirtWaitTimer);
-        clearTimeout(maxDirtTimer);
-        dirtWaitTimer = undefined;
-        maxDirtTimer = undefined;
+        clear();
 
         if(form.isDirty()){
-            const response = await boundary.remote("update_scene", activeElement.id, form.values);
-            console.log("Scene updated", response);
+            // const response = await boundary.remote("update_scene", activeElement.id, form.values);
+            updateScene.mutate([activeElement.id, form.values]);
+            // console.log("Scene updated", response);
             form.resetDirty();
+
         }
     }
 
     return (
         <form onChange={onFormChange} onSubmit={form.onSubmit((values)=>console.log(values))}>
+
             <Grid>
                 <Grid.Col span={"auto"}>
                     <TextInput placeholder={"Scene name"} {...form.getInputProps("name")}/>
