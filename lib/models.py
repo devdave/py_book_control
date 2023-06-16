@@ -7,6 +7,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import create_engine
 from sqlalchemy import String
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import (
@@ -64,10 +65,17 @@ class Chapter(Base):
     book_id: Mapped[int] = mapped_column(ForeignKey("Book.id"))
     book: Mapped["Book"] = relationship(back_populates="chapters")
 
-    def asdict(self):
-        data = dict(id=self.uid, type='chapter', name=self.name, order=self.order)
-        data['scenes'] = [scene.asdict() for scene in self.scenes]
+    def asdict(self, stripped = False):
+        data = dict(id=self.uid, type='chapter', name=self.name, order=self.order, words=self.words)
+        if stripped is False:
+            data['notes'] = self.notes
+
+        data['scenes'] = [scene.asdict(stripped=stripped) for scene in self.scenes]
         return data
+
+    @hybrid_property
+    def words(self):
+        return sum(scene.words for scene in self.scenes)
 
 
     @classmethod
@@ -105,10 +113,22 @@ class Scene(Base):
         , collection_class = ordering_list("order")
     )
 
-    def asdict(self):
-        data = dict(id=self.uid, type='scene', name=self.name, order=self.order, desc=self.desc, content=self.content)
-        data['locations'] = [location.asdict() for location in self.locations]
-        data['characters'] = [character.asdict() for character in self.characters]
+    @hybrid_property
+    def words(self):
+        cleaned = (""+self.content)
+        return len(cleaned.replace('",.!?', ' ').split(' '))
+
+    def asdict(self, stripped=False):
+
+        if stripped is True:
+            data = dict(id=self.uid, type='scene', name=self.name, order=self.order)
+        else:
+            data = dict(id=self.uid, type='scene', name=self.name, order=self.order, desc=self.desc, content=self.content)
+            data['locations'] = [location.asdict() for location in self.locations]
+            data['characters'] = [character.asdict() for character in self.characters]
+
+        data['words'] = self.words
+
         return data
 
     @classmethod

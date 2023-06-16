@@ -48,6 +48,10 @@ export const SceneDetail: React.FC<SceneProps> = ({activeElement, updateScene}) 
 
     }
 
+    const blurred = (evt) => {
+        whenDirtTimesOut();
+    }
+
     return (
         <form onSubmit={fuckOff} onChange={onFormChange}>
             <TextInput label="Scene name" placeholder={"Scene name"} {...myForm.getInputProps("name")}/>
@@ -59,14 +63,14 @@ export const SceneDetail: React.FC<SceneProps> = ({activeElement, updateScene}) 
                 </Tabs.List>
                 <Tabs.Panel value="content">
                     <Paper miw="60vw" shadow="md" p="md" withBorder>
-                        <Textarea autosize minLength={80} minRows={14} {...myForm.getInputProps("content")}/>
+                        <Textarea autosize minLength={80} minRows={14} onBlur={blurred} {...myForm.getInputProps("content")}/>
                     </Paper>
                 </Tabs.Panel>
                 <Tabs.Panel value="desc">
-                    <Textarea autosize minRows={14} {...myForm.getInputProps("desc")} />
+                    <Textarea autosize minRows={14} onBlur={blurred} {...myForm.getInputProps("desc")} />
                 </Tabs.Panel>
                 <Tabs.Panel value="notes">
-                    <Textarea autosize minRows={14} {...myForm.getInputProps("notes")} />
+                    <Textarea autosize minRows={14} onBlur={blurred} {...myForm.getInputProps("notes")} />
                 </Tabs.Panel>
             </Tabs>
 

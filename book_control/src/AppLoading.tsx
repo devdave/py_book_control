@@ -2,6 +2,7 @@ import {useEffect, useState} from "react";
 import App from "./App.tsx";
 import {LoadingOverlay} from "@mantine/core";
 import {PYWEBVIEWREADY} from "./lib/boundary.ts";
+import app from "./App.tsx";
 
 
 export const AppLoading = () => {
@@ -14,7 +15,12 @@ export const AppLoading = () => {
     }
 
     useEffect(()=>{
-        window.addEventListener(PYWEBVIEWREADY, bridgeReady)
+        if(window.pywebview == undefined || window.pywebview.api == undefined) {
+            window.addEventListener(PYWEBVIEWREADY, bridgeReady)
+        } else {
+            setIsReady(true);
+        }
+
     }, []);
 
 

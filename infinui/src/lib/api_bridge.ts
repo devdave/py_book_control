@@ -1,7 +1,10 @@
 
-import {Boundary} from "./lib/boundary.ts";
 
-export class APIBridge {
+interface Boundary {
+    remote: (method_name:string, ...args:any)=>any
+}
+
+class APIBridge {
 
     boundary:Boundary
     
@@ -38,6 +41,18 @@ export class APIBridge {
     async fetch_chapters( ) {
         
         return await this.boundary.remote("fetch_chapters", );
+    }
+    
+    
+    async fetch_chapter( chapter_id:string, ) {
+        
+        return await this.boundary.remote("fetch_chapter", chapter_id, );
+    }
+    
+    
+    async fetch_stripped_chapters( ) {
+        
+        return await this.boundary.remote("fetch_stripped_chapters", );
     }
     
     
@@ -79,3 +94,5 @@ export class APIBridge {
     
 
 }
+
+export default APIBridge;

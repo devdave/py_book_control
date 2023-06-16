@@ -34,9 +34,14 @@ class BCAPI:
             self.alert("No file was loaded or created, a save dialog will appear the next time you try to save.")
 
     def fetch_chapters(self):
-
         return [chapter.asdict() for chapter in self.app.book.chapters]
 
+    def fetch_chapter(self, chapter_id:str):
+        return models.Chapter.Fetch_by_uid(self.app.session, chapter_id).asdict();
+
+    def fetch_stripped_chapters(self):
+
+        return [chapter.asdict(stripped=True) for chapter in self.app.book.chapters]
 
     def create_chapter(self, chapter_name:str):
         chapter = models.Chapter(name=chapter_name, uid=models.generate_id(7))
@@ -55,7 +60,7 @@ class BCAPI:
         scene = models.Scene.Fetch_by_uid(self.app.session, scene_uid)
 
         for key, val in new_data.items():
-            if key in ['id', 'uid']:
+            if key in ['id', 'uid', 'words']:
                 continue
 
             setattr(scene, key, val)

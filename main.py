@@ -16,8 +16,8 @@ from lib.api import BCAPI
 
 
 
-def spinup_pnpm():
-    ui_dir = pathlib.Path(__file__).parent / "book_control"
+def spinup_pnpm(url_path:pathlib.Path):
+    ui_dir = url_path.parent
     process = subprocess.Popen(["pnpm", "dev", "--port", "8080"],
                                cwd=str(ui_dir),
                                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
@@ -46,7 +46,7 @@ def main():
     worker = None
 
     if result.dev is True:
-        worker = spinup_pnpm()
+        worker = spinup_pnpm(result.url)
         win1 = webview.create_window("PyOpen Talk", url="http://127.0.0.1:8080", js_api=api)
     else:
         win1 = webview.create_window("PyOpen Talk", url=str(result.url), js_api=api)

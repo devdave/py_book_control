@@ -5,9 +5,12 @@ import jinja2
 import typing as T
 
 template_body = """
-import {Boundary} from "./lib/boundary.ts";
 
-export class APIBridge {
+interface Boundary {
+    remote: (method_name:string, ...args:any)=>any
+}
+
+class APIBridge {
 
     boundary:Boundary
     
@@ -24,6 +27,8 @@ export class APIBridge {
     {% endfor %}
 
 }
+
+export default APIBridge;
 """
 
 class FuncArg(T.NamedTuple):

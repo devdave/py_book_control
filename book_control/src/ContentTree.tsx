@@ -32,6 +32,13 @@ const Node: FC<NodeRendererProps<Chapter>> = ({node, style, dragHandle}) => {
         <div style={style} ref={dragHandle} className={nodeClass}>
             {node.data.type === "chapter" ? parentIcon : sceneIcon}
             {node.data.name}
+            {node.data.type === "chapter" &&
+                <span>&nbsp;: {node.data.scenes.length}</span>
+            }
+            {node.data.type === "scene" &&
+            <span>&nbsp;: {node.data.words}</span>
+            }
+
         </div>
     );
 }
@@ -50,6 +57,7 @@ export const ContentTree: FC<ContentTreeProps> = ({createChapter, createScene, c
 
     const onMove: MoveHandler<Chapter> = ({dragNodes, parentNode, index}) => {
         console.log("moved", dragNodes, parentNode, index);
+
     };
 
     const onSelect = (nodes: NodeApi<Chapter>[]) => {
