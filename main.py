@@ -15,6 +15,8 @@ from lib.api import BCAPI
 
 
 
+HERE = pathlib.Path(__file__).parent
+
 
 def spinup_pnpm(url_path:pathlib.Path):
     ui_dir = url_path.parent
@@ -32,18 +34,34 @@ def spinup_pnpm(url_path:pathlib.Path):
     return process
 
 
+def write_bridge(dest:pathlib.Path):
+    import transformer
+    transformer.process_source(
+        (HERE/"lib"/"remote.py"),
+        dest
+    )
+
+
 
 def main():
     args = argparse.ArgumentParser("OpenAI API talker")
 
     args.add_argument("--url", type=pathlib.Path, default=pathlib.Path("./book_control/dist/index.html"))
     args.add_argument("--dev", action="store_true", default=False)
+    args.add_argument("--write_bridge", type=pathlib.Path, default=None)
+
 
     result = args.parse_args()
     app = BCApplication()
     api = BCAPI(app)
 
     worker = None
+
+    if result.write_bridge is not None:
+        assert result.write_bridge.parent.exists() and result.write_bridge.parent.isdir()
+        write_bridge(result.write_bridge)
+
+
 
     if result.dev is True:
         worker = spinup_pnpm(result.url)
