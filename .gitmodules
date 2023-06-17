@@ -1,0 +1,3 @@
+[submodule "dave-book-ui"]
+	path = dave-book-ui
+	url = https://github.com/devdave/dave-book-ui.git
