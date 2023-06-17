@@ -1,0 +1,29 @@
+
+article {
+    z-index: 50;
+    margin-bottom: 25vh;
+}
+
+article .banner {
+    position: sticky;
+    background: white;
+    z-index: 100 !important;
+    top: 0;
+}
+
+
+.footer {
+    bottom: 100px;
+    z-index: -1;
+}
+
+article .banner {
+  background-image: linear-gradient(
+    to bottom,
+    transparent 50px,
+    #F5A623 50px,
+    #F5A623 calc(100% - 50px),
+    transparent 0
+  );
+  margin: auto auto 50px auto;
+}

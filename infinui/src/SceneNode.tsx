@@ -1,5 +1,5 @@
 import React from "react";
-import {Paper, Textarea, TextInput} from "@mantine/core";
+import {Paper, Tabs, Textarea, TextInput} from "@mantine/core";
 
 
 interface SceneElement {
@@ -20,8 +20,33 @@ const SceneNode: React.FC<SceneNodeProps> = ({scene}) => {
     return (
         <div id={`${scene.type}-${scene.id}`}>
             <Paper>
-                <TextInput label="Scene name" defaultValue={scene.name}/>
-                <Textarea label="Content" defaultValue={scene.content} variant="unstyled" size="xl" minRows={10} autosize={true}/>
+                <TextInput label="Scene" defaultValue={scene.name}/>
+                <Tabs defaultValue="content">
+                    <Tabs.List>
+                        <Tabs.Tab value="content">Content</Tabs.Tab>
+                        <Tabs.Tab value="desc">Description</Tabs.Tab>
+                        <Tabs.Tab value="notes">Notes</Tabs.Tab>
+                        <Tabs.Tab value="locations">Locations</Tabs.Tab>
+                        <Tabs.Tab value="chacters">Characters</Tabs.Tab>
+                    </Tabs.List>
+                    <Tabs.Panel value="content">
+                        <Textarea label="Content" defaultValue={scene.content} variant="unstyled" size="xl" minRows={10} autosize={true}/>
+                    </Tabs.Panel>
+                    <Tabs.Panel value="desc">
+                        <Textarea variant="unstyled" size='xl' minRows={10} autosize={true}/>
+                    </Tabs.Panel>
+                    <Tabs.Panel value="notes">
+                        <Textarea variant="unstyled" size='xl' minRows={10} autosize={true}/>
+                    </Tabs.Panel>
+                    <Tabs.Panel value="locations">
+                        <Textarea variant="unstyled" size='xl' minRows={10} autosize={true}/>
+                    </Tabs.Panel>
+                    <Tabs.Panel value="characters">
+                        <Textarea variant="unstyled" size='xl' minRows={10} autosize={true}/>
+                    </Tabs.Panel>
+                    
+                </Tabs>
+
             </Paper>
         </div>
 

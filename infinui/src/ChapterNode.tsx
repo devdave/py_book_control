@@ -1,7 +1,7 @@
 import React from "react";
 import {Button, Group, Paper, Tabs, Textarea, TextInput} from "@mantine/core";
 import SceneNode from "./SceneNode.tsx";
-
+import "./book.css";
 
 interface BookElement {
     id:string
@@ -29,8 +29,13 @@ const ChapterNode:React.FC<BookProps> = ({chapter}) => {
     );
 
     return (
-        <div id={`${chapter.type}-${chapter.id}`}>
-            <TextInput label="Chapter" defaultValue={chapter.name}/>
+        <article id={`${chapter.type}-${chapter.id}`}>
+            <div className="banner">
+                <TextInput label="Chapter" defaultValue={chapter.name}/>
+                <Button>Prepend chapter</Button>
+                <Button>Append chapter</Button>
+            </div>
+            <div className="scenesBody">
             <Tabs defaultValue="scenes">
                 <Tabs.List>
                     <Tabs.Tab value="scenes">Scenes</Tabs.Tab>
@@ -39,13 +44,13 @@ const ChapterNode:React.FC<BookProps> = ({chapter}) => {
                 <Tabs.Panel value="scenes" pt='xs'>
                     <Paper shadow={"sm"}>
                         <Group position="center">
-                        <Button compact={true} size="sx">Append new scene</Button>
+                        <Button compact={true} size="sx">Append scene</Button>
                         </Group>
 
                         {chapter.scenes.length > 0 && sceneList}<br/>
-                        <Group position="center">
-                        <Button compact={true} size="sx">Attach new scene</Button>
-                        </Group>
+                        {/*<Group position="center">*/}
+                        {/*<Button compact={true} size="sx">Attach scene</Button>*/}
+                        {/*</Group>*/}
 
                     </Paper>
 
@@ -54,8 +59,11 @@ const ChapterNode:React.FC<BookProps> = ({chapter}) => {
                     <Textarea defaultValue={chapter.notes} minRows={10} autosize={true}/>
                 </Tabs.Panel>
             </Tabs>
-
-        </div>
+            </div>
+            <div className="chapterFoot">
+                <span> Visible end of Chapter marker</span>
+            </div>
+        </article>
     )
 
 }

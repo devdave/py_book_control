@@ -18,11 +18,10 @@ const Book:React.FC<BookProps> = ({chapters}) => {
 
     return (
         <div style={{zIndex:100}}>
-            <h1>Book contents</h1>
             <Group position="center"><Button compact={true} size="sx">Append chapter</Button></Group>
             {chapters.map((chapter)=>
                 <Paper key={chapter.id}>
-                        <ChapterNode chapter={chapter}/>
+                    <ChapterNode chapter={chapter}/>
                 </Paper>
             )}
             <br/>
