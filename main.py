@@ -20,6 +20,8 @@ HERE = pathlib.Path(__file__).parent
 
 def spinup_pnpm(url_path:pathlib.Path):
     ui_dir = url_path.parent
+    print(f"Spinup CWD `{ui_dir=}`")
+
     process = subprocess.Popen(["pnpm", "dev", "--port", "8080"],
                                cwd=str(ui_dir),
                                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
@@ -36,8 +38,9 @@ def spinup_pnpm(url_path:pathlib.Path):
 
 def write_bridge(dest:pathlib.Path):
     import transformer
+    dest.touch(exist_ok=True)
     transformer.process_source(
-        (HERE/"lib"/"remote.py"),
+        (HERE/"lib"/"api.py"),
         dest
     )
 
@@ -51,14 +54,20 @@ def main():
     args.add_argument("--write_bridge", type=pathlib.Path, default=None)
 
 
+
+
     result = args.parse_args()
+    print(f"{result.url=}")
+    print(f"{result.dev=}")
+    print(f"{result.write_bridge=}")
+
     app = BCApplication()
     api = BCAPI(app)
 
     worker = None
 
     if result.write_bridge is not None:
-        assert result.write_bridge.parent.exists() and result.write_bridge.parent.isdir()
+        assert result.write_bridge.parent.exists() and result.write_bridge.parent.is_dir()
         write_bridge(result.write_bridge)
 
 
