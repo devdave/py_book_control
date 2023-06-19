@@ -199,6 +199,9 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             _setChapters((prevChapters) =>
                 map(prevChapters, (prevChapter) => (prevChapter.id === chapter.id ? chapter : prevChapter))
             );
+            if(activeChapter?.id == chapter.id){
+                _setActiveChapter(chapter);
+            }
         },
 
         []);
