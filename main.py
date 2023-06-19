@@ -4,12 +4,7 @@ import signal
 import time
 import argparse
 import webview
-from dataclasses import asdict
-import random
-import string
 
-from lib.types import Character, Location, Scene, Chapter, Book, TargetedElement
-from lib import models
 from lib.application import BCApplication
 from lib.api import BCAPI
 
