@@ -18,6 +18,8 @@ from sqlalchemy.orm import (
     declared_attr
 
 )
+
+
 def generate_id(length):
     alphanum = string.ascii_letters + string.digits
     return "".join(random.choice(alphanum) for _ in range(length))
@@ -30,8 +32,9 @@ class Base(DeclarativeBase):
     def __tablename__(self):
         return self.__name__
 
+
 class Book(Base):
-    name: Mapped[str]
+    title: Mapped[str]
     notes: Mapped[str] = mapped_column(default="")
 
     chapters: Mapped[T.List["Chapter"]] = relationship(
@@ -39,36 +42,49 @@ class Book(Base):
         cascade="all, delete-orphan", order_by="Chapter.order", collection_class=ordering_list("order")
     )
 
+    @classmethod
+    def Fetch_All(cls, session: Session):
+        stmt = select(cls)
+        return session.scalars(stmt).all()
 
     @classmethod
-    def Fetch_book_by_id(cls, session, id):
+    def Fetch_by_ID(cls, session, id):
         stmt = select(cls).where(cls.id == id)
         return session.scalars(stmt).one()
 
     def asdict(self):
-        data = dict(type='book', id=self.id, name=self)
+        data = dict(type='book', id=self.id, title=self.title)
         data['chapters'] = [chapter.asdict() for chapter in self.chapters]
         return data
+
+    @hybrid_property
+    def words(self):
+        return sum([chapter.words for chapter in self.chapters])
+
+
 
 
 class Chapter(Base):
     uid: Mapped[str]
-    name: Mapped[str]
+    title: Mapped[str]
     order: Mapped[int]
 
+    summary: Mapped[str] = mapped_column(default="")
     notes: Mapped[str] = mapped_column(default="")
 
     scenes: Mapped[T.List["Scene"]] = relationship(
-        back_populates="chapter", cascade="all, delete-orphan", order_by="Scene.order", collection_class=ordering_list("order")
+        back_populates="chapter", cascade="all, delete-orphan", order_by="Scene.order",
+        collection_class=ordering_list("order")
     )
 
     book_id: Mapped[int] = mapped_column(ForeignKey("Book.id"))
     book: Mapped["Book"] = relationship(back_populates="chapters")
 
-    def asdict(self, stripped = False):
-        data = dict(id=self.uid, type='chapter', name=self.name, order=self.order, words=self.words)
+    def asdict(self, stripped=False):
+        data = dict(id=self.uid, type='chapter', title=self.title, order=self.order, words=self.words)
         if stripped is False:
             data['notes'] = self.notes
+            data['summary'] = self.summary
 
         data['scenes'] = [scene.asdict(stripped=stripped) for scene in self.scenes]
         return data
@@ -77,26 +93,38 @@ class Chapter(Base):
     def words(self):
         return sum(scene.words for scene in self.scenes)
 
-
     @classmethod
-    def Fetch_all(cls, session):
+    def Fetch_all(cls, session, stripped=False):
         stmt = select(cls)
         return session.scalars(stmt)
 
     @classmethod
-    def Fetch_by_uid(cls, session:Session, chapter_uid)->"Chapter":
+    def Fetch_by_uid(cls, session: Session, chapter_uid) -> "Chapter":
         stmt = select(cls).where(cls.uid == chapter_uid)
         return session.scalars(stmt).one()
 
+    @classmethod
+    def Reorder(cls, session: Session, chapters: T.List[T.Dict[str, str]]):
+        for chapterData in chapters:
+            record = cls.Fetch_by_uid(chapterData['id'])
+            record.order = chapterData['order']
 
+        session.commit()
+
+    def update(self, chapter_data: dict[str, str]):
+        SKIP = ['id', 'scenes', 'words']
+
+        for key, value in chapter_data.items():
+            if key in SKIP: continue
+            setattr(self, key, value)
 
 
 class Scene(Base):
-    uid: Mapped[str] = mapped_column(default=lambda : generate_id(7))
-    name: Mapped[str]
+    uid: Mapped[str] = mapped_column(default=lambda: generate_id(7))
+    title: Mapped[str]
     order: Mapped[int]
 
-    desc: Mapped[str] = mapped_column(default="")
+    summary: Mapped[str] = mapped_column(default="")
     content: Mapped[str] = mapped_column(default="")
     notes: Mapped[str] = mapped_column(default="")
 
@@ -110,20 +138,26 @@ class Scene(Base):
 
     characters: Mapped[T.List["Character"]] = relationship(
         back_populates="scene", cascade="all, delete-orphan", order_by="Character.order"
-        , collection_class = ordering_list("order")
+        , collection_class=ordering_list("order")
     )
+
+    def update(self, newScene:dict[str, str]):
+        SKIP = ['id', 'words', 'chapter_id', 'chapterId']
+        for key, value in newScene.items():
+            if key in SKIP: continue
+            setattr(self, key, value)
 
     @hybrid_property
     def words(self):
-        cleaned = (""+self.content)
+        cleaned = ("" + self.content)
         return len(cleaned.replace('",.!?', ' ').split(' '))
 
     def asdict(self, stripped=False):
+        data = dict(id=self.uid, type='scene', title=self.title, order=self.order, chapterId=self.chapter.uid)
 
-        if stripped is True:
-            data = dict(id=self.uid, type='scene', name=self.name, order=self.order)
-        else:
-            data = dict(id=self.uid, type='scene', name=self.name, order=self.order, desc=self.desc, content=self.content)
+        if stripped is False:
+            data['summary'] = self.summary
+            data['content'] = self.content
             data['locations'] = [location.asdict() for location in self.locations]
             data['characters'] = [character.asdict() for character in self.characters]
 
@@ -149,6 +183,7 @@ class Location(Base):
 
     def adsdict(self):
         return dict(id=self.uid, type='location', name=self.name, order=self.order, notes=self.notes)
+
 
 class Character(Base):
     uid: Mapped[str]
@@ -176,10 +211,7 @@ def db_with():
         yield session
 
 
-
 def connect():
-
-
     engine = create_engine("sqlite:///test.sqlite3", echo=True)
     Base.metadata.create_all(engine, checkfirst=True)
 

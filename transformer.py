@@ -22,7 +22,7 @@ class APIBridge {
 
     {% for func_name, func_def in functions|items() %}
     {%if func_def.doc %}/* {{func_def.doc}} */{% endif%}
-    async {{ func_name }}( {% for key, arg_def in func_def.args|items %}{{key}}:string, {% endfor %}) {
+    async {{ func_name }}( {% for key, arg_def in func_def.args|items %}{{key}}:any, {% endfor %}) {
         
         return await this.boundary.remote("{{ func_name }}", {% for key, arg_def in func_def.args|items %}{{key}}, {% endfor %});
     }
@@ -35,16 +35,16 @@ export default APIBridge;
 
 
 class FuncArg(T.NamedTuple):
-    name: str
-    annotype: str = None
+    name: T.Optional[str]
+    annotype: T.Optional[str] = None
 
 
 class FuncDef(T.NamedTuple):
     args: T.List[FuncArg] = []
-    doc: str = ""
+    doc: T.Optional[str] = ""
 
 
-def process_source(src_file: pathlib.Path, dest: pathlib.Path = None):
+def process_source(src_file: pathlib.Path, dest: pathlib.Path|None = None):
     module = ast.parse(src_file.read_text(), src_file.name, mode="exec")
 
     body = []
@@ -74,7 +74,7 @@ def process_class(class_elm: ast.ClassDef):
 
             functions[element.name] = process_function(element)
 
-    return (cls_name, functions)
+    return cls_name, functions
 
 
 def process_function(func_elm: ast.FunctionDef):
@@ -82,7 +82,7 @@ def process_function(func_elm: ast.FunctionDef):
     return FuncDef(process_args(func_elm.args.args), ast.get_docstring(func_elm))
 
 
-def process_args(func_args: ast.arguments):
+def process_args(func_args: T.List[ast.arg]):
     return {
         arg_elm.arg: FuncArg(arg_elm.annotation)
         for arg_elm in func_args

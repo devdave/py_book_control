@@ -15,7 +15,7 @@ class BCApplication:
         try:
             self.book = models.Book.Fetch_book_by_id(self.session, 1)
         except models.NoResultFound:
-            self.book = models.Book(name="Test1")
+            self.book = models.Book(title="Test1")
             self.session.add(self.book)
             self.session.commit()
 

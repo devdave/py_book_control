@@ -4,7 +4,7 @@ import typing as T
 @dataclass()
 class BaseElement:
     id: str
-    name: str
+    title: str
     order: int
 
 @dataclass()
@@ -22,8 +22,8 @@ class Character(BaseElement):
 class Scene(BaseElement):
     content: str
     desc: str
-    locations: [Location]
-    characters: [Character]
+    locations: T.List[Location]
+    characters: T.List[Character]
     notes: str
     words: int
 
@@ -32,7 +32,7 @@ class Scene(BaseElement):
 class Chapter(BaseElement):
     desc: str
     words: int
-    scenes: [Scene]
+    scenes: T.List[Scene]
 
 @dataclass()
 class Book:
