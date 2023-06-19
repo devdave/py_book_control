@@ -3,9 +3,9 @@ import {useForm, zodResolver} from '@mantine/form'
 import {type FC} from 'react'
 import z from 'zod'
 
-import {useBookContext} from './Book.context'
-import {type Scene} from './types'
-import {useDebouncedEffect} from './useDebouncedEffect'
+import {useBookContext} from '../Book.context'
+import {type Scene} from '../types'
+import {useDebouncedEffect} from '../useDebouncedEffect'
 
 const formSchema = z.object({
     title: z.string().trim().nonempty('Cannot be empty').min(3, 'Must be at least 3 characters')
@@ -15,11 +15,11 @@ export interface SceneFormProps {
     scene: Scene
 }
 
-export const SceneForm: FC<SceneFormProps> = ({scene}) => {
+export const MainSceneForm: FC<SceneFormProps> = ({scene}) => {
     const {updateScene} = useBookContext()
     const form = useForm({
         initialValues: {
-            summary: scene.summary,
+            content: scene.content,
             title: scene.title
         },
         validate: zodResolver(formSchema),
@@ -28,7 +28,6 @@ export const SceneForm: FC<SceneFormProps> = ({scene}) => {
 
     useDebouncedEffect(
         () => {
-            console.log(form.values, form.isDirty(), form.isValid());
             if (form.isDirty() && form.isValid()) {
                 updateScene({
                     ...scene,
@@ -55,10 +54,10 @@ export const SceneForm: FC<SceneFormProps> = ({scene}) => {
             <Textarea
                 autoCapitalize='sentences'
                 autosize
-                label='Summary'
+                label='Content'
                 minRows={4}
                 spellCheck
-                {...form.getInputProps('summary')}
+                {...form.getInputProps('content')}
             />
             <br/>
         </>

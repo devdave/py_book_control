@@ -14,104 +14,110 @@ class APIBridge {
 
     
     
-    async info( message:any, ) {
+    async info(message:string) {
         
-        return await this.boundary.remote("info", message, );
+        return await this.boundary.remote("info", message);
     }
     
     
-    async alert( message:any, ) {
+    async alert(message:string) {
         
-        return await this.boundary.remote("alert", message, );
+        return await this.boundary.remote("alert", message);
     }
     
     
-    async list_books( ) {
+    async list_books(stripped:boolean = true) {
         
-        return await this.boundary.remote("list_books", );
+        return await this.boundary.remote("list_books", stripped);
     }
     
     
-    async get_current_book( ) {
+    async get_current_book(stripped:boolean = true) {
         
-        return await this.boundary.remote("get_current_book", );
+        return await this.boundary.remote("get_current_book", stripped);
     }
     
     
-    async set_current_book( book_id:any, ) {
+    async set_current_book(book_id:string) {
         
-        return await this.boundary.remote("set_current_book", book_id, );
+        return await this.boundary.remote("set_current_book", book_id);
     }
     
     
-    async find_source( ) {
+    async find_source() {
         
         return await this.boundary.remote("find_source", );
     }
     
     
-    async create_source( ) {
+    async create_source() {
         
         return await this.boundary.remote("create_source", );
     }
     
     
-    async fetch_chapters( ) {
+    async fetch_chapters() {
         
         return await this.boundary.remote("fetch_chapters", );
     }
     
     
-    async fetch_chapter( chapter_id:any, ) {
+    async fetch_chapter(chapter_id:string) {
         
-        return await this.boundary.remote("fetch_chapter", chapter_id, );
+        return await this.boundary.remote("fetch_chapter", chapter_id);
     }
     
     
-    async update_chapter( chapter_id:any, chapter_data:any, ) {
+    async update_chapter(chapter_id:string, chapter_data:any) {
         
-        return await this.boundary.remote("update_chapter", chapter_id, chapter_data, );
+        return await this.boundary.remote("update_chapter", chapter_id, chapter_data);
     }
     
     
-    async fetch_stripped_chapters( ) {
+    async fetch_stripped_chapters() {
         
         return await this.boundary.remote("fetch_stripped_chapters", );
     }
     
     
-    async create_chapter( chapter_name:any, ) {
+    async create_chapter(chapter_name:string) {
         
-        return await this.boundary.remote("create_chapter", chapter_name, );
+        return await this.boundary.remote("create_chapter", chapter_name);
     }
     
     
-    async save_reordered_chapters( chapters:any, ) {
+    async save_reordered_chapters(chapters:any) {
         
-        return await this.boundary.remote("save_reordered_chapters", chapters, );
+        return await this.boundary.remote("save_reordered_chapters", chapters);
     }
     
     
-    async fetch_scene( scene_uid:any, ) {
+    async fetch_scene(scene_uid:string) {
         
-        return await this.boundary.remote("fetch_scene", scene_uid, );
+        return await this.boundary.remote("fetch_scene", scene_uid);
     }
     
     
-    async update_scene( scene_uid:any, new_data:any, ) {
+    async update_scene(scene_uid:string, new_data:any) {
         
-        return await this.boundary.remote("update_scene", scene_uid, new_data, );
+        return await this.boundary.remote("update_scene", scene_uid, new_data);
     }
     
     
-    async create_scene( chapter_uid:any, scene_title:any, ) {
+    async create_scene(chapter_uid:string, scene_title:string) {
         
-        return await this.boundary.remote("create_scene", chapter_uid, scene_title, );
+        return await this.boundary.remote("create_scene", chapter_uid, scene_title);
+    }
+    
+    
+    async delete_scene(chapter_uid:string, scene_uid:string) {
+        
+        return await this.boundary.remote("delete_scene", chapter_uid, scene_uid);
     }
     
     /* Will be deprecated, automatically loads up the 1st Book for use with the app.
     :return: bool */
-    async boot_up( ) {
+    async boot_up() {
         
         return await this.boundary.remote("boot_up", );
     }

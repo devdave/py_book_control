@@ -36,7 +36,7 @@ export const RightPanel: FC<RightPanelProps> = () => {
 
     return (
         <Stack spacing='xs'>
-            <Title order={4}>Chapter {activeChapter.order+1}</Title>
+            <Title order={4}>Chapter {activeChapter.order+1} {activeChapter.title}</Title>`
             <ChapterForm chapter={activeChapter}/>
             <Group
                 position='apart'

@@ -8,14 +8,19 @@ export interface Book {
 }
 
 export interface Scene {
+  [key:string]: string|number
   id: string
   chapterId: string
   title: string
   summary: string
   content: string
   notes: string
+  location: string
+  characters: string
+
   order: number
   words: number
+
 }
 
 export interface Chapter {
