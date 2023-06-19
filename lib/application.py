@@ -13,7 +13,7 @@ class BCApplication:
         self.session = session
 
         try:
-            self.book = models.Book.Fetch_book_by_id(self.session, 1)
+            self.book = models.Book.Fetch_by_ID(self.session, 1)
         except models.NoResultFound:
             self.book = models.Book(title="Test1")
             self.session.add(self.book)
