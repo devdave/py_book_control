@@ -1,8 +1,10 @@
 import { Center, createStyles, Tabs } from '@mantine/core'
 import { type FC } from 'react'
 import { IconId, IconMapPin, IconNote, IconUsers, IconVocabulary } from '@tabler/icons-react'
+import TextSceneForm from './scene_forms/TextSceneForm';
+import ListSceneForm from "./scene_forms/ListSceneForm";
+import { MainSceneForm } from './scene_forms/MainSceneForm'
 
-import { SceneForm } from './SceneForm'
 import { type Scene } from './types'
 
 const useStyles = createStyles((theme) => ({
@@ -32,9 +34,9 @@ export const ScenePanel: FC<ScenePanelProps> = ({ scene }) => {
         </Tabs.Tab>
         <Tabs.Tab
           icon={<IconId size='0.8rem' />}
-          value='description'
+          value='summary'
         >
-          Description
+          Summary
         </Tabs.Tab>
         <Tabs.Tab
           icon={<IconNote size='0.8rem' />}
@@ -56,19 +58,19 @@ export const ScenePanel: FC<ScenePanelProps> = ({ scene }) => {
         </Tabs.Tab>
       </Tabs.List>
       <Tabs.Panel value='content'>
-        <SceneForm scene={scene} />
+        <MainSceneForm scene={scene} />
       </Tabs.Panel>
-      <Tabs.Panel value='description'>
-        <Center h={200}>Description Goes Here</Center>
+      <Tabs.Panel value='summary'>
+        <TextSceneForm scene={scene} field="summary" label="Summary"/>
       </Tabs.Panel>
       <Tabs.Panel value='notes'>
-        <Center h={200}>Notes Go Here</Center>
+        <TextSceneForm scene={scene} field="notes" label="Notes"/>
       </Tabs.Panel>
-      <Tabs.Panel value='locations'>
-        <Center h={200}>Locations Go Here</Center>
+      <Tabs.Panel value='location'>
+        <TextSceneForm scene={scene} field="location" label="Location"/>
       </Tabs.Panel>
       <Tabs.Panel value='characters'>
-        <Center h={200}>Characters Go Here</Center>
+        <TextSceneForm scene={scene} field={"characters"} label={"Characters"}/>
       </Tabs.Panel>
     </Tabs>
   )
