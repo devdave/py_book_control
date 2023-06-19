@@ -5,6 +5,8 @@
       <sourceFolder url="file://$MODULE_DIR$/pbc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/ui_v1/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/ui_v2/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/dave-book-ui/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/lib" isTestSource="false" />
     </content>
     <orderEntry type="jdk" jdkName="Pipenv (py_book_control)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
