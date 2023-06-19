@@ -26,9 +26,21 @@ class APIBridge {
     }
     
     
+    async list_books( ) {
+        
+        return await this.boundary.remote("list_books", );
+    }
+    
+    
     async get_current_book( ) {
         
         return await this.boundary.remote("get_current_book", );
+    }
+    
+    
+    async set_current_book( book_id:any, ) {
+        
+        return await this.boundary.remote("set_current_book", book_id, );
     }
     
     
@@ -74,6 +86,12 @@ class APIBridge {
     }
     
     
+    async save_reordered_chapters( chapters:any, ) {
+        
+        return await this.boundary.remote("save_reordered_chapters", chapters, );
+    }
+    
+    
     async fetch_scene( scene_uid:any, ) {
         
         return await this.boundary.remote("fetch_scene", scene_uid, );
@@ -89,12 +107,6 @@ class APIBridge {
     async create_scene( chapter_uid:any, scene_title:any, ) {
         
         return await this.boundary.remote("create_scene", chapter_uid, scene_title, );
-    }
-    
-    
-    async save_reordered_chapters( chapters:any, ) {
-        
-        return await this.boundary.remote("save_reordered_chapters", chapters, );
     }
     
     /* Will be deprecated, automatically loads up the 1st Book for use with the app.
