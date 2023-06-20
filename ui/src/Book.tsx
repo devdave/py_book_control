@@ -44,6 +44,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
     const [chapters, _setChapters] = useState<Chapter[]>([]);
     const [activeChapter, _setActiveChapter] = useState<Chapter | undefined>(undefined);
     const [activeScene, _setActiveScene] = useState<Scene | undefined>(undefined);
+    const [viewMode, setViewMode] = useState("list");
 
 
     const addChapter = useCallback(
