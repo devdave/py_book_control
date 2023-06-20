@@ -3,9 +3,9 @@ import {useForm, zodResolver} from '@mantine/form'
 import {type FC, useCallback} from 'react'
 import z from 'zod'
 
-import {useBookContext} from './Book.context'
-import {type Chapter} from './types'
-import {useDebouncedEffect} from './useDebouncedEffect'
+import {useBookContext} from '../Book.context'
+import {type Chapter} from '../types'
+import {useDebouncedEffect} from '../lib/useDebouncedEffect'
 import {iconSizes} from "@mantine/core/lib/Stepper/Step/Step.styles";
 import {IconPlus} from "@tabler/icons-react";
 
@@ -30,7 +30,6 @@ export const ChapterForm: FC<ChapterFormProps> = ({chapter}) => {
 
     useDebouncedEffect(
         () => {
-            console.log("Checking if need to update chapter", form.isDirty());
 
             if (form.isDirty() && form.isValid()) {
 
@@ -50,19 +49,22 @@ export const ChapterForm: FC<ChapterFormProps> = ({chapter}) => {
         <>
             <TextInput
                 autoCapitalize='words'
-                label='Title'
+                label='Chapter Title'
                 required
                 spellCheck
                 {...form.getInputProps('title')}
             />
-            <Textarea
-                autoCapitalize='sentences'
-                autosize
-                label='Summary'
-                minRows={4}
-                spellCheck
-                {...form.getInputProps('summary')}
-            />
+            <details open>
+                <summary>Summary</summary>
+                    <Textarea
+                        autoCapitalize='sentences'
+                        autosize
+                        label='Summary'
+                        minRows={4}
+                        spellCheck
+                        {...form.getInputProps('summary')}
+                    />
+            </details>
         </>
     )
 }

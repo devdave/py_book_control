@@ -3,9 +3,9 @@ import {useForm, zodResolver} from '@mantine/form'
 import {type FC} from 'react'
 import z from 'zod'
 
-import {useBookContext} from '../Book.context'
-import {type Scene} from '../types'
-import {useDebouncedEffect} from '../useDebouncedEffect'
+import {useBookContext} from '../../Book.context'
+import {type Scene} from '../../types'
+import {useDebouncedEffect} from '../../lib/useDebouncedEffect'
 
 const formSchema = z.object({
     title: z.string().trim().nonempty('Cannot be empty').min(3, 'Must be at least 3 characters')

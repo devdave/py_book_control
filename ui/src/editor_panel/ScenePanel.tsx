@@ -2,10 +2,10 @@ import { Center, createStyles, Tabs } from '@mantine/core'
 import { type FC } from 'react'
 import { IconId, IconMapPin, IconNote, IconUsers, IconVocabulary } from '@tabler/icons-react'
 import TextSceneForm from './scene_forms/TextSceneForm';
-import ListSceneForm from "./scene_forms/ListSceneForm";
+
 import { MainSceneForm } from './scene_forms/MainSceneForm'
 
-import { type Scene } from './types'
+import { type Scene } from '../types'
 
 const useStyles = createStyles((theme) => ({
   tabPanel: {
@@ -46,7 +46,7 @@ export const ScenePanel: FC<ScenePanelProps> = ({ scene }) => {
         </Tabs.Tab>
         <Tabs.Tab
           icon={<IconMapPin size='0.8rem' />}
-          value='locations'
+          value='location'
         >
           Locations
         </Tabs.Tab>

@@ -1,10 +1,10 @@
-import {Accordion, Center, createStyles, Group, Text, Title} from "@mantine/core";
+import {Accordion, Button, Center, createStyles, Group, Text, Title} from "@mantine/core";
 import {useCallback, useEffect, useRef} from "react";
 import {IconGripVertical} from "@tabler/icons-react";
 import {find, map} from "lodash";
 import {DragDropContext, Draggable, Droppable} from "react-beautiful-dnd";
 import {ScenePanel} from "./ScenePanel";
-import {useBookContext} from "./Book.context";
+import {useBookContext} from "../Book.context";
 
 const useStyles = createStyles((theme) => ({
     accordionContent: {
@@ -15,7 +15,7 @@ const useStyles = createStyles((theme) => ({
 
 const SceneList = () => {
 
-    const {activeChapter, activeScene, reorderScene, setActiveScene} = useBookContext()
+    const {activeChapter, activeScene, addScene, reorderScene, setActiveScene} = useBookContext()
     const {classes} = useStyles();
     const accordionRefs = useRef<Record<string, HTMLDivElement>>({});
 
@@ -30,7 +30,7 @@ const SceneList = () => {
     }, [activeScene?.id]);
 
 
-    if (activeChapter === null) {
+    if (activeChapter === null || activeChapter === undefined) {
         return (
             <Group position="center">
                 <h2>Create a new Chapter</h2>
@@ -38,10 +38,13 @@ const SceneList = () => {
         )
     }
 
+    // @ts-ignore I don't care that activeChapter might be undefined
+    const addNewScene = useCallback(() => addScene(activeChapter.id), [activeChapter, addScene])
+
     if (activeScene === undefined || activeChapter === undefined || activeChapter?.scenes?.length <= 0) {
         return (
             <Group position="center">
-                <h2>Create a new scene</h2>
+                <Button onClick={addNewScene} >Create a new scene</Button>
             </Group>
         )
     }

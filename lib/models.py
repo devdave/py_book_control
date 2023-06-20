@@ -49,12 +49,32 @@ class Book(Base):
     )
 
     @classmethod
+    def Update(cls, session:Session, changeset:T.Dict[str, str]):
+
+        if "id" not in changeset:
+            raise ValueError("Missing Book's uid from changeset")
+
+        uid = changeset['id']
+
+        book = cls.Fetch_by_UID(session, uid)
+
+
+        SAFE_KEYS = ['title', 'notes']
+        for safe in SAFE_KEYS:
+            if safe in changeset:
+                setattr(book, safe, changeset[safe])
+
+        session.commit()
+        return True
+
+
+    @classmethod
     def Fetch_All(cls, session: Session):
         stmt = select(cls)
         return session.scalars(stmt).all()
 
     @classmethod
-    def Fetch_by_ID(cls, session, id):
+    def Fetch_by_UID(cls, session, id):
         stmt = select(cls).where(cls.id == id)
         return session.scalars(stmt).one()
 

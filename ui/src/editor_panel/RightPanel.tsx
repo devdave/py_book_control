@@ -4,7 +4,7 @@ import {find, map} from 'lodash'
 import {type FC, useCallback, useRef} from 'react'
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
 
-import {useBookContext} from './Book.context'
+import {useBookContext} from '../Book.context'
 import {ChapterForm} from './ChapterForm'
 
 import SceneList from "./SceneList";
@@ -36,7 +36,7 @@ export const RightPanel: FC<RightPanelProps> = () => {
 
     return (
         <Stack spacing='xs'>
-            <Title order={4}>Chapter {activeChapter.order+1} {activeChapter.title}</Title>`
+            {/*<Title order={4}>Chapter {activeChapter.order+1} {activeChapter.title}</Title>*/}
             <ChapterForm chapter={activeChapter}/>
             <Group
                 position='apart'

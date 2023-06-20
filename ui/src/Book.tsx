@@ -10,7 +10,7 @@ import {
     useMantineColorScheme
 } from '@mantine/core'
 import {IconSun, IconMoonStars} from '@tabler/icons-react'
-import {clone, find, forEach, map} from 'lodash'
+import {clone, countBy, find, forEach, map} from 'lodash'
 
 import {FC, useCallback, useEffect, useMemo, useState} from 'react'
 
@@ -18,7 +18,7 @@ import InputModal, {PromptModal} from "./lib/input_modal";
 
 import {BookContext} from './Book.context'
 import {LeftPanel} from './LeftPanel'
-import {RightPanel} from './RightPanel'
+import {RightPanel} from './editor_panel';
 import {type Chapter, type Scene} from './types'
 import APIBridge from "./lib/remote";
 import Boundary from "./lib/boundary";
@@ -76,7 +76,14 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
     )
 
     const addScene = useCallback(
-        async (chapterId: string) => {
+        async (chapterId: string|undefined) => {
+
+            if(chapterId === undefined){
+                console.log("Tried to add a scene when there isn't an activeChapter");
+                api.alert("There was a problem creating a new scene!");
+                return;
+            }
+
 
             console.log("addScene chapter.id=", chapterId);
 
