@@ -1,3 +1,4 @@
+import datetime
 import string
 import random
 import contextlib
@@ -30,6 +31,11 @@ class Base(DeclarativeBase):
     updated_on: Mapped[DT.datetime] = mapped_column(
         server_default=func.now(), onupdate=func.now()
     )
+
+    @classmethod
+    def Fetch_by_Id(cls, session:Session, fetch_id:int):
+        stmt = select(cls).where(cls.id == fetch_id)
+        return session.execute(stmt).scalars().one()
 
     @declared_attr
     def __tablename__(self):
@@ -168,13 +174,14 @@ class Scene(Base):
     chapter_id: Mapped[int] = mapped_column(ForeignKey("Chapter.id"))
     chapter: Mapped["Chapter"] = relationship(back_populates="scenes")
 
+    FMT_STR = "%y/%m/%d %H:%M:%S"
+
 
     def update(self, newScene: dict[str, str]):
-        SKIP = ["id", "words", "chapter_id", "chapterId"]
+        VALID = ['title','order','summary','content','notes','location','characters']
         for key, value in newScene.items():
-            if key in SKIP:
-                continue
-            setattr(self, key, value)
+            if key in VALID:
+                setattr(self, key, value)
 
     @hybrid_property
     def words(self):
@@ -182,12 +189,17 @@ class Scene(Base):
         return len(cleaned.replace('",.!?', " ").split(" "))
 
     def asdict(self, stripped=False):
+
         data = dict(
             id=self.uid,
             type="scene",
             title=self.title,
             order=self.order,
             chapterId=self.chapter.uid,
+
+            created_on=str(self.created_on),
+            updated_on=str(self.updated_on),
+            words=self.words
         )
 
         if stripped is False:
@@ -196,7 +208,7 @@ class Scene(Base):
             data["location"] = self.location
             data["characters"] = self.characters
 
-        data["words"] = self.words
+
 
         return data
 
@@ -218,9 +230,14 @@ def db_with():
     with Session(engine) as session:
         yield session
 
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
 
 def connect():
     engine = create_engine("sqlite:///test.sqlite3", echo=True)
     Base.metadata.create_all(engine, checkfirst=True)
 
-    return engine, Session(engine)
+    session_factory = sessionmaker(bind=engine)
+    Session = scoped_session(session_factory)
+
+    return engine, Session

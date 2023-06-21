@@ -1,5 +1,6 @@
 import typing as T
 import webview
+from .scene_processor import SceneProcessor
 from .application import BCApplication
 from . import models
 
@@ -23,17 +24,21 @@ class BCAPI:
         return self.app.main_window.create_confirmation_dialog("Problem", message)
 
     def list_books(self, stripped: bool = True):
-        return [
-            book.asdict(stripped=stripped)
-            for book in models.Book.Fetch_All(self.app.session)
-        ]
+        with self.app.get_db() as session:
+            return [
+                book.asdict(stripped=stripped)
+                for book in models.Book.Fetch_All(session)
+            ]
 
     def get_current_book(self, stripped: bool = True):
-        return self.app.book.asdict(stripped=stripped)
+        with self.app.get_db() as session:
+            return self.app.get_book(session).asdict(stripped=stripped)
+
 
     def set_current_book(self, book_id: str):
-        self.app.book = models.Book.Fetch_by_ID(self.app.session, book_id)
-        return self.app.book.asdict()
+        with self.app.get_db() as session:
+            self.app.book = models.Book.Fetch_by_ID(session, book_id)
+            return self.app.book.asdict()
 
     def find_source(self):
         result = self.app.main_window.create_file_dialog(
@@ -51,61 +56,105 @@ class BCAPI:
             )
 
     def fetch_chapters(self):
-        return [chapter.asdict() for chapter in self.app.book.chapters]
+        with self.app.get_db() as session:
+            return [chapter.asdict() for chapter in self.app.fetch_chapters(session).chapters]
 
     def fetch_chapter(self, chapter_id: str):
-        return models.Chapter.Fetch_by_uid(self.app.session, chapter_id).asdict()
+        with self.app.get_db() as session:
+            session = self.app.Session()
+            return models.Chapter.Fetch_by_uid(session, chapter_id).asdict()
 
     def update_chapter(self, chapter_id: str, chapter_data: dict[str, str]):
-        chapter = models.Chapter.Fetch_by_uid(self.app.session, chapter_id)
-        chapter.update(chapter_data)
-
-        self.app.session.commit()
-
-        return True
+        with self.app.get_db() as session:
+            chapter = models.Chapter.Fetch_by_uid(session, chapter_id)
+            chapter.update(chapter_data)
+            session.commit()
+            return True
 
     def fetch_stripped_chapters(self):
-        return [chapter.asdict(stripped=True) for chapter in self.app.book.chapters]
+        with self.app.get_db() as session:
+            return [chapter.asdict(stripped=True) for chapter in self.app.get_book(session).chapters]
 
     def create_chapter(self, chapter_name: str):
         chapter = models.Chapter(title=chapter_name, uid=models.generate_id(12))
 
-        self.app.book.chapters.append(chapter)
-        self.app.session.add(chapter)
-        self.app.session.commit()
+        with self.app.get_db() as session:
+            self.app.get_book(session).chapters.append(chapter)
+            session.add(chapter)
+            session.commit()
 
         return chapter.asdict()
 
     def save_reordered_chapters(self, chapters: T.List[T.Dict[str, str]]):
-        return models.Chapter.Reorder(self.app.session, chapters)
+        with self.app.get_db() as session:
+            return models.Chapter.Reorder(session, chapters)
 
     def fetch_scene(self, scene_uid: str):
-        scene = models.Scene.Fetch_by_uid(self.app.session, scene_uid)
-        return scene.asdict()
+        with self.app.get_db() as session:
+            scene = models.Scene.Fetch_by_uid(session, scene_uid)
+            return scene.asdict()
+
+    def fetch_scene_markedup(self, scene_uid: str):
+        with self.app.get_db() as session:
+            scene = models.Scene.Fetch_by_uid(session, scene_uid)
+
+            processor = SceneProcessor()
+            return processor.compile(scene.title, scene.content)
+
+
+
+    def process_scene_markdown(self, scene_uid: str, raw_text:str):
+        print(f"`{repr(scene_uid)}` `{repr(raw_text)}`")
+
+        processor = SceneProcessor()
+        try:
+            response = processor.walk(raw_text)
+            response['markdown'] = raw_text
+        except ValueError as exc:
+            response = dict(status = 'error', message = str(exc.args))
+
+
+
+        if response['status'] == 'success':
+            with self.app.get_db() as session:
+                sceneRecord = models.Scene.Fetch_by_uid(session, scene_uid)
+                setattr(sceneRecord, "title", response['title'])
+                setattr(sceneRecord, 'content', response['content'])
+
+                session.commit()
+                response['updated_on'] = models.Scene.FMT_STR.format(sceneRecord.updated_on)
+                return response
+        else:
+            return response
 
     def update_scene(self, scene_uid: str, new_data: T.Dict[str, str]):
-        scene = models.Scene.Fetch_by_uid(self.app.session, scene_uid)
+        with self.app.get_db() as session:
 
-        scene.update(new_data)
+            scene = models.Scene.Fetch_by_uid(session, scene_uid)
 
-        self.app.session.commit()
-        return True
+            scene.update(new_data)
+
+            session.commit()
+
+            return True
 
     def create_scene(self, chapter_uid: str, scene_title: str):
-        chapter = models.Chapter.Fetch_by_uid(self.app.session, chapter_uid)
-        scene = models.Scene(title=scene_title)
-        chapter.scenes.append(scene)
-        self.app.session.add(scene)
-        self.app.session.commit()
-        return scene.asdict()
+        with self.app.get_db() as session:
+            chapter = models.Chapter.Fetch_by_uid(session, chapter_uid)
+            scene = models.Scene(title=scene_title)
+            chapter.scenes.append(scene)
+            session.add(scene)
+            session.commit()
+            return scene.asdict()
 
     def delete_scene(self, chapter_uid: str, scene_uid: str):
-        scene = models.Scene.Fetch_by_uid(self.app.session, scene_uid)
-        parent = scene.chapter  # type: models.Chapter
-        parent.scenes.remove(scene)
-        self.app.session.delete(scene)
-        parent.scenes.reorder()
-        self.app.session.commit()
+        with self.app.get_db() as session:
+            scene = models.Scene.Fetch_by_uid(session, scene_uid)
+            parent = scene.chapter  # type: models.Chapter
+            parent.scenes.remove(scene)
+            session.delete(scene)
+            parent.scenes.reorder()
+            session.commit()
 
     def boot_up(self):
         """
