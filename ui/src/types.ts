@@ -1,15 +1,23 @@
 
-export interface Book {
+export interface Base {
+  [key:string]: any
+
   id: string
+  created_on: string
+  updated_on: string
+}
+
+export interface Book extends Base{
+
   title: string
   notes: string
   chapters: Chapter[]
   words: number
 }
 
-export interface Scene {
-  [key:string]: string|number
-  id: string
+export interface Scene extends Base {
+
+
   chapterId: string
   title: string
   summary: string
@@ -23,8 +31,8 @@ export interface Scene {
 
 }
 
-export interface Chapter {
-  id: string
+export interface Chapter extends Base {
+
   title: string
   summary: string
   notes: string

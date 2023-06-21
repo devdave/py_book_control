@@ -98,6 +98,18 @@ class APIBridge {
     }
     
     
+    async fetch_scene_markedup(scene_uid:string) {
+        
+        return await this.boundary.remote("fetch_scene_markedup", scene_uid);
+    }
+    
+    
+    async process_scene_markdown(scene_uid:string, raw_text:string) {
+        
+        return await this.boundary.remote("process_scene_markdown", scene_uid, raw_text);
+    }
+    
+    
     async update_scene(scene_uid:string, new_data:any) {
         
         return await this.boundary.remote("update_scene", scene_uid, new_data);

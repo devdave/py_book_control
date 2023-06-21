@@ -120,7 +120,7 @@ const SceneList = () => {
                                                 <Text weight='bold'>Scene #{scene.order+1}</Text>
                                             </Accordion.Control>
                                             <Accordion.Panel>
-                                                <ScenePanel key={scene.id} scene={scene}/>
+                                                <ScenePanel key={scene.content} scene={scene}/>
                                             </Accordion.Panel>
                                         </Accordion.Item>
                                     )}

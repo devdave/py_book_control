@@ -19,6 +19,8 @@ import InputModal, {PromptModal} from "./lib/input_modal";
 import {BookContext} from './Book.context'
 import {LeftPanel} from './LeftPanel'
 import {RightPanel} from './editor_panel';
+import {ContinousBody} from './continuous_panel';
+
 import {type Chapter, type Scene} from './types'
 import APIBridge from "./lib/remote";
 import Boundary from "./lib/boundary";
@@ -44,7 +46,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
     const [chapters, _setChapters] = useState<Chapter[]>([]);
     const [activeChapter, _setActiveChapter] = useState<Chapter | undefined>(undefined);
     const [activeScene, _setActiveScene] = useState<Scene | undefined>(undefined);
-    const [viewMode, setViewMode] = useState("list");
+    const [viewMode, setViewMode] = useState<string>("list");
 
 
     const addChapter = useCallback(
@@ -76,23 +78,10 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
         []
     )
 
-    const addScene = useCallback(
-        async (chapterId: string|undefined) => {
-
-            if(chapterId === undefined){
-                console.log("Tried to add a scene when there isn't an activeChapter");
-                api.alert("There was a problem creating a new scene!");
-                return;
-            }
+    const createScene = useCallback(
+        async (chapterId:string, sceneTitle: string, position = -1)=> {
 
 
-            console.log("addScene chapter.id=", chapterId);
-
-            const sceneTitle: string = await PromptModal("New scene title");
-            if (sceneTitle.trim().length <= 2) {
-                alert("Scene's must have a title longer than 2 characters.");
-                return;
-            }
             const newScene = await api.create_scene(chapterId, sceneTitle);
 
 
@@ -114,6 +103,27 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                     return chapter
                 })
             );
+
+    }, []);
+
+    const addScene = useCallback(
+        async (chapterId: string|undefined) => {
+
+            if(chapterId === undefined){
+                console.log("Tried to add a scene when there isn't an activeChapter");
+                api.alert("There was a problem creating a new scene!");
+                return;
+            }
+
+
+            console.log("addScene chapter.id=", chapterId);
+
+            const sceneTitle: string = await PromptModal("New scene title");
+            if (sceneTitle.trim().length <= 2) {
+                alert("Scene's must have a title longer than 2 characters.");
+                return;
+            }
+            await createScene(chapterId, sceneTitle);
 
         },
         []
@@ -246,12 +256,15 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             addChapter,
             addScene,
             chapters,
+            viewMode,
+            api,
             reorderChapter,
             reorderScene,
             setActiveChapter,
             setActiveScene,
             updateChapter,
-            updateScene
+            updateScene,
+            setViewMode
         }),
         [
             activeChapter,
@@ -264,7 +277,8 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             setActiveChapter,
             setActiveScene,
             updateChapter,
-            updateScene
+            updateScene,
+            setViewMode
         ]
     );
 
@@ -288,11 +302,42 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
 
     }, []);
 
-    if (fetchedBook === false) {
+    if (!fetchedBook) {
         return (
             <LoadingOverlay visible={true}/>
         );
     }
+
+    let rightPanel = (
+        <h1>No book loaded</h1>
+    )
+
+    switch (viewMode){
+        case 'list':
+            if(activeChapter !== undefined){
+                rightPanel = (
+                    <RightPanel key={`${activeChapter?.id}-${activeScene?.id}`}/>
+                )
+            } else {
+                rightPanel = (
+                    <h2>Create a new chapter!</h2>
+                )
+            }
+            break;
+        case 'flow':
+            if(activeChapter !== undefined){
+                rightPanel = (
+                    <ContinousBody key={`${activeChapter}-${activeScene?.id}`}/>
+                )
+            } else {
+                rightPanel = (
+                    <h2>Create a new chapter!</h2>
+                )
+            }
+
+
+    }
+
 
     return (
         <BookContext.Provider value={bookContextValue}>
@@ -339,14 +384,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                     px='md'
                     py='sm'
                 >
-                    {activeChapter !== null && activeScene !== null &&
-                        <RightPanel key={`${activeChapter?.id}-${activeScene?.id}`}/>
-                    }
-                    {activeChapter === null &&
-                        <>
-                            <div>Create a chapter!</div>
-                        </>
-                    }
+                    {rightPanel}
                 </Box>
             </AppShell>
         </BookContext.Provider>

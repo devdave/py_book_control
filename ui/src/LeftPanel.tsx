@@ -23,8 +23,20 @@ interface LeftPanelProps {
 
 export const LeftPanel: FC<LeftPanelProps> = () => {
     const theme = useMantineTheme()
-    const {activeChapter, activeScene, addChapter, chapters, reorderChapter, setActiveChapter, setActiveScene} =
+    const {
+        activeChapter,
+        activeScene,
+        addChapter,
+        chapters,
+        reorderChapter,
+        setActiveChapter,
+        setActiveScene,
+        setViewMode,
+        viewMode
+
+    } =
         useBookContext()
+
 
     return (
         <Navbar width={{base: 300}}>
@@ -40,17 +52,19 @@ export const LeftPanel: FC<LeftPanelProps> = () => {
                     <IconPlus/>
                 </ActionIcon>
                 <ActionIcon
-                    color='blue'
+                    color={viewMode=='list' ? 'green' : 'blue'}
                     size='xs'
                     title='Single page'
                     variant='subtle'
+                    onClick={() => setViewMode('list')}
                 >
                     <IconList/>
                 </ActionIcon>
                 <ActionIcon
-                    color='blue'
+                    color={viewMode=='flow' ? 'blue' : 'green'}
                     size="xs"
                     variant="subtle"
+                    onClick={() => setViewMode('flow')}
                 >
                     <IconArticle/>
                 </ActionIcon>
@@ -117,7 +131,7 @@ export const LeftPanel: FC<LeftPanelProps> = () => {
                                                         return (
                                                             <NavLink
                                                                 active={isSceneActive}
-                                                                key={scene.id}
+                                                                key={scene.updated_on}
                                                                 label={
                                                                     <Group
                                                                         align='start'
