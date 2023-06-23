@@ -11,7 +11,7 @@ import {useBookContext} from "../Book.context";
 
 export const ContinousBody = ({}) => {
 
-    const {activeChapter, createScene, updateScene, api} = useBookContext();
+    const {activeChapter, addScene, updateScene, api} = useBookContext();
 
     // @ts-ignore
     return (
@@ -24,7 +24,7 @@ export const ContinousBody = ({}) => {
             )}
             {activeChapter?.scenes.length == 0 &&
                 <Center>
-                    <Button onClick={()=>createScene()}>Create a scene</Button>
+                    <Button onClick={()=>addScene(activeChapter.id)}>Create a scene</Button>
                 </Center>
             }
         </>
