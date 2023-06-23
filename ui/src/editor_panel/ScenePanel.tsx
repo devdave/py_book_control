@@ -5,7 +5,7 @@ import TextSceneForm from './scene_forms/TextSceneForm';
 
 import {MainSceneForm} from './scene_forms/MainSceneForm'
 
-import {type Scene} from '../types'
+import {type Scene} from "src/types";
 import {useBookContext} from "../Book.context";
 
 const useStyles = createStyles((theme) => ({
