@@ -9,21 +9,20 @@ import {
     Title,
     useMantineColorScheme
 } from '@mantine/core'
-import {IconSun, IconMoonStars} from '@tabler/icons-react'
-import {clone, countBy, find, forEach, map} from 'lodash'
+import {IconMoonStars, IconSun} from '@tabler/icons-react'
+import {clone, find, forEach, map} from 'lodash'
 
-import {FC, useCallback, useEffect, useMemo, useState} from 'react'
+import {useCallback, useEffect, useMemo, useState} from 'react'
 
-import InputModal, {PromptModal} from "./lib/input_modal";
+import {PromptModal} from "./lib/input_modal";
 
 import {BookContext} from './Book.context'
 import {LeftPanel} from './LeftPanel'
 import {RightPanel} from './editor_panel';
 import {ContinousBody} from './continuous_panel';
 
-import {type Chapter, type Scene} from './types'
+import {type Chapter, type Scene, ViewModes} from './types'
 import APIBridge from "./lib/remote";
-import Boundary from "./lib/boundary";
 
 
 const useStyles = createStyles((theme) => ({
@@ -46,7 +45,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
     const [chapters, _setChapters] = useState<Chapter[]>([]);
     const [activeChapter, _setActiveChapter] = useState<Chapter | undefined>(undefined);
     const [activeScene, _setActiveScene] = useState<Scene | undefined>(undefined);
-    const [viewMode, setViewMode] = useState<string>("list");
+    const [viewMode, setViewMode] = useState<ViewModes>(ViewModes.LIST);
 
 
     const addChapter = useCallback(
@@ -120,7 +119,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
 
             const sceneTitle: string = await PromptModal("New scene title");
             if (sceneTitle.trim().length <= 2) {
-                alert("Scene's must have a title longer than 2 characters.");
+                alert("A scene must have a title longer than 2 characters.");
                 return;
             }
             await createScene(chapterId, sceneTitle);
@@ -255,6 +254,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             activeScene,
             addChapter,
             addScene,
+            createScene,
             chapters,
             viewMode,
             api,
@@ -313,7 +313,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
     )
 
     switch (viewMode){
-        case 'list':
+        case ViewModes.LIST:
             if(activeChapter !== undefined){
                 rightPanel = (
                     <RightPanel key={`${activeChapter?.id}-${activeScene?.id}`}/>
@@ -324,7 +324,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                 )
             }
             break;
-        case 'flow':
+        case ViewModes.FLOW:
             if(activeChapter !== undefined){
                 rightPanel = (
                     <ContinousBody key={`${activeChapter}-${activeScene?.id}`}/>
