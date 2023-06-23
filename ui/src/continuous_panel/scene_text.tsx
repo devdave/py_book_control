@@ -50,6 +50,10 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                 throw new Error(response.message);
             }
 
+            if(response.status == 'split'){
+
+            }
+
 
             const new_scene =
                 { id: scene.id,
