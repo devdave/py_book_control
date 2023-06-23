@@ -124,6 +124,8 @@ class BCAPI:
                 session.commit()
                 response['updated_on'] = models.Scene.FMT_STR.format(sceneRecord.updated_on)
                 return response
+        elif response['status'] == 'split':
+            return response
         else:
             return response
 
