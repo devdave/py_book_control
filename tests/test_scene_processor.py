@@ -76,3 +76,41 @@ with a third line right after!"""
 
     assert expected == repeat
 
+
+def test_splits_2_large_paragraphs():
+
+    data = """# Title 1
+This is a block of text that should be detected as a paragraph
+Second line of 1st paragraph of text and i need
+one more line of text to hopefully get enough material for this test
+
+# The Second title
+Now the test is to see if the system is smart enough to handle a block of text after the split
+point.   Ideally it should create a 'new_title' that equals 'The Secodn title' and a 'new_content'
+block that has this paragraph in it.
+""".strip()
+
+
+    processor = SceneProcessor()
+    product = processor.walk(data)
+
+    title1 = 'Title 1'
+    content1 = """This is a block of text that should be detected as a paragraph
+Second line of 1st paragraph of text and i need
+one more line of text to hopefully get enough material for this test
+""".strip()
+
+    title2 = 'The Second title'
+    content2 = """Now the test is to see if the system is smart enough to handle a block of text after the split
+point.   Ideally it should create a 'new_title' that equals 'The Secodn title' and a 'new_content'
+block that has this paragraph in it.
+""".strip()
+
+    assert product['title'] == title1
+    assert product['content'] == content1
+
+    assert product['new_title'] == title2
+    assert product['new_content'] == content2
+
+
+
