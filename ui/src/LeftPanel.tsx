@@ -1,5 +1,6 @@
 import {
-    ActionIcon, Button,
+    ActionIcon,
+    Button,
     Center,
     Divider,
     Group,
@@ -8,15 +9,15 @@ import {
     ScrollArea,
     Text,
     Title,
-    useMantineColorScheme,
     useMantineTheme
 } from '@mantine/core'
-import {IconArticle, IconChevronRight, IconGripVertical, IconLayersOff, IconList, IconPlus} from '@tabler/icons-react'
+import {IconArticle, IconChevronRight, IconGripVertical, IconList, IconPlus} from '@tabler/icons-react'
 import {map} from 'lodash'
 import {type FC, useCallback} from 'react'
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
 
 import {useBookContext} from './Book.context'
+import {ViewModes} from "./types";
 
 interface LeftPanelProps {
 }
@@ -52,19 +53,19 @@ export const LeftPanel: FC<LeftPanelProps> = () => {
                     <IconPlus/>
                 </ActionIcon>
                 <ActionIcon
-                    color={viewMode=='list' ? 'green' : 'blue'}
+                    color={viewMode == ViewModes.LIST ? 'green' : 'blue'}
                     size='xs'
                     title='Single page'
                     variant='subtle'
-                    onClick={() => setViewMode('list')}
+                    onClick={() => setViewMode(ViewModes.LIST)}
                 >
                     <IconList/>
                 </ActionIcon>
                 <ActionIcon
-                    color={viewMode=='flow' ? 'blue' : 'green'}
+                    color={viewMode == ViewModes.FLOW ? 'green' : 'blue'}
                     size="xs"
                     variant="subtle"
-                    onClick={() => setViewMode('flow')}
+                    onClick={() => setViewMode(ViewModes.FLOW)}
                 >
                     <IconArticle/>
                 </ActionIcon>
