@@ -40,3 +40,9 @@ export interface Chapter extends Base {
   order: number
   words: number
 }
+
+export enum ViewModes {
+  LIST= 1,
+  FLOW,
+  STATS,
+}
