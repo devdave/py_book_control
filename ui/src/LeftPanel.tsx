@@ -42,7 +42,7 @@ export const LeftPanel: FC<LeftPanelProps> = () => {
     return (
         <Navbar width={{base: 300}}>
             <Title order={3}>Chapters</Title>
-            <Button.Group>
+            <Button.Group key={viewMode}>
                 <ActionIcon
                     color='blue'
                     onClick={() => addChapter()}
@@ -53,16 +53,16 @@ export const LeftPanel: FC<LeftPanelProps> = () => {
                     <IconPlus/>
                 </ActionIcon>
                 <ActionIcon
-                    color={viewMode == ViewModes.LIST ? 'green' : 'blue'}
+                    color={viewMode === ViewModes.LIST ? theme.colors.green[6] : theme.colors.blue[6] }
                     size='xs'
                     title='Single page'
                     variant='subtle'
                     onClick={() => setViewMode(ViewModes.LIST)}
                 >
-                    <IconList/>
+                    <IconList />
                 </ActionIcon>
                 <ActionIcon
-                    color={viewMode == ViewModes.FLOW ? 'green' : 'blue'}
+                    color={viewMode === ViewModes.LIST ? theme.colors.green[6] : theme.colors.blue[6] }
                     size="xs"
                     variant="subtle"
                     onClick={() => setViewMode(ViewModes.FLOW)}
