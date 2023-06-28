@@ -6,7 +6,7 @@ def test_transform_md2dict():
 
     processor = SceneProcessor()
 
-    raw = """# Scene 1
+    raw = """## Scene 1
     
 This is the scene's content!
 """
@@ -33,7 +33,7 @@ This will fail because the scene title should be double sharp/two #'s
 def test_catches_badsyntax():
     processor = SceneProcessor()
 
-    raw = """# Split scene
+    raw = """## Split scene
 Is this the first paragraph?
 
 Is this the second paragraph?    
@@ -46,12 +46,12 @@ Is this the second paragraph?
 
 
 def test_catches_scene_split():
-    raw = """# Split scene
+    raw = """## Split scene
 
 Is this the first paragraph?
 Is this the second paragraph?
 
-# Second scene    
+## Second scene    
 """
 
     processor = SceneProcessor()
@@ -75,7 +75,7 @@ with a third line right after!"""
 
     actual = processor.compile(test_title, test_content)
 
-    expected = """# Scene foo
+    expected = """## Scene foo
 
 This is the first line!
 
@@ -93,13 +93,13 @@ with a third line right after!"""
 
 def test_splits_2_large_paragraphs():
 
-    data = """# Title 1
+    data = """## Title 1
 
 This is a block of text that should be detected as a paragraph
 Second line of 1st paragraph of text and i need
 one more line of text to hopefully get enough material for this test
 
-# The Second title
+## The Second title
 
 Now the test is to see if the system is smart enough to handle a block of text after the split
 point.   Ideally it should create a 'new_title' that equals 'The Second title' and a 'new_content'

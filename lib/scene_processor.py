@@ -55,7 +55,7 @@ class SceneProcessor2:
         return "".join(body)
 
     def compile(self, title, content):
-        return f"""# {title}
+        return f"""## {title}
 
 {content}"""
 
@@ -80,6 +80,9 @@ class SceneProcessor2:
 
         for child in self.ast[2:]:
             if child['type'] == 'heading':
+                if child['attrs']['level'] != 2:
+                    raise ValueError("Scene split tile must have double sharp/2 #'s.")
+
                 if self.status != 'split':
                     self.status = 'split'
                     self.split_title = self.collect_text(child).strip()
