@@ -1,10 +1,15 @@
 import {useForm} from "@mantine/form";
 import {useEffect, useState} from "react";
-import {Textarea} from "@mantine/core";
+import {createStyles, Skeleton, Textarea} from "@mantine/core";
 import {useDebouncedEffect} from "../lib/useDebouncedEffect";
 import {useBookContext} from "../Book.context";
 import {Scene} from "../types";
 
+const useStyles = createStyles((theme)=>({
+    greedytext: {
+        height: "80vh"
+    }
+}));
 
 interface SceneTextProps {
     scene: Scene
@@ -15,6 +20,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
     const [sceneLoaded, setSceneLoaded] = useState(false);
     const [sceneMD, setSceneMD] = useState("");
 
+    const {classes} = useStyles();
 
     const form = useForm({
         initialValues: {
@@ -47,6 +53,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
             if(response.status == "error"){
                 form.setValues({content: sceneMD});
+
                 throw new Error(response.message);
             }
 
@@ -65,10 +72,9 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
             updateScene(
                 {
                     ...scene,
-                    ...new_scene
+                    new_scene
                 }
             );
-
             return response['markdown'];
         }
 
@@ -83,7 +89,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
     if (sceneLoaded == false) {
         return (
-            <h2>Loading</h2>
+            <Skeleton height={8} mt={6} width="70%" radius="xl" />
         )
     }
 
@@ -93,6 +99,8 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
         <Textarea autoCapitalize="sentences"
                   autosize
                   minRows={5}
+                  variant="unstyled"
+                  style={{height: "80vh"}}
                   key={`smd-${scene.id}`}
                   {...form.getInputProps("content")}/>
     )
