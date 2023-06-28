@@ -70,6 +70,9 @@ class SceneProcessor2:
         if self.ast[0]['type'] != 'heading':
             raise ValueError("A scene must start with a `# Scene title` header line.")
 
+        if self.ast[0]['attrs']['level'] != 2:
+            raise ValueError("A scene title must have a double sharp/2 # heading.")
+
         self.title = self.collect_text(self.ast [0]).strip()
 
         if len(self.ast) > 1 and self.ast[1]['type'] != 'blank_line':

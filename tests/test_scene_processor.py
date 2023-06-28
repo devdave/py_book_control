@@ -16,6 +16,20 @@ This is the scene's content!
     assert actual['content'] == "This is the scene's content!"
 
 
+def test_enforce_title_level():
+    processor = SceneProcessor()
+
+    badContent = """# Wrong level
+    
+This will fail because the scene title should be double sharp/two #'s 
+"""
+
+    with pytest.raises(ValueError):
+        actual = processor.walk(badContent)
+
+
+
+
 def test_catches_badsyntax():
     processor = SceneProcessor()
 
@@ -88,7 +102,7 @@ one more line of text to hopefully get enough material for this test
 # The Second title
 
 Now the test is to see if the system is smart enough to handle a block of text after the split
-point.   Ideally it should create a 'new_title' that equals 'The Secodn title' and a 'new_content'
+point.   Ideally it should create a 'new_title' that equals 'The Second title' and a 'new_content'
 block that has this paragraph in it.
 """.strip()
 
@@ -105,7 +119,7 @@ one more line of text to hopefully get enough material for this test
 
     title2 = 'The Second title'
     content2 = """Now the test is to see if the system is smart enough to handle a block of text after the split
-point.   Ideally it should create a 'new_title' that equals 'The Secodn title' and a 'new_content'
+point.   Ideally it should create a 'new_title' that equals 'The Second title' and a 'new_content'
 block that has this paragraph in it."""
 
     assert product['title'] == title1
