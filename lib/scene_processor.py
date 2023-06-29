@@ -96,10 +96,17 @@ class SceneProcessor2:
                     self.content.append(self.collect_text(child))
 
             elif child['type'] == 'blank_line':
-                self.content.append('')
+                if self.status == 'split':
+                    self.split_content.append('')
+                else:
+                    self.content.append('')
             else:
                 raise ValueError(f"Unexpected token {child['type']} - unsure what to do with {repr(child)}")
+        else:
+            if self.status == 'error':
+                self.status = 'success'
 
+        # TODO - get rid of the status field and just rely on exceptions
         response = dict(
             status=self.status,
             title=self.title,
@@ -109,6 +116,7 @@ class SceneProcessor2:
         if self.status == 'split':
             response['split_title'] = self.split_title
             response['split_content'] = "\n".join(self.split_content)
+            response['markdown'] = self.compile(self.title, response['content'])
 
 
 
