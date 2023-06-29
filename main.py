@@ -3,18 +3,47 @@ import subprocess
 import signal
 import time
 import argparse
+import logging
+
 import webview
 
 from lib.application import BCApplication
 from lib.api import BCAPI
+from lib.log_helper import getLogger
 
 
 HERE = pathlib.Path(__file__).parent
+LOG = getLogger(__name__)
+
+def setup_logging(level=logging.DEBUG):
+    print(f"Setting up logging for {__name__}")
+
+
+
+    root = getLogger(__name__)
+    lib = getLogger("lib")
+
+    root.setLevel(level)
+    lib.setLevel(level)
+
+
+    console = logging.StreamHandler()
+    console.setLevel(level)
+
+    basic_format = logging.Formatter('%(levelname)s - %(name)s.%(funcName)s@%(lineno)s - %(message)s')
+    console.setFormatter(basic_format)
+
+    root.addHandler(console)
+    lib.addHandler(console)
+
+    root.info("Logging setup")
+
+
 
 
 def spinup_pnpm(url_path: pathlib.Path):
     ui_dir = url_path.parent
-    print(f"Spinup CWD `{ui_dir=}`")
+    LOG.debug("Spinup CWD {}", ui_dir)
 
     process = subprocess.Popen(
         ["pnpm", "dev", "--port", "8080"],
@@ -39,6 +68,8 @@ def write_bridge(dest: pathlib.Path):
 
 
 def main():
+    setup_logging()
+
     args = argparse.ArgumentParser("OpenAI API talker")
 
     args.add_argument(
@@ -50,9 +81,10 @@ def main():
     args.add_argument("--write_bridge", type=pathlib.Path, default=None)
 
     result = args.parse_args()
-    print(f"{result.url=}")
-    print(f"{result.dev=}")
-    print(f"{result.write_bridge=}")
+    LOG.debug("url={}", result.url)
+    LOG.debug("dev={}", result.dev)
+    LOG.debug("write_bridge={}", result.write_bridge)
+
 
     app = BCApplication()
     api = BCAPI(app)
