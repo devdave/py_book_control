@@ -108,7 +108,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
             mih={50}
             gap="md"
             justify="center"
-            align="flex-start"
+            align="stretch"
             direction="row"
             wrap="nowrap"
         >
@@ -137,7 +137,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                     maxRows={15}
                     label="Notes"
                     style={{
-                        height:"30vh",
+                        minHeight:"30vh",
                         flexGrow:1
                     }}
                     {...form.getInputProps("notes")}
@@ -150,11 +150,12 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
                     label="Summary"
                     style={{
-                            height:"30vh",
+                        minHeight:"30vh",
                         flexGrow:1
                     }}
                     {...form.getInputProps("summary")}
                 ></Textarea>
+
 
             </Flex>
         </Flex>
