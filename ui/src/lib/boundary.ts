@@ -46,7 +46,7 @@ class Boundary {
 
     public remote(remoteName: string, ...args: any[]): Promise<any> {
 
-        this.info(`Calling ${remoteName} with ${args}`);
+        this.info(`Calling ${remoteName} with:`, args);
         return this._remote(remoteName, ...args);
 
     }
