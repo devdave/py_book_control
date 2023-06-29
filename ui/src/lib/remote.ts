@@ -38,9 +38,9 @@ class APIBridge {
     }
     
     
-    async set_current_book(book_id:string) {
+    async set_current_book(book_uid:string) {
         
-        return await this.boundary.remote("set_current_book", book_id);
+        return await this.boundary.remote("set_current_book", book_uid);
     }
     
     
