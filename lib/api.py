@@ -1,24 +1,29 @@
 import typing as T
+import logging
+
 import webview
-from .scene_processor import SceneProcessor
+from .scene_processor import SceneProcessor2 as SceneProcessor
 from .application import BCApplication
 from . import models
+from .log_helper import getLogger
 
+log = getLogger(__name__)
 
 class BCAPI:
-    app: BCApplication
-
     FILE_TYPES: T.Tuple[str] = ("Database file (*.sqlite;*.sqlite3)",)
 
+
+    app: BCApplication
     data_store: T.Dict[str, str]
+    log: logging.Logger
 
     def __init__(self, app: BCApplication):
         self.app = app
-
         self.data_store = dict()
+        self.log = getLogger(__name__)
 
     def info(self, message: str):
-        print(f"Frontend says `{message}`")
+        self.log.info("Frontend says `{}`", message)
 
     def alert(self, message: str):
         return self.app.main_window.create_confirmation_dialog("Problem", message)
@@ -35,9 +40,9 @@ class BCAPI:
             return self.app.get_book(session).asdict(stripped=stripped)
 
 
-    def set_current_book(self, book_id: str):
+    def set_current_book(self, book_uid: str):
         with self.app.get_db() as session:
-            self.app.book = models.Book.Fetch_by_ID(session, book_id)
+            self.app.book = models.Book.Fetch_by_UID(session, book_uid)
             return self.app.book.asdict()
 
     def find_source(self):
@@ -104,30 +109,35 @@ class BCAPI:
 
 
     def process_scene_markdown(self, scene_uid: str, raw_text:str):
-        print(f"`{repr(scene_uid)}` `{repr(raw_text)}`")
+        self.log.debug("`{}`, `{}`", scene_uid, raw_text)
 
         processor = SceneProcessor()
         try:
             response = processor.walk(raw_text)
-            response['markdown'] = raw_text
+            if 'markdown' not in response:
+                response['markdown'] = raw_text
         except ValueError as exc:
+            self.log.error("Handling walk failure: {}", exc)
             response = dict(status = 'error', message = str(exc.args))
 
 
 
         if response['status'] == 'success':
             with self.app.get_db() as session:
-                sceneRecord = models.Scene.Fetch_by_uid(session, scene_uid)
-                setattr(sceneRecord, "title", response['title'])
-                setattr(sceneRecord, 'content', response['content'])
-
+                sceneRecord = models.Scene.Fetch_by_uid(session, scene_uid) # type: models.Scene
+                sceneRecord.update(response)
                 session.commit()
                 response['updated_on'] = models.Scene.FMT_STR.format(sceneRecord.updated_on)
+                self.log.debug()
                 return response
         elif response['status'] == 'split':
+            self.log.debug("TODO split implementation")
             return response
         else:
+            self.log.error("Got a non-success status {}", response)
             return response
+
+
 
     def update_scene(self, scene_uid: str, new_data: T.Dict[str, str]):
         with self.app.get_db() as session:
