@@ -61,9 +61,6 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
             if (response.status == 'split') {
                 console.log("Split!")
-
-
-
             }
 
 
@@ -72,13 +69,14 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                     id: scene.id,
                     title: response['title'],
                     content: response['content'],
-                    updated_on: response['updated_on']
+                    notes: form.values['notes'],
+                    summary: form.values['summary'],
                 }
 
             updateScene(
                 {
                     ...scene,
-                    new_scene
+                    ...new_scene
                 }
             );
             console.log("Got safe content", response['markdown']);
