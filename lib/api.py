@@ -128,7 +128,7 @@ class BCAPI:
                 sceneRecord.update(response)
                 session.commit()
                 response['updated_on'] = models.Scene.FMT_STR.format(sceneRecord.updated_on)
-                self.log.debug()
+                self.log.debug("updated record hopefully")
                 return response
         elif response['status'] == 'split':
             self.log.debug("TODO split implementation")
