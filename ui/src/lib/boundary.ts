@@ -46,6 +46,12 @@ class Boundary {
 
     public remote(remoteName: string, ...args: any[]): Promise<any> {
 
+        this.info(`Calling ${remoteName} with ${args}`);
+        return this._remote(remoteName, ...args);
+
+    }
+
+    private _remote(remoteName: string, ...args: any[]): Promise<any> {
         this.connect();
 
         if(!(remoteName in this.backendHooks)){
@@ -53,9 +59,7 @@ class Boundary {
         }
 
         const func = this.backendHooks[remoteName];
-        console.log(`Calling ${remoteName} with ${args}`);
         return func.apply(this, args);
-
     }
 
     public request(remoteName: string, ...args: any[]): Deferred {
@@ -66,7 +70,8 @@ class Boundary {
     }
 
     public info(...message:any[]): void {
-        this.remote("info", message);
+        console.log(...message);
+        this._remote("info", message);
     }
 
 }
