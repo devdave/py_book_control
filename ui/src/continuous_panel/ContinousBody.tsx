@@ -38,6 +38,9 @@ export const ContinousBody = ({}) => {
             <h1>{activeChapter?.title}</h1>
             {activeChapter?.scenes.map((scene:Scene)=>
                 <Paper key={scene.id}
+                       shadow="lg"
+                       p="md"
+                       withBorder
                        style={{height: "80vh"}}
                 ref={(ref: HTMLDivElement) => {
                     if (ref) {
