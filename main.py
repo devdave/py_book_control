@@ -46,7 +46,7 @@ def spinup_pnpm(url_path: pathlib.Path):
     LOG.debug("Spinup CWD {}", ui_dir)
 
     process = subprocess.Popen(
-        ["pnpm", "dev", "--port", "8080"],
+        ["pnpm", "dev", "--port", "8080", "--host"],
         cwd=str(ui_dir),
         creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
     )
