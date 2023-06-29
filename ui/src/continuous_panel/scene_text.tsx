@@ -1,11 +1,11 @@
 import {useForm} from "@mantine/form";
 import {useEffect, useState} from "react";
-import {createStyles, Skeleton, Textarea} from "@mantine/core";
+import {createStyles, Divider, Flex, Skeleton, Textarea} from "@mantine/core";
 import {useDebouncedEffect} from "../lib/useDebouncedEffect";
 import {useBookContext} from "../Book.context";
 import {Scene} from "../types";
 
-const useStyles = createStyles((theme)=>({
+const useStyles = createStyles((theme) => ({
     greedytext: {
         height: "80vh"
     }
@@ -24,7 +24,9 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
     const form = useForm({
         initialValues: {
-            content: sceneMD
+            content: sceneMD,
+            notes: scene.notes,
+            summary: scene.summary,
         }
     });
 
@@ -51,19 +53,23 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
         async function doWork() {
             const response = await api.process_scene_markdown(scene.id, form.values['content']);
 
-            if(response.status == "error"){
+            if (response.status == "error") {
                 form.setValues({content: sceneMD});
 
                 throw new Error(response.message);
             }
 
-            if(response.status == 'split'){
+            if (response.status == 'split') {
+                console.log("Split!")
+
+
 
             }
 
 
             const new_scene =
-                { id: scene.id,
+                {
+                    id: scene.id,
                     title: response['title'],
                     content: response['content'],
                     updated_on: response['updated_on']
@@ -75,33 +81,83 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                     new_scene
                 }
             );
+            console.log("Got safe content", response['markdown']);
+            setSceneMD(prev => response['markdown']);
             return response['markdown'];
         }
 
         if (form.isDirty()) {
-            doWork().then((mdtext) => setSceneMD(mdtext)).catch(reason=>{
+            doWork().then((mdtext) => setSceneMD(mdtext)).catch(reason => {
                 alert(reason);
             });
         }
 
-    }, [form.values], {delay: 500});
+    }, [form.values], {delay: 500, runOnInitialize: false});
 
 
     if (sceneLoaded == false) {
         return (
-            <Skeleton height={8} mt={6} width="70%" radius="xl" />
+            <Skeleton height={8} mt={6} width="70%" radius="xl"/>
         )
     }
 
     console.log("Conti ST ", sceneLoaded, sceneMD);
 
     return (
-        <Textarea autoCapitalize="sentences"
-                  autosize
-                  minRows={5}
-                  variant="unstyled"
-                  style={{height: "80vh"}}
-                  key={`smd-${scene.id}`}
-                  {...form.getInputProps("content")}/>
+        <Flex
+            mih={50}
+            gap="md"
+            justify="center"
+            align="flex-start"
+            direction="row"
+            wrap="nowrap"
+        >
+            <Textarea
+                        style={{
+                            height: "80vh",
+                            flexGrow: 4
+                        }}
+                        autoCapitalize="sentences"
+                      autosize
+                      minRows={5}
+                        maxRows={30}
+                      variant="unstyled"
+                      key={`smd-${scene.id}`}
+                      {...form.getInputProps("content")}/>
+            <Divider orientation="vertical"/>
+            <Flex
+                direction="column"
+
+
+            >
+                <Textarea
+                    autoCapitalize="sentences"
+                    autosize
+                    minRows={10}
+                    maxRows={15}
+                    label="Notes"
+                    style={{
+                        height:"30vh",
+                        flexGrow:1
+                    }}
+                    {...form.getInputProps("notes")}
+                ></Textarea>
+                <Textarea
+                    autoCapitalize="sentences"
+                    autosize
+                    minRows={10}
+                    maxRows={15}
+
+                    label="Summary"
+                    style={{
+                            height:"30vh",
+                        flexGrow:1
+                    }}
+                    {...form.getInputProps("summary")}
+                ></Textarea>
+
+            </Flex>
+        </Flex>
+
     )
 }
