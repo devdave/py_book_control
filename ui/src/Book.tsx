@@ -326,8 +326,9 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             break;
         case ViewModes.FLOW:
             if(activeChapter !== undefined){
+                let rpkey = `${activeChapter.id}`
                 rightPanel = (
-                    <ContinousBody key={`${activeChapter}-${activeScene?.id}`}/>
+                    <ContinousBody key={rpkey}/>
                 )
             } else {
                 rightPanel = (
