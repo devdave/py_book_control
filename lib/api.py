@@ -121,21 +121,22 @@ class BCAPI:
             response = dict(status = 'error', message = str(exc.args))
 
 
+        return response
 
-        if response['status'] == 'success':
-            with self.app.get_db() as session:
-                sceneRecord = models.Scene.Fetch_by_uid(session, scene_uid) # type: models.Scene
-                sceneRecord.update(response)
-                session.commit()
-                response['updated_on'] = models.Scene.FMT_STR.format(sceneRecord.updated_on)
-                self.log.debug("updated record hopefully")
-                return response
-        elif response['status'] == 'split':
-            self.log.debug("TODO split implementation")
-            return response
-        else:
-            self.log.error("Got a non-success status {}", response)
-            return response
+        # if response['status'] == 'success':
+        #     with self.app.get_db() as session:
+        #         sceneRecord = models.Scene.Fetch_by_uid(session, scene_uid) # type: models.Scene
+        #         sceneRecord.update(response)
+        #         session.commit()
+        #         response['updated_on'] = models.Scene.FMT_STR.format(sceneRecord.updated_on)
+        #         self.log.debug("updated record hopefully")
+        #         return response
+        # elif response['status'] == 'split':
+        #     self.log.debug("TODO split implementation")
+        #     return response
+        # else:
+        #     self.log.error("Got a non-success status {}", response)
+        #     return response
 
 
 
