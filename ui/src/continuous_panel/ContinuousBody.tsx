@@ -1,7 +1,7 @@
 import {Chapter, type Scene} from "../types";
 import {useDebouncedEffect} from "../lib/useDebouncedEffect";
 
-import {Button, Center, Paper, TextInput} from "@mantine/core";
+import {Button, Center, Paper, TextInput, Title} from "@mantine/core";
 import {useEffect, useRef} from "react";
 import {SceneText} from "./scene_text";
 import {useBookContext} from "../Book.context";
@@ -55,6 +55,12 @@ export const ContinuousBody = ({}) => {
         }
     }, [activeScene?.id]);
 
+    if(!activeChapter){
+        return (
+            <Title order={2}>Missing active chapter</Title>
+        )
+    }
+
     // @ts-ignore
     return (
         <div>
@@ -67,7 +73,7 @@ export const ContinuousBody = ({}) => {
 
                 {...form.getInputProps('title')}/>
 
-            {activeChapter?.scenes.map((scene:Scene)=>
+            {activeChapter.scenes.map((scene:Scene)=>
                 <Paper key={scene.id}
                        shadow="xl"
                         p='xs'
@@ -79,7 +85,10 @@ export const ContinuousBody = ({}) => {
                     }
                 }}
                 >
-                   <SceneText key={scene.id + ' ' + scene.updated_on} scene={scene}/>
+                    {scene &&
+                        <SceneText key={`${scene.id} ${scene.updated_on} ${scene.order}`} scene={scene}/>
+                    }
+
                 </Paper>
             )}
             {activeChapter?.scenes.length == 0 &&
