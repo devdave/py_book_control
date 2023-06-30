@@ -19,7 +19,7 @@ import {PromptModal} from "./lib/input_modal";
 import {BookContext} from './Book.context'
 import {LeftPanel} from './LeftPanel'
 import {RightPanel} from './editor_panel';
-import {ContinousBody} from './continuous_panel';
+import {ContinuousBody} from './continuous_panel';
 
 import {type Chapter, type Scene, ViewModes} from './types'
 import APIBridge from "./lib/remote";
@@ -102,7 +102,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                     return chapter
                 })
             );
-
+        return newScene;
     }, []);
 
     const addScene = useCallback(
@@ -150,7 +150,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
         []
     )
     const reorderScene = useCallback(
-        (chapterId: string, from: number, to: number) =>
+        (chapterId: string, from: number, to: number) => {
             _setChapters((prevChapters) =>
                 map(prevChapters, (chapter) => {
                     if (chapter.id === chapterId) {
@@ -171,12 +171,16 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
 
                         _setActiveChapter(nextChapter)
 
+                        api.reorder_scenes(nextScenes).then();
+
                         return nextChapter
                     }
 
                     return chapter
                 })
-            ),
+            );
+
+        },
         []
     )
 
@@ -328,7 +332,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             if(activeChapter !== undefined){
                 let rpkey = `${activeChapter.id}`
                 rightPanel = (
-                    <ContinousBody key={rpkey}/>
+                    <ContinuousBody key={rpkey}/>
                 )
             } else {
                 rightPanel = (

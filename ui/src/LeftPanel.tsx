@@ -1,5 +1,5 @@
 import {
-    ActionIcon,
+    ActionIcon, Box,
     Button,
     Center,
     Divider,
@@ -7,8 +7,9 @@ import {
     Navbar,
     NavLink,
     ScrollArea,
+    SegmentedControl,
     Text,
-    Title,
+    Title, Tooltip,
     useMantineTheme
 } from '@mantine/core'
 import {IconArticle, IconChevronRight, IconGripVertical, IconList, IconPlus} from '@tabler/icons-react'
@@ -41,36 +42,40 @@ export const LeftPanel: FC<LeftPanelProps> = () => {
 
     return (
         <Navbar width={{base: 300}}>
-            <Title order={3}>Chapters</Title>
-            <Button.Group key={viewMode}>
-                <ActionIcon
-                    color='blue'
-                    onClick={() => addChapter()}
-                    size='xs'
-                    title='Add Chapter'
-                    variant='subtle'
-                >
-                    <IconPlus/>
-                </ActionIcon>
-                <ActionIcon
-                    color={viewMode === ViewModes.LIST ? theme.colors.green[6] : theme.colors.blue[6] }
-                    size='xs'
-                    title='Single page'
-                    variant='subtle'
-                    onClick={() => setViewMode(ViewModes.LIST)}
-                >
-                    <IconList />
-                </ActionIcon>
-                <ActionIcon
-                    color={viewMode === ViewModes.LIST ? theme.colors.green[6] : theme.colors.blue[6] }
-                    size="xs"
-                    variant="subtle"
-                    onClick={() => setViewMode(ViewModes.FLOW)}
-                >
-                    <IconArticle/>
-                </ActionIcon>
 
-            </Button.Group>
+            {/*<Title order={3}>Chapters</Title>*/}
+
+            <SegmentedControl
+                value={ViewModes[viewMode]}
+                onChange={setViewMode}
+                data={[
+                    {
+                        value: ViewModes['LIST'],
+                        label: (
+                            <Center>
+                                <IconList/>
+                                <Box ml={10}>Detailed</Box>
+                            </Center>
+                        )
+                    },
+                    {
+                        value: ViewModes['FLOW'],
+                        label: (
+                            <Center>
+                                <IconArticle/>
+                                <Box ml={10}>Flow</Box>
+                            </Center>
+                        )
+                    }
+                ]}
+            />
+
+            <Divider color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]}/>
+            <Button
+                size="xs"
+                color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]}
+                onClick={()=>addChapter()}
+            ><IconPlus/>Create new chapter</Button>
 
             <Divider color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]}/>
             <ScrollArea>

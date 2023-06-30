@@ -124,7 +124,7 @@ def process_function(func_elm: ast.FunctionDef):
             #fuck it
             func_type = "any"
 
-        elif arg.annotation is not None and arg.annotation.id is not None:
+        elif arg.annotation is not None and hasattr(arg.annotation, "id"):
             match arg.annotation.id:
                 case "str":
                     func_type = "string"

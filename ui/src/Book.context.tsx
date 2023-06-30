@@ -11,7 +11,7 @@ interface BookContextValue {
   api: APIBridge
   addChapter(): void
   addScene(chapterId: string): void
-  createScene(chapterId: string, sceneTitle: string, order?: number): void
+  createScene(chapterId: string, sceneTitle: string, order?: number): Scene
   reorderChapter(from: number, to: number): void
   reorderScene(chapterId: string, from: number, to: number): void
   setActiveChapter(chapter: Chapter): void

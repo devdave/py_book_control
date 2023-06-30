@@ -78,17 +78,19 @@ class BCAPI:
 
     def fetch_stripped_chapters(self):
         with self.app.get_db() as session:
-            return [chapter.asdict(stripped=True) for chapter in self.app.get_book(session).chapters]
+            book = models.Book.Fetch_by_Id(session, self.app.book_id)
+            return [chapter.asdict(stripped=True) for chapter in book.chapters]
 
     def create_chapter(self, chapter_name: str):
         chapter = models.Chapter(title=chapter_name, uid=models.generate_id(12))
 
         with self.app.get_db() as session:
-            self.app.get_book(session).chapters.append(chapter)
+            book = self.app.get_book(session)
+            book.chapters.append(chapter)
             session.add(chapter)
             session.commit()
 
-        return chapter.asdict()
+            return chapter.asdict()
 
     def save_reordered_chapters(self, chapters: T.List[T.Dict[str, str]]):
         with self.app.get_db() as session:
@@ -168,6 +170,20 @@ class BCAPI:
             session.delete(scene)
             parent.scenes.reorder()
             session.commit()
+
+    def reorder_scenes(self, new_order:[models.Scene]):
+        with self.app.get_db() as session:
+            for authority in new_order:
+                record = models.Scene.Fetch_by_uid(session, authority['id'])
+                record.order = authority.order
+                chapterId = record.chapter.id
+
+            session.commit()
+
+            data = models.Chapter.Fetch_by_Id(session, chapterId).asdict()
+
+        return data['scenes']
+
 
     def boot_up(self):
         """

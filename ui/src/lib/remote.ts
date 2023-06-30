@@ -127,6 +127,12 @@ class APIBridge {
         return await this.boundary.remote("delete_scene", chapter_uid, scene_uid);
     }
     
+    
+    async reorder_scenes(new_order:any) {
+        
+        return await this.boundary.remote("reorder_scenes", new_order);
+    }
+    
     /* Will be deprecated, automatically loads up the 1st Book for use with the app.
     :return: bool */
     async boot_up() {

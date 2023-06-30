@@ -15,8 +15,14 @@ interface SceneTextProps {
     scene: Scene
 }
 
+const compile_scene2md = (scene:Scene) => {
+    return `## ${scene.title}\n\n${scene.content}`;
+}
+
+
+
 export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
-    const {api, updateScene} = useBookContext();
+    const {api, updateScene, createScene, reorderScene} = useBookContext();
     const [sceneLoaded, setSceneLoaded] = useState(false);
     const [sceneMD, setSceneMD] = useState("");
 
@@ -24,33 +30,16 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
     const form = useForm({
         initialValues: {
-            content: sceneMD,
+            content: compile_scene2md(scene),
             notes: scene.notes,
             summary: scene.summary,
         }
     });
 
-    useEffect(
-        () => {
-
-            async function doWork() {
-                const markedown = await api.fetch_scene_markedup(scene.id);
-                setSceneMD(markedown);
-                form.setValues({content: markedown});
-
-
-            }
-
-            doWork().then(() => setSceneLoaded(true));
-
-        },
-        [scene]
-    )
-
 
     useDebouncedEffect(() => {
 
-        async function doWork() {
+        async function reprocessMDnSave() {
             const response = await api.process_scene_markdown(scene.id, form.values['content']);
 
             if (response.status == "error") {
@@ -61,6 +50,16 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
             if (response.status == 'split') {
                 console.log("Split!")
+                const new_scene = await createScene(
+                    scene.chapterId,
+                    response['split_title'],
+                    scene.order + 1,
+                );
+                reorderScene(new_scene.chapterId, new_scene.order, scene.order + 1);
+
+                new_scene.content = response['split_content'];
+                updateScene(new_scene);
+
             }
 
 
@@ -85,21 +84,14 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
         }
 
         if (form.isDirty()) {
-            doWork().then((mdtext) => setSceneMD(mdtext)).catch(reason => {
-                alert(reason);
+            reprocessMDnSave().catch(reason => {
+                alert(`Failed to reprocess markdown to content: ${reason}`);
             });
         }
 
     }, [form.values], {delay: 500, runOnInitialize: false});
 
 
-    if (sceneLoaded == false) {
-        return (
-            <Skeleton height={8} mt={6} width="70%" radius="xl"/>
-        )
-    }
-
-    console.log("Conti ST ", sceneLoaded, sceneMD);
 
     return (
         <Flex
@@ -109,50 +101,44 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
             align="stretch"
             direction="row"
             wrap="nowrap"
+            style={{
+                height: "100%"
+            }}
         >
-            <Textarea
-                        style={{
-                            height: "80vh",
-                            flexGrow: 4
-                        }}
-                        autoCapitalize="sentences"
-                      autosize
-                      minRows={5}
-                        maxRows={30}
-                      variant="unstyled"
-                      key={`smd-${scene.id}`}
-                      {...form.getInputProps("content")}/>
+            <textarea
+            style={{
+                height: "100%",
+                width: "100%",
+                boxSizing:"border-box",
+
+            }}
+            autoCapitalize="sentences"
+
+            {...form.getInputProps("content")}
+            />
             <Divider orientation="vertical"/>
             <Flex
                 direction="column"
-
-
+                style={{height:"100%"}}
             >
-                <Textarea
+                <label>Notes</label>
+                <textarea
                     autoCapitalize="sentences"
-                    autosize
-                    minRows={10}
-                    maxRows={15}
-                    label="Notes"
                     style={{
-                        minHeight:"30vh",
+                        height: "40%",
                         flexGrow:1
                     }}
                     {...form.getInputProps("notes")}
-                ></Textarea>
-                <Textarea
+                />
+                <label>Summary</label>
+                <textarea
                     autoCapitalize="sentences"
-                    autosize
-                    minRows={10}
-                    maxRows={15}
-
-                    label="Summary"
                     style={{
-                        minHeight:"30vh",
+                        height: "40%",
                         flexGrow:1
                     }}
                     {...form.getInputProps("summary")}
-                ></Textarea>
+                />
 
 
             </Flex>

@@ -152,12 +152,12 @@ class Chapter(Base):
         session.commit()
 
     def update(self, chapter_data: dict[str, str]):
-        SKIP = ["id", "scenes", "words"]
+
+        VALID = ['title', 'order', 'summary', 'notes']
 
         for key, value in chapter_data.items():
-            if key in SKIP:
-                continue
-            setattr(self, key, value)
+            if key in VALID:
+                setattr(self, key, value)
 
 
 class Scene(Base):

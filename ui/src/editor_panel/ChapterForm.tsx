@@ -10,7 +10,7 @@ import {iconSizes} from "@mantine/core/lib/Stepper/Step/Step.styles";
 import {IconPlus} from "@tabler/icons-react";
 
 const formSchema = z.object({
-    title: z.string().trim().nonempty('Cannot be empty').min(4, 'Must be at least 4 characters')
+    title: z.string().trim().nonempty('Cannot be empty').min(3, 'Must be at least 4 characters')
 })
 
 export interface ChapterFormProps {
@@ -22,6 +22,7 @@ export const ChapterForm: FC<ChapterFormProps> = ({chapter}) => {
     const form = useForm({
         initialValues: {
             summary: chapter.summary,
+            notes: chapter.notes,
             title: chapter.title
         },
         validate: zodResolver(formSchema),
@@ -54,12 +55,21 @@ export const ChapterForm: FC<ChapterFormProps> = ({chapter}) => {
                 spellCheck
                 {...form.getInputProps('title')}
             />
+            <details>
+                <summary>Chapter Notes</summary>
+                <Textarea
+                    autoCapitalize="sentences"
+                    autosize
+                    minRows={4}
+                    spellCheck
+                    {...form.getInputProps('notes')}
+                    />
+            </details>
             <details open>
-                <summary>Summary</summary>
+                <summary>Chapter Summary</summary>
                     <Textarea
                         autoCapitalize='sentences'
                         autosize
-                        label='Summary'
                         minRows={4}
                         spellCheck
                         {...form.getInputProps('summary')}

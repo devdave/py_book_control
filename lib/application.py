@@ -4,7 +4,7 @@ from contextlib import contextmanager
 
 class BCApplication:
     main_window: webview.Window
-    book: models.Book
+    book_id: int
     session: models.scoped_session
 
     def __init__(self):
@@ -17,14 +17,15 @@ class BCApplication:
 
         with self.get_db() as session:
             try:
-                self.book = models.Book.Fetch_by_UID(session, 1)
+                self.book_id = models.Book.Fetch_by_UID(session, 1).id
             except models.NoResultFound:
-                self.book = models.Book(title="Test1")
-                session.add(self.book)
+                new_book = models.Book(title="Test1")
+                session.add(new_book)
+                self.book_id = new_book.id
                 session.commit()
 
     def get_book(self, session: models.Session) -> models.Book:
-        return models.Book.Fetch_by_Id(session, self.book.id)
+        return models.Book.Fetch_by_Id(session, self.book_id)
 
     def set_window(self, main_window):
         self.main_window = main_window

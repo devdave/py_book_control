@@ -42,7 +42,7 @@ export interface Chapter extends Base {
 }
 
 export enum ViewModes {
-  LIST= 1,
-  FLOW,
-  STATS,
+  LIST= 'list',
+  FLOW= 'flow',
+  STATS= 'stats',
 }
