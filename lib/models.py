@@ -121,8 +121,8 @@ class Chapter(Base):
             title=self.title,
             order=self.order,
             words=self.words,
-            created_on=self.created_on,
-            updated_on=self.updated_on,
+            created_on=str(self.created_on),
+            updated_on=str(self.updated_on),
         )
         if stripped is False:
             data["notes"] = self.notes
