@@ -160,13 +160,17 @@ class BCAPI:
             return scene.asdict()
 
     def delete_scene(self, chapter_uid: str, scene_uid: str):
-        with self.app.get_db() as session:
-            scene = models.Scene.Fetch_by_uid(session, scene_uid)
-            parent = scene.chapter  # type: models.Chapter
-            parent.scenes.remove(scene)
-            session.delete(scene)
-            parent.scenes.reorder()
-            session.commit()
+        try:
+            with self.app.get_db() as session:
+                scene = models.Scene.Fetch_by_uid(session, scene_uid)
+                parent = scene.chapter  # type: models.Chapter
+                parent.scenes.remove(scene)
+                session.delete(scene)
+                parent.scenes.reorder()
+                session.commit()
+                return True
+        except models.NoResultFound:
+            raise ValueError("Scene was already deleted");
 
     def reorder_scenes(self, new_order:[models.Scene]):
         with self.app.get_db() as session:
