@@ -151,27 +151,34 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
     )
     const reorderScene = useCallback(
         (chapterId: string, from: number, to: number) => {
+
             _setChapters((prevChapters) =>
                 map(prevChapters, (chapter) => {
                     if (chapter.id === chapterId) {
                         // make a clone of the scenes array, so we don't mutate it in place
+                        console.log("Pre reorder", chapter.scenes);
                         const nextScenes = clone(chapter.scenes)
+                        const targetScene = nextScenes.splice(from, 1)[0];
+                        nextScenes.splice(to, 0, targetScene);
 
-                        // reorder the scenes array
-                        nextScenes.splice(to, 0, nextScenes.splice(from, 1)[0])
+                        _setActiveScene((prevState)=> targetScene);
+                        const sortedScenes = nextScenes.map((old_scene, sidx)=>{
+                            old_scene.order = sidx;
+                            return old_scene;
+                        });
+
 
                         const nextChapter: Chapter = {
                             ...chapter,
-                            // iterate over each item and overwrite its new sequence
-                            scenes: map(nextScenes, (scene, sceneIdx) => ({
-                                ...scene,
-                                order: sceneIdx + 1
-                            }))
+                            updated_on: new Date(Date.now()).toUTCString(),
+                            scenes: sortedScenes
                         }
 
-                        _setActiveChapter(nextChapter)
+                        _setActiveChapter((oldchap) => nextChapter)
 
-                        api.reorder_scenes(nextScenes).then();
+                        api.reorder_scenes(sortedScenes).then();
+
+                        console.log("post reorder", sortedScenes);
 
                         return nextChapter
                     }
@@ -180,6 +187,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                 })
             );
 
+            debugger;
         },
         []
     )
@@ -210,6 +218,8 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
         async (chapter: Chapter) => {
 
             const authoritiveChapter = await api.update_chapter(chapter.id, chapter);
+            authoritiveChapter.updated_on = new Date(Date.now()).toUTCString();
+
             if (!authoritiveChapter) {
                 alert("Warning!  Failed to save chapter changes.");
                 return;
@@ -234,6 +244,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             const chapter = getChapter(scene.chapterId);
 
             const authoritiveScene = await api.update_scene(scene.id, scene);
+            authoritiveScene.updated_on = new Date(Date.now()).toUTCString();
 
             if (!authoritiveScene) {
                 alert("Failed to update scene!");
@@ -245,6 +256,8 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                     ...chapter,
                     scenes: map(chapter.scenes, (prevScene) => (prevScene.id === authoritiveScene.id ? authoritiveScene : prevScene))
                 })
+            } else {
+                alert("Failed to find chapter.");
             }
         },
         [getChapter, updateChapter]
@@ -255,15 +268,20 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             const response = await api.delete_scene(chapterId, sceneId);
             if (response) {
                 const new_chap_date = new Date(Date.now()).toUTCString();
-                _setChapters((prevChapters: Chapter[]) => {
-                        return map(prevChapters, (prevChapter: Chapter) => {
-                            if (prevChapter.id == chapterId) {
-                                reorderChapter.updated_on = new_chap_date;
-                            }
-                            return reorderChapter;
-                        });
-                    }
-                );
+
+                _setChapters((prevState)=>{
+                    return map(prevState, (prevChapter)=>{
+                        if(prevChapter.id == chapterId){
+                            prevChapter.updated_on = new Date(Date.now()).toUTCString();
+                            prevChapter.scenes = prevChapter.scenes.filter((existing)=>existing.id != sceneId);
+
+                        }
+
+                        return prevChapter;
+                    })
+                });
+            } else {
+                api.info("Failed to delete scene or got non-positive response!");
             }
         }
     , []);
@@ -362,6 +380,11 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
 
     }
 
+    if(!activeChapter){
+        return (
+            <Title order={3}>There is no activeChapter</Title>
+        )
+    }
 
     return (
         <BookContext.Provider value={bookContextValue}>
@@ -370,7 +393,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                     main: classes.main
                 }}
                 fixed
-                navbar={<LeftPanel key={`${activeChapter?.id} ${activeChapter?.updated_on}`}/>}
+                navbar={<LeftPanel key={`${activeChapter.id} ${activeChapter.updated_on} ${activeChapter.scenes.length}`}/>}
                 header={
                     <Header height={60}>
                         <Group
