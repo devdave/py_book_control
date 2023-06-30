@@ -89,10 +89,10 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
         new_scene.content = response['split_content'];
 
-        reorderScene(new_scene.chapterId, new_scene.order, scene.order);
-        scanDuplicateScenes();
-
-        updateScene(new_scene);
+        // @ts-ignore
+        console.log("Reordering", new_scene.chapterId, new_scene.order, activeScene.order+1);
+        // @ts-ignore
+        reorderScene(new_scene.chapterId, new_scene.order, activeScene.order+1);
         scanDuplicateScenes();
 
         console.groupEnd();
