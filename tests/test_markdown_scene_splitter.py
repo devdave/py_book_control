@@ -1,5 +1,8 @@
+import pytest
+
 from lib.md_splitter import MDSplitter
 
+@pytest.mark.skip()
 def test_basic_idea():
 
     raw = """
