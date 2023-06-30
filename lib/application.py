@@ -21,8 +21,9 @@ class BCApplication:
             except models.NoResultFound:
                 new_book = models.Book(title="Test1")
                 session.add(new_book)
-                self.book_id = new_book.id
                 session.commit()
+                self.book_id = new_book.id
+
 
     def get_book(self, session: models.Session) -> models.Book:
         return models.Book.Fetch_by_Id(session, self.book_id)

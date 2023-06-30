@@ -74,7 +74,7 @@ class BCAPI:
             chapter = models.Chapter.Fetch_by_uid(session, chapter_id)
             chapter.update(chapter_data)
             session.commit()
-            return True
+            return chapter.asdict()
 
     def fetch_stripped_chapters(self):
         with self.app.get_db() as session:
@@ -144,14 +144,11 @@ class BCAPI:
 
     def update_scene(self, scene_uid: str, new_data: T.Dict[str, str]):
         with self.app.get_db() as session:
-
             scene = models.Scene.Fetch_by_uid(session, scene_uid)
-
             scene.update(new_data)
-
             session.commit()
 
-            return True
+            return scene.asdict()
 
     def create_scene(self, chapter_uid: str, scene_title: str):
         with self.app.get_db() as session:
@@ -175,7 +172,7 @@ class BCAPI:
         with self.app.get_db() as session:
             for authority in new_order:
                 record = models.Scene.Fetch_by_uid(session, authority['id'])
-                record.order = authority.order
+                record.order = int(authority['order'])
                 chapterId = record.chapter.id
 
             session.commit()

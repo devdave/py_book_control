@@ -78,7 +78,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
     )
 
     const createScene = useCallback(
-        async (chapterId:string, sceneTitle: string, position = -1)=> {
+        async (chapterId: string, sceneTitle: string, position = -1) => {
 
 
             const newScene = await api.create_scene(chapterId, sceneTitle);
@@ -102,15 +102,15 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                     return chapter
                 })
             );
-        return newScene;
-    }, []);
+            return newScene;
+        }, []);
 
     const addScene = useCallback(
-        async (chapterId: string|undefined) => {
+        async (chapterId: string | undefined): Promise<void|Scene> => {
 
-            if(chapterId === undefined){
+            if (chapterId === undefined) {
                 console.log("Tried to add a scene when there isn't an activeChapter");
-                api.alert("There was a problem creating a new scene!");
+                await api.alert("There was a problem creating a new scene!");
                 return;
             }
 
@@ -122,7 +122,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                 alert("A scene must have a title longer than 2 characters.");
                 return;
             }
-            await createScene(chapterId, sceneTitle);
+            return await createScene(chapterId, sceneTitle);
 
         },
         []
@@ -185,11 +185,11 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
     )
 
 
-    const setActiveChapter = useCallback( async (chapter: Chapter) => {
-        if(activeChapter !== undefined){
+    const setActiveChapter = useCallback(async (chapter: Chapter) => {
+        if (activeChapter !== undefined) {
             activeChapter.notes = "";
             activeChapter.summary = "";
-            forEach(activeChapter.scenes, (scene)=>{
+            forEach(activeChapter.scenes, (scene) => {
                 scene.notes = "";
                 scene.content = "";
                 scene.summary = "";
@@ -209,8 +209,8 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
     const updateChapter = useCallback(
         async (chapter: Chapter) => {
 
-            const result = await api.update_chapter(chapter.id, chapter);
-            if (result === false) {
+            const authoritiveChapter = await api.update_chapter(chapter.id, chapter);
+            if (!authoritiveChapter) {
                 alert("Warning!  Failed to save chapter changes.");
                 return;
             }
@@ -218,10 +218,10 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             console.log("Would update chapter with ", chapter);
 
             _setChapters((prevChapters) =>
-                map(prevChapters, (prevChapter) => (prevChapter.id === chapter.id ? chapter : prevChapter))
+                map(prevChapters, (prevChapter) => (prevChapter.id === authoritiveChapter.id ? authoritiveChapter : prevChapter))
             );
-            if(activeChapter?.id == chapter.id){
-                _setActiveChapter(chapter);
+            if (activeChapter?.id == chapter.id) {
+                _setActiveChapter(authoritiveChapter);
             }
         },
 
@@ -233,9 +233,9 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
 
             const chapter = getChapter(scene.chapterId);
 
-            const result = await api.update_scene(scene.id, scene);
+            const authoritiveScene = await api.update_scene(scene.id, scene);
 
-            if (result !== true) {
+            if (!authoritiveScene) {
                 alert("Failed to update scene!");
                 return;
             }
@@ -243,12 +243,31 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             if (chapter) {
                 await updateChapter({
                     ...chapter,
-                    scenes: map(chapter.scenes, (prevScene) => (prevScene.id === scene.id ? scene : prevScene))
+                    scenes: map(chapter.scenes, (prevScene) => (prevScene.id === authoritiveScene.id ? authoritiveScene : prevScene))
                 })
             }
         },
         [getChapter, updateChapter]
     );
+
+    const deleteScene = useCallback(
+        async (chapterId: string, sceneId: string) => {
+            const response = await api.delete_scene(chapterId, sceneId);
+            if (response) {
+                const new_chap_date = new Date(Date.now()).toUTCString();
+                _setChapters((prevChapters: Chapter[]) => {
+                        return map(prevChapters, (prevChapter: Chapter) => {
+                            if (prevChapter.id == chapterId) {
+                                reorderChapter.updated_on = new_chap_date;
+                            }
+                            return reorderChapter;
+                        });
+                    }
+                );
+            }
+        }
+    , []);
+
 
     const onToggleColorScheme = useCallback(() => toggleColorScheme(), [toggleColorScheme])
 
@@ -268,6 +287,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             setActiveScene,
             updateChapter,
             updateScene,
+            deleteScene,
             setViewMode
         }),
         [
@@ -316,9 +336,9 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
         <h1>No book loaded</h1>
     )
 
-    switch (viewMode){
+    switch (viewMode) {
         case ViewModes.LIST:
-            if(activeChapter !== undefined){
+            if (activeChapter !== undefined) {
                 rightPanel = (
                     <RightPanel key={`${activeChapter?.id}-${activeScene?.id}`}/>
                 )
@@ -329,10 +349,9 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             }
             break;
         case ViewModes.FLOW:
-            if(activeChapter !== undefined){
-                let rpkey = `${activeChapter.id}`
+            if (activeChapter !== undefined) {
                 rightPanel = (
-                    <ContinuousBody key={rpkey}/>
+                    <ContinuousBody key={`${activeChapter.id} ${activeChapter.updated_on}`}/>
                 )
             } else {
                 rightPanel = (
@@ -351,7 +370,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                     main: classes.main
                 }}
                 fixed
-                navbar={<LeftPanel/>}
+                navbar={<LeftPanel key={`${activeChapter?.id} ${activeChapter?.updated_on}`}/>}
                 header={
                     <Header height={60}>
                         <Group

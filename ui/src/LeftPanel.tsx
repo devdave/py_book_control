@@ -102,7 +102,7 @@ export const LeftPanel: FC<LeftPanelProps> = () => {
                                         <Draggable
                                             draggableId={chapter.id}
                                             index={chapterIdx}
-                                            key={chapter.id}
+                                            key={`${chapter.id} ${chapter.updated_on}`}
                                         >
                                             {(draggable) => (
                                                 <NavLink
@@ -137,7 +137,7 @@ export const LeftPanel: FC<LeftPanelProps> = () => {
                                                         return (
                                                             <NavLink
                                                                 active={isSceneActive}
-                                                                key={scene.updated_on}
+                                                                key={`${scene.id} ${scene.updated_on}`}
                                                                 label={
                                                                     <Group
                                                                         align='start'

@@ -79,7 +79,7 @@ export const ContinuousBody = ({}) => {
                     }
                 }}
                 >
-                   <SceneText scene={scene}/>
+                   <SceneText key={scene.id + ' ' + scene.updated_on} scene={scene}/>
                 </Paper>
             )}
             {activeChapter?.scenes.length == 0 &&

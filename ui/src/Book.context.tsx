@@ -10,14 +10,15 @@ interface BookContextValue {
   viewMode: ViewModes
   api: APIBridge
   addChapter(): void
-  addScene(chapterId: string): void
-  createScene(chapterId: string, sceneTitle: string, order?: number): Scene
+  addScene(chapterId: string): Promise<Scene|void>
+  createScene(chapterId: string, sceneTitle: string, order?: number): Promise<Scene>
   reorderChapter(from: number, to: number): void
   reorderScene(chapterId: string, from: number, to: number): void
   setActiveChapter(chapter: Chapter): void
   setActiveScene(chapter: Chapter, scene: Scene): void
   updateChapter(chapter: Chapter): void
   updateScene(scene: Scene): void
+  deleteScene(chapterId: string, sceneId: string): void
   setViewMode(mode: ViewModes): void
 }
 

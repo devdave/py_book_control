@@ -85,7 +85,7 @@ class Book(Base):
         return session.scalars(stmt).one()
 
     def asdict(self, stripped=True):
-        data = dict(type="book", id=self.id, title=self.title)
+        data = dict(type="book", id=self.id, title=self.title, updated_on=self.updated_on, created_on=self.created_on)
         if stripped is False:
             data["chapters"] = [chapter.asdict() for chapter in self.chapters]
 
@@ -121,6 +121,8 @@ class Chapter(Base):
             title=self.title,
             order=self.order,
             words=self.words,
+            created_on=self.created_on,
+            updated_on=self.updated_on,
         )
         if stripped is False:
             data["notes"] = self.notes
@@ -234,7 +236,7 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 
 def connect():
-    engine = create_engine("sqlite:///test.sqlite3", echo=True)
+    engine = create_engine("sqlite:///test.sqlite3", echo=False)
     Base.metadata.create_all(engine, checkfirst=True)
 
     session_factory = sessionmaker(bind=engine)
