@@ -33,7 +33,7 @@ class Base(DeclarativeBase):
     )
 
     @classmethod
-    def Fetch_by_Id(cls, session:Session, fetch_id:int):
+    def Fetch_by_Id(cls, session: Session, fetch_id: int):
         stmt = select(cls).where(cls.id == fetch_id)
         return session.execute(stmt).scalars().one()
 
@@ -55,24 +55,21 @@ class Book(Base):
     )
 
     @classmethod
-    def Update(cls, session:Session, changeset:T.Dict[str, str]):
-
+    def Update(cls, session: Session, changeset: T.Dict[str, str]):
         if "id" not in changeset:
             raise ValueError("Missing Book's uid from changeset")
 
-        uid = changeset['id']
+        uid = changeset["id"]
 
         book = cls.Fetch_by_UID(session, uid)
 
-
-        SAFE_KEYS = ['title', 'notes']
+        SAFE_KEYS = ["title", "notes"]
         for safe in SAFE_KEYS:
             if safe in changeset:
                 setattr(book, safe, changeset[safe])
 
         session.commit()
         return True
-
 
     @classmethod
     def Fetch_All(cls, session: Session):
@@ -85,7 +82,13 @@ class Book(Base):
         return session.scalars(stmt).one()
 
     def asdict(self, stripped=True):
-        data = dict(type="book", id=self.id, title=self.title, updated_on=self.updated_on, created_on=self.created_on)
+        data = dict(
+            type="book",
+            id=self.id,
+            title=self.title,
+            updated_on=str(self.updated_on),
+            created_on=str(self.created_on),
+        )
         if stripped is False:
             data["chapters"] = [chapter.asdict() for chapter in self.chapters]
 
@@ -154,8 +157,7 @@ class Chapter(Base):
         session.commit()
 
     def update(self, chapter_data: dict[str, str]):
-
-        VALID = ['title', 'order', 'summary', 'notes']
+        VALID = ["title", "order", "summary", "notes"]
 
         for key, value in chapter_data.items():
             if key in VALID:
@@ -178,9 +180,16 @@ class Scene(Base):
 
     FMT_STR = "%y/%m/%d %H:%M:%S"
 
-
     def update(self, newScene: dict[str, str]):
-        VALID = ['title','order','summary','content','notes','location','characters']
+        VALID = [
+            "title",
+            "order",
+            "summary",
+            "content",
+            "notes",
+            "location",
+            "characters",
+        ]
         for key, value in newScene.items():
             if key in VALID:
                 setattr(self, key, value)
@@ -191,17 +200,15 @@ class Scene(Base):
         return len(cleaned.replace('",.!?', " ").split(" "))
 
     def asdict(self, stripped=False):
-
         data = dict(
             id=self.uid,
             type="scene",
             title=self.title,
             order=self.order,
             chapterId=self.chapter.uid,
-
             created_on=str(self.created_on),
             updated_on=str(self.updated_on),
-            words=self.words
+            words=self.words,
         )
 
         if stripped is False:
@@ -210,15 +217,12 @@ class Scene(Base):
             data["location"] = self.location
             data["characters"] = self.characters
 
-
-
         return data
 
     @classmethod
     def Fetch_by_uid(cls, session, scene_uid):
         stmt = select(cls).where(cls.uid == scene_uid)
         return session.scalars(stmt).one()
-
 
 
 @contextlib.contextmanager
@@ -232,8 +236,10 @@ def db_with():
     with Session(engine) as session:
         yield session
 
+
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
+
 
 def connect():
     engine = create_engine("sqlite:///test.sqlite3", echo=False)
