@@ -21,7 +21,7 @@ import {LeftPanel} from './LeftPanel'
 import {RightPanel} from './editor_panel';
 import {ContinuousBody} from './continuous_panel';
 
-import {type Chapter, type Scene, ViewModes} from './types'
+import {type Chapter, type Scene, SplitResponse, ViewModes} from './types'
 import APIBridge from "./lib/remote";
 
 
@@ -46,6 +46,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
     const [activeChapter, _setActiveChapter] = useState<Chapter | undefined>(undefined);
     const [activeScene, _setActiveScene] = useState<Scene | undefined>(undefined);
     const [viewMode, setViewMode] = useState<ViewModes>(ViewModes.LIST);
+
 
 
     const addChapter = useCallback(
@@ -78,25 +79,35 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
     )
 
     const createScene = useCallback(
-        async (chapterId: string, sceneTitle: string, position = -1) => {
+        async (chapterId: string, sceneTitle: string, position = -1, content = '') => {
 
 
             const newScene = await api.create_scene(chapterId, sceneTitle);
-
+            newScene.content = content;
+            if (position >= 0) {
+                newScene.order = position;
+            }
 
             _setChapters((prevChapters) =>
                 map(prevChapters, (chapter) => {
                     if (chapter.id === chapterId) {
-                        const scene = newScene; //createScene(chapter.id, sceneId, sceneTitle, chapter.scenes.length + 1)
-                        const updatedChapter: Chapter = {
-                            ...chapter,
-                            scenes: [...chapter.scenes, scene]
+
+                        let scenes = clone(chapter.scenes);
+                        if(position >= 0){
+                            scenes.splice(position, 0, newScene);
+                            scenes = scenes.map((element, idx)=>{
+                                element.order = idx;
+                                return element;
+                            });
+                        } else {
+                            scenes.push(newScene);
                         }
+                        chapter.scenes = scenes;
 
-                        _setActiveChapter(updatedChapter)
-                        _setActiveScene(scene)
+                        _setActiveChapter(chapter)
+                        _setActiveScene(newScene)
 
-                        return updatedChapter
+                        return chapter
                     }
 
                     return chapter
@@ -106,7 +117,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
         }, []);
 
     const addScene = useCallback(
-        async (chapterId: string | undefined): Promise<void|Scene> => {
+        async (chapterId: string | undefined): Promise<void | Scene> => {
 
             if (chapterId === undefined) {
                 console.log("Tried to add a scene when there isn't an activeChapter");
@@ -126,8 +137,16 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
 
         },
         []
-    )
+    );
+
+
     const getChapter = useCallback((chapterId: string) => find(chapters, ['id', chapterId]), [chapters])
+
+    const getStrippedChapters = useCallback(async () => {
+        const fetchedData: Chapter[] = await api.fetch_stripped_chapters();
+        return fetchedData;
+    }, [bookId]);
+
     const reorderChapter = useCallback(
         async (from: number, to: number) => {
             _setChapters((prevChapters) => {
@@ -161,8 +180,8 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                         const targetScene = nextScenes.splice(from, 1)[0];
                         nextScenes.splice(to, 0, targetScene);
 
-                        _setActiveScene((prevState)=> targetScene);
-                        const sortedScenes = nextScenes.map((old_scene, sidx)=>{
+                        _setActiveScene((prevState) => targetScene);
+                        const sortedScenes = nextScenes.map((old_scene, sidx) => {
                             old_scene.order = sidx;
                             return old_scene;
                         });
@@ -173,8 +192,6 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                             updated_on: new Date(Date.now()).toUTCString(),
                             scenes: sortedScenes
                         }
-
-                        _setActiveChapter((oldchap) => nextChapter)
 
                         api.reorder_scenes(sortedScenes).then();
 
@@ -187,7 +204,6 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                 })
             );
 
-            debugger;
         },
         []
     )
@@ -203,14 +219,24 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                 scene.summary = "";
             })
         }
+        const changeScene = activeScene !== undefined && activeChapter !== undefined && activeScene.chapterId === activeChapter.id;
+
+        const newChapters = await api.fetch_stripped_chapters();
+        _setChapters(oldchap=>newChapters);
+
         chapter = await api.fetch_chapter(chapter.id);
-        _setActiveChapter(chapter)
-        _setActiveScene(chapter.scenes[0])
+        chapter.updated_on = new Date(Date.now()).toUTCString();
+        _setActiveChapter(old_chapter=>chapter)
+
+        if(activeScene === undefined || activeScene.chapterId !== chapter.id ){
+            _setActiveScene(old_scene => chapter.scenes[0]);
+        }
+
     }, [])
 
     const setActiveScene = useCallback((chapter: Chapter, scene: Scene) => {
-        _setActiveChapter(chapter);
-        _setActiveScene(scene);
+        _setActiveChapter(old_chap=>chapter);
+        _setActiveScene(old_scene=>scene);
 
     }, []);
 
@@ -226,6 +252,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             }
 
             console.log("Would update chapter with ", chapter);
+            console.trace();
 
             _setChapters((prevChapters) =>
                 map(prevChapters, (prevChapter) => (prevChapter.id === authoritiveChapter.id ? authoritiveChapter : prevChapter))
@@ -243,7 +270,10 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
 
             const chapter = getChapter(scene.chapterId);
 
+            console.log("What the fuck: ", scene.id,scene.order, scene.title);
+            console.trace();
             const authoritiveScene = await api.update_scene(scene.id, scene);
+
             authoritiveScene.updated_on = new Date(Date.now()).toUTCString();
 
             if (!authoritiveScene) {
@@ -269,11 +299,11 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             if (response) {
                 const new_chap_date = new Date(Date.now()).toUTCString();
 
-                _setChapters((prevState)=>{
-                    return map(prevState, (prevChapter)=>{
-                        if(prevChapter.id == chapterId){
+                _setChapters((prevState) => {
+                    return map(prevState, (prevChapter) => {
+                        if (prevChapter.id == chapterId) {
                             prevChapter.updated_on = new Date(Date.now()).toUTCString();
-                            prevChapter.scenes = prevChapter.scenes.filter((existing)=>existing.id != sceneId);
+                            prevChapter.scenes = prevChapter.scenes.filter((existing) => existing.id != sceneId);
 
                         }
 
@@ -284,7 +314,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                 api.info("Failed to delete scene or got non-positive response!");
             }
         }
-    , []);
+        , []);
 
 
     const onToggleColorScheme = useCallback(() => toggleColorScheme(), [toggleColorScheme])
@@ -306,7 +336,10 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             updateChapter,
             updateScene,
             deleteScene,
-            setViewMode
+            setViewMode,
+            _setChapters,
+            _setActiveChapter,
+            _setActiveScene,
         }),
         [
             activeChapter,
@@ -320,7 +353,10 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             setActiveScene,
             updateChapter,
             updateScene,
-            setViewMode
+            setViewMode,
+            _setChapters,
+            _setActiveChapter,
+            _setActiveScene,
         ]
     );
 
@@ -380,11 +416,21 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
 
     }
 
-    if(!activeChapter){
+    if (!activeChapter) {
         return (
             <Title order={3}>There is no activeChapter</Title>
         )
     }
+
+    const sceneKeys = activeChapter.scenes.map((scene) => scene.id);
+
+    const superKey = sceneKeys.join();
+
+
+    const leftPanel = (
+        <LeftPanel key={`${activeChapter.id} ${activeChapter.updated_on} ${superKey}`}/>
+    )
+
 
     return (
         <BookContext.Provider value={bookContextValue}>
@@ -393,7 +439,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                     main: classes.main
                 }}
                 fixed
-                navbar={<LeftPanel key={`${activeChapter.id} ${activeChapter.updated_on} ${activeChapter.scenes.length}`}/>}
+                navbar={leftPanel}
                 header={
                     <Header height={60}>
                         <Group
