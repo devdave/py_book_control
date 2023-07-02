@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 
-import {type Chapter, type Scene, ViewModes} from './types'
+import {type Chapter, type Scene, SplitResponse, ViewModes} from './types'
 import APIBridge from "./lib/remote";
 
 interface BookContextValue {
@@ -11,7 +11,7 @@ interface BookContextValue {
   api: APIBridge
   addChapter(): void
   addScene(chapterId: string): Promise<Scene|void>
-  createScene(chapterId: string, sceneTitle: string, order?: number): Promise<Scene>
+  createScene(chapterId: string, sceneTitle: string, order?: number, content?: string): Promise<Scene>
   reorderChapter(from: number, to: number): void
   reorderScene(chapterId: string, from: number, to: number): void
   setActiveChapter(chapter: Chapter): void
@@ -20,6 +20,9 @@ interface BookContextValue {
   updateScene(scene: Scene): void
   deleteScene(chapterId: string, sceneId: string): void
   setViewMode(mode: ViewModes): void
+  _setChapters (chapters: Chapter[]):void,
+  _setActiveChapter (chapter: Chapter): void,
+  _setActiveScene(scene: Scene): void,
 }
 
 // @ts-ignore
