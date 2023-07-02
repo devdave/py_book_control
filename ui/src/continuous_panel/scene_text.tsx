@@ -3,8 +3,9 @@ import {useEffect, useState} from "react";
 import {Button, createStyles, Divider, Flex, Skeleton, Text, Textarea} from "@mantine/core";
 import {useDebouncedEffect} from "../lib/useDebouncedEffect";
 import {useBookContext} from "../Book.context";
-import {Scene} from "../types";
+import {Chapter, Scene} from "../types";
 import {modals} from "@mantine/modals";
+import {clone, map} from "lodash";
 
 const useStyles = createStyles((theme) => ({
     greedytext: {
@@ -22,7 +23,18 @@ const compile_scene2md = (scene: Scene) => {
 
 
 export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
-    const {api, activeScene, activeChapter, updateScene, createScene, reorderScene, deleteScene} = useBookContext();
+    const {
+        api,
+        activeScene,
+        activeChapter,
+        setActiveChapter,
+        setActiveScene,
+        updateScene,
+        createScene,
+        reorderScene,
+        deleteScene,
+        _setChapters,
+    } = useBookContext();
     const [sceneLoaded, setSceneLoaded] = useState(false);
     const [sceneMD, setSceneMD] = useState("");
 
@@ -37,17 +49,17 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
     });
 
     const scanDuplicateScenes = () => {
-        const sceneList: { [key: string]:boolean } = {};
+        const sceneList: { [key: string]: boolean } = {};
 
-        if(activeChapter){
-            activeChapter.scenes.map((scene, sdx)=>{
+        if (activeChapter) {
+            activeChapter.scenes.map((scene, sdx) => {
 
-                if(scene == undefined || scene == null){
+                if (scene == undefined || scene == null) {
                     console.error("dupe!", activeChapter.scenes);
                     throw new Error("Founded an empty slot in scenes");
                 }
 
-                if(sceneList[scene.id] !== undefined){
+                if (sceneList[scene.id] !== undefined) {
                     console.error("Duplicate scene detected!", activeChapter.scenes);
                     throw Error("Integrity error!");
                 } else {
@@ -59,43 +71,45 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
     }
 
     const doSplit = async (response: any) => {
-
         console.group("doSplit");
 
-        let active = activeScene;
 
-        if (active) {
-            active.content = response['content'];
-            updateScene(active);
-            console.log("Updated current scene");
+        if (activeScene == undefined || activeChapter == undefined) {
+            //These are both undefined
+            console.error("Cannot split scenes when there is no active scene or chapter.");
+            throw new Error("Cannot split scenes when there is no active scene or chapter.");
         }
+        const wasActiveChapter = clone(activeChapter);
 
-        const priorLen = activeChapter ? activeChapter.scenes.length + 1 :
-            activeScene ? activeScene.order + 1 : -1
+        const activeSceneId = activeScene.id;
+        const activeChapId = activeChapter.id;
 
-        if(priorLen == -1) {
-            console.error("No activeChapter on split, cannot proceeded!", activeChapter, activeScene);
-            console.groupEnd();
-            return;
-        }
+        activeScene.content = response['content'];
+        await api.update_scene(activeSceneId, activeScene);
+
+        const newScene = await api.create_scene(activeChapId, response['split_title']);
+
+        newScene.order = activeScene.order + 1;
+        newScene.content = response['split_content'];
+
+        let newScenes = clone(activeChapter.scenes);
+        newScenes.splice(newScene.order, 0, newScene);
+        const renumbered = map(newScenes, (newScene, idx)=>{
+            newScene.order = idx;
+            return newScene;
+        })
 
 
-        const new_scene = await createScene(
-            scene.chapterId,
-            response['split_title'],
-        );
-        console.log("created new scene ", new_scene.id, new_scene.title);
-        scanDuplicateScenes();
+        await api.reorder_scenes(renumbered);
+        await api.update_scene(newScene.id, newScene);
 
-        new_scene.content = response['split_content'];
 
-        // @ts-ignore
-        console.log("Reordering", new_scene.chapterId, new_scene.order, activeScene.order+1);
-        // @ts-ignore
-        reorderScene(new_scene.chapterId, new_scene.order, activeScene.order+1);
-        scanDuplicateScenes();
+        setActiveChapter(wasActiveChapter);
+        setActiveScene(wasActiveChapter, newScene);
 
-        console.groupEnd();
+        console.groupEnd()
+
+
     }
 
 
@@ -175,6 +189,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                 height: "100%"
             }}
         >
+            <Text>{scene.order}</Text>
             <textarea
                 style={{
                     height: "100%",
@@ -210,8 +225,8 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                     {...form.getInputProps("summary")}
                 />
                 <Button
-                    onClick={()=>deleteScene(scene.chapterId, scene.id) }
-                    >Delete Scene</Button>
+                    onClick={() => deleteScene(scene.chapterId, scene.id)}
+                >Delete Scene</Button>
 
             </Flex>
         </Flex>
