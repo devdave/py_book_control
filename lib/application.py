@@ -24,7 +24,6 @@ class BCApplication:
                 session.commit()
                 self.book_id = new_book.id
 
-
     def get_book(self, session: models.Session) -> models.Book:
         return models.Book.Fetch_by_Id(session, self.book_id)
 
@@ -32,7 +31,7 @@ class BCApplication:
         self.main_window = main_window
 
     def fetch_chapters(self, session):
-        return self.get_book(session).chapters
+        return [chapter for chapter in self.get_book(session).chapters]
 
     @contextmanager
     def get_db(self):
