@@ -46,3 +46,11 @@ export enum ViewModes {
   FLOW= 'flow',
   STATS= 'stats',
 }
+
+
+export interface SplitResponse {
+  content: string
+  split_content: string
+  title: string
+  split_title: string
+}
