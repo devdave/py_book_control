@@ -131,8 +131,10 @@ export const LeftPanel: FC<LeftPanelProps> = () => {
                                                     variant='filled'
                                                     {...draggable.draggableProps}
                                                 >
-                                                    {map(chapter.scenes, (scene) => {
-                                                        const isSceneActive = scene.id === activeScene?.id
+                                                    {chapter.scenes
+                                                        .sort((a,b)=>a.order-b.order)
+                                                        .map((scene)=>{
+                                                            const isSceneActive = scene.id === activeScene?.id
 
                                                         return (
                                                             <NavLink
