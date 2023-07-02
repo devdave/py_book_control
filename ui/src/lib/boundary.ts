@@ -46,9 +46,13 @@ class Boundary {
 
     public remote(remoteName: string, ...args: any[]): Promise<any> {
 
+        console.group(remoteName);
         this.info(`Calling ${remoteName} with:`, args);
         console.trace();
-        return this._remote(remoteName, ...args);
+        const retval = this._remote(remoteName, ...args);
+        console.log("Got ", retval);
+        console.groupEnd();
+        return retval;
 
     }
 
