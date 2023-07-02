@@ -62,7 +62,7 @@ class BCAPI:
 
     def fetch_chapters(self):
         with self.app.get_db() as session:
-            return [chapter.asdict() for chapter in self.app.fetch_chapters(session).chapters]
+            return [chapter.asdict() for chapter in self.app.fetch_chapters(session)]
 
     def fetch_chapter(self, chapter_id: str):
         with self.app.get_db() as session:
