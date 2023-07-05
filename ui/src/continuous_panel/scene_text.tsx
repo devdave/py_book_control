@@ -48,28 +48,6 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
         }
     });
 
-    const scanDuplicateScenes = () => {
-        const sceneList: { [key: string]: boolean } = {};
-
-        if (activeChapter) {
-            activeChapter.scenes.map((scene, sdx) => {
-
-                if (scene == undefined || scene == null) {
-                    console.error("dupe!", activeChapter.scenes);
-                    throw new Error("Founded an empty slot in scenes");
-                }
-
-                if (sceneList[scene.id] !== undefined) {
-                    console.error("Duplicate scene detected!", activeChapter.scenes);
-                    throw Error("Integrity error!");
-                } else {
-                    sceneList[scene.id] = true;
-                }
-
-            })
-        }
-    }
-
     const doSplit = async (response: any) => {
         console.group("doSplit");
 
