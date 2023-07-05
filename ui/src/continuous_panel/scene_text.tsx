@@ -134,7 +134,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                         </Text>
                     ),
                     labels: {confirm: "Do split", cancel: "Undo/remove second title"},
-                    onConfirm: () => doSplit(response).then(),
+                    onConfirm: () => doSplit(response).then(()=>{form.resetDirty()}),
                     onCancel: () => console.log("Split cancelled!")
                 });
 
