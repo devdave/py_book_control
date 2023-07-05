@@ -1,23 +1,18 @@
 import {useForm} from "@mantine/form";
 import {useEffect, useState} from "react";
-import {Button, createStyles, Divider, Flex, Skeleton, Text, Textarea} from "@mantine/core";
+import {Button, createStyles, Divider, Flex, Indicator, Skeleton, Text, Textarea} from "@mantine/core";
 import {useDebouncedEffect} from "../lib/useDebouncedEffect";
 import {useBookContext} from "../Book.context";
 import {Chapter, Scene} from "../types";
 import {modals} from "@mantine/modals";
 import {clone, map} from "lodash";
 
-const useStyles = createStyles((theme) => ({
-    greedytext: {
-        height: "80vh"
-    }
-}));
-
 interface SceneTextProps {
     scene: Scene
 }
 
 const compile_scene2md = (scene: Scene) => {
+    let content = (scene.content != undefined) ? scene.content : "";
     return `## ${scene.title}\n\n${scene.content}`;
 }
 
@@ -30,15 +25,11 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
         setActiveChapter,
         setActiveScene,
         updateScene,
-        createScene,
-        reorderScene,
         deleteScene,
-        _setChapters,
     } = useBookContext();
     const [sceneLoaded, setSceneLoaded] = useState(false);
     const [sceneMD, setSceneMD] = useState("");
 
-    const {classes} = useStyles();
 
     const form = useForm({
         initialValues: {
@@ -72,7 +63,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
         let newScenes = clone(activeChapter.scenes);
         newScenes.splice(newScene.order, 0, newScene);
-        const renumbered = map(newScenes, (newScene, idx)=>{
+        const renumbered = map(newScenes, (newScene, idx) => {
             newScene.order = idx;
             return newScene;
         })
@@ -80,7 +71,6 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
         await api.reorder_scenes(renumbered);
         await api.update_scene(newScene.id, newScene);
-
 
         setActiveChapter(wasActiveChapter);
         setActiveScene(wasActiveChapter, newScene);
@@ -160,6 +150,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
             );
             console.log("Got safe content", response['markdown']);
             setSceneMD(prev => response['markdown']);
+            form.resetDirty();
             return response['markdown'];
         }
 
@@ -184,7 +175,18 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                 height: "100%"
             }}
         >
-            <Text>{scene.order}</Text>
+            <Indicator
+                color="red"
+                position="top-start"
+                processing
+                disabled={!form.isDirty("content")}
+                style={{
+                    height: "100%",
+                    width: "100%",
+                    boxSizing: "border-box",
+
+                }}
+            >
             <textarea
                 style={{
                     height: "100%",
@@ -196,35 +198,56 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
                 {...form.getInputProps("content")}
             />
+            </Indicator>
+
             <Divider orientation="vertical"/>
             <Flex
                 direction="column"
                 style={{height: "100%"}}
             >
                 <label>Notes</label>
-                <textarea
-                    autoCapitalize="sentences"
+                <Indicator
+                    processing
+                    color="red"
+                    disabled={!form.isDirty('notes')}
                     style={{
-                        height: "40%",
-                        flexGrow: 1
-                    }}
-                    {...form.getInputProps("notes")}
-                />
+                            height: "40%",
+                            flexGrow: 1
+                        }}
+                >
+                    <textarea
+                        autoCapitalize="sentences"
+                        style={{
+                            height: "100%"
+                        }}
+                        {...form.getInputProps("notes")}
+                    />
+                </Indicator>
+
                 <label>Summary</label>
-                <textarea
-                    autoCapitalize="sentences"
+                <Indicator
+                    color="red"
+                    processing
+                    disabled={!form.isDirty("summary")}
                     style={{
-                        height: "40%",
-                        flexGrow: 1
-                    }}
-                    {...form.getInputProps("summary")}
-                />
+                            height: "40%",
+                            flexGrow: 1
+                        }}
+                    >
+                    <textarea
+                        autoCapitalize="sentences"
+                        style={{
+                            height: "100%"
+
+                        }}
+                        {...form.getInputProps("summary")}
+                    />
+                </Indicator>
                 <Button
                     onClick={() => deleteScene(scene.chapterId, scene.id)}
                 >Delete Scene</Button>
 
             </Flex>
         </Flex>
-
     )
 }
