@@ -64,14 +64,16 @@ export const ContinuousBody = ({}) => {
     // @ts-ignore
     return (
         <div>
+            <div
+                    style={{
+                        position: "sticky",
+                        top: "0",
+                    }}
+            >
+                <TextInput
+                    {...form.getInputProps('title')}/>
+            </div>
 
-            <TextInput
-                style={{
-                    position: "sticky",
-                    top: "0",
-                }}
-
-                {...form.getInputProps('title')}/>
 
             {activeChapter.scenes.map((scene:Scene)=>
                 <Paper key={scene.id}
