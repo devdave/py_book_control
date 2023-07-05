@@ -71,9 +71,9 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
         await api.reorder_scenes(renumbered);
         await api.update_scene(newScene.id, newScene);
+        const updatedChapter = await api.fetch_chapter(wasActiveChapter.id);
 
-        setActiveChapter(wasActiveChapter);
-        setActiveScene(wasActiveChapter, newScene);
+        setActiveScene(updatedChapter, newScene);
 
         console.groupEnd()
 
@@ -95,7 +95,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                         </Text>
                     ),
                     labels: {confirm: "Delete scene!", cancel: "Do not delete scene!"},
-                    onConfirm: () => {deleteScene(scene.chapterId, scene.id)},
+                    onConfirm: () => { deleteScene(scene.chapterId, scene.id) },
 
                 })
                 return;
