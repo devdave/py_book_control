@@ -115,7 +115,7 @@ class SceneProcessor2:
 
         if self.status == 'split':
             response['split_title'] = self.split_title
-            response['split_content'] = "\n".join(self.split_content)
+            response['split_content'] = ("\n".join(self.split_content)).strip()
             response['markdown'] = self.compile(self.title, response['content'])
 
 
