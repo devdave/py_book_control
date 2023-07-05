@@ -7,7 +7,7 @@ interface BookContextValue {
   activeChapter: Chapter | undefined
   activeScene: Scene | undefined
   chapters: Chapter[] | undefined
-  viewMode: ViewModes
+  viewMode: string
   api: APIBridge
   addChapter(): void
   addScene(chapterId: string): Promise<Scene|void>
@@ -19,7 +19,7 @@ interface BookContextValue {
   updateChapter(chapter: Chapter): void
   updateScene(scene: Scene): void
   deleteScene(chapterId: string, sceneId: string): void
-  setViewMode(mode: ViewModes): void
+  setViewMode(mode: string): void
   _setChapters (chapters: Chapter[]):void,
   _setActiveChapter (chapter: Chapter): void,
   _setActiveScene(scene: Scene): void,

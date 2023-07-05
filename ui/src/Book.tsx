@@ -45,7 +45,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
     const [chapters, _setChapters] = useState<Chapter[]>([]);
     const [activeChapter, _setActiveChapter] = useState<Chapter | undefined>(undefined);
     const [activeScene, _setActiveScene] = useState<Scene | undefined>(undefined);
-    const [viewMode, setViewMode] = useState<ViewModes>(ViewModes.LIST);
+    const [viewMode, setViewMode] = useState<"list"|"flow">("list");
 
 
 
@@ -156,6 +156,8 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                 // reorder the chapter array
                 nextChapters.splice(to, 0, nextChapters.splice(from, 1)[0])
 
+                api.save_reordered_chapters(chapters).then();
+
                 // iterate over each item and overwrite its new sequence
                 return map(nextChapters, (chapter, chapterIdx) => ({
                     ...chapter,
@@ -163,7 +165,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                 }))
             });
 
-            const response = await api.save_reordered_chapters(chapters);
+
 
         },
         []
