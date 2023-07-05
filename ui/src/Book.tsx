@@ -10,7 +10,7 @@ import {
     useMantineColorScheme
 } from '@mantine/core'
 import {IconMoonStars, IconSun} from '@tabler/icons-react'
-import {clone, find, forEach, map} from 'lodash'
+import {assignWith, clone, find, forEach, map} from 'lodash'
 
 import {useCallback, useEffect, useMemo, useState} from 'react'
 
@@ -238,7 +238,10 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
 
     const setActiveScene = useCallback((chapter: Chapter, scene: Scene) => {
         _setActiveChapter(old_chap=>chapter);
-        _setActiveScene(old_scene=>scene);
+        if(scene){
+            _setActiveScene(old_scene=>scene);
+        }
+
 
     }, []);
 
@@ -297,7 +300,17 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
 
     const deleteScene = useCallback(
         async (chapterId: string, sceneId: string) => {
+
+            const kill_scene = await api.fetch_scene(sceneId);
+
+            const prior_scene_id = (kill_scene.order > 0 && activeChapter != undefined)
+                ? activeChapter.scenes[kill_scene.order-1].id
+                : undefined;
+
+            const prior_scene = prior_scene_id ? await api.fetch_scene(prior_scene_id) : undefined;
             const response = await api.delete_scene(chapterId, sceneId);
+            const fullChapter = await api.fetch_chapter(chapterId);
+
             if (response) {
                 const new_chap_date = new Date(Date.now()).toUTCString();
 
@@ -307,11 +320,21 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                             prevChapter.updated_on = new Date(Date.now()).toUTCString();
                             prevChapter.scenes = prevChapter.scenes.filter((existing) => existing.id != sceneId);
 
+                            if(prior_scene){
+                                setActiveScene(fullChapter, prior_scene);
+                            } else {
+                                setActiveChapter(fullChapter);
+                            }
+                            return fullChapter;
+
                         }
 
+
                         return prevChapter;
-                    })
+                    });
                 });
+
+                console.log(`Deleted ${sceneId}...hopefully`);
             } else {
                 api.info("Failed to delete scene or got non-positive response!");
             }
