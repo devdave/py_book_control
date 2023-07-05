@@ -94,6 +94,23 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
     useDebouncedEffect(() => {
 
         async function reprocessMDnSave() {
+
+            if(form.values['content'] != undefined && form.values['content'].trim().length == 0){
+                modals.openConfirmModal({
+                    modalId: "shouldDeleteScene",
+                    title: "Scene body empty",
+                    children: (
+                        <Text size="sm">
+                            The scene's content body is empty, do you want to delete this scene?
+                        </Text>
+                    ),
+                    labels: {confirm: "Delete scene!", cancel: "Do not delete scene!"},
+                    onConfirm: () => {deleteScene(scene.chapterId, scene.id)},
+
+                })
+                return;
+            }
+
             const response = await api.process_scene_markdown(scene.id, form.values['content']);
 
             if (response.status == "error") {
