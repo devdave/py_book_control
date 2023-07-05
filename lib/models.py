@@ -213,6 +213,7 @@ class Scene(Base):
 
         if stripped is False:
             data["summary"] = self.summary
+            data["notes"] = self.notes
             data["content"] = self.content
             data["location"] = self.location
             data["characters"] = self.characters
