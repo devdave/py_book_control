@@ -4,7 +4,7 @@ import random
 import contextlib
 import typing as T
 import datetime as DT
-from sqlalchemy import select, ForeignKey, create_engine, DateTime, func
+from sqlalchemy import select, update, ForeignKey, create_engine, DateTime, func
 
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -31,6 +31,12 @@ class Base(DeclarativeBase):
     updated_on: Mapped[DT.datetime] = mapped_column(
         server_default=func.now(), onupdate=func.now()
     )
+
+    @classmethod
+    def Touch(cls, session: Session, fetch_id: int):
+        stmt = update(cls).where(cls.id == fetch_id).values()
+        session.execute(stmt)
+
 
     @classmethod
     def Fetch_by_Id(cls, session: Session, fetch_id: int):
