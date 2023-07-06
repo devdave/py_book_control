@@ -18,12 +18,13 @@ import {type FC, useCallback} from 'react'
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
 
 import {useBookContext} from './Book.context'
-import {ViewModes} from "./types";
+import {ChapterIndex, ViewModes} from "./types";
 
 interface LeftPanelProps {
+    index: ChapterIndex[]
 }
 
-export const LeftPanel: FC<LeftPanelProps> = () => {
+export const LeftPanel: FC<LeftPanelProps> = ({index}) => {
     const theme = useMantineTheme()
     const {
         activeChapter,
@@ -46,7 +47,7 @@ export const LeftPanel: FC<LeftPanelProps> = () => {
             {/*<Title order={3}>Chapters</Title>*/}
 
             <SegmentedControl
-                value={ViewModes[viewMode]}
+                value={viewMode}
                 onChange={setViewMode}
                 data={[
                     {
@@ -95,7 +96,7 @@ export const LeftPanel: FC<LeftPanelProps> = () => {
                                 {...droppable.droppableProps}
                                 ref={droppable.innerRef}
                             >
-                                {map(chapters, (chapter, chapterIdx) => {
+                                {map(index, (chapter, chapterIdx) => {
                                     const isChapterActive = chapter.id === activeChapter?.id
 
                                     return (

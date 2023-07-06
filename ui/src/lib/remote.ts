@@ -68,9 +68,21 @@ class APIBridge {
     }
     
     
+    async fetch_chapter_index(chapter_id:string) {
+        
+        return await this.boundary.remote("fetch_chapter_index", chapter_id);
+    }
+    
+    
     async update_chapter(chapter_id:string, chapter_data:any) {
         
         return await this.boundary.remote("update_chapter", chapter_id, chapter_data);
+    }
+    
+    
+    async reorder_chapter(from_pos:any, to_pos:any) {
+        
+        return await this.boundary.remote("reorder_chapter", from_pos, to_pos);
     }
     
     
@@ -80,9 +92,9 @@ class APIBridge {
     }
     
     
-    async create_chapter(chapter_name:string) {
+    async create_chapter(new_chapter:any) {
         
-        return await this.boundary.remote("create_chapter", chapter_name);
+        return await this.boundary.remote("create_chapter", new_chapter);
     }
     
     
@@ -116,15 +128,21 @@ class APIBridge {
     }
     
     
-    async create_scene(chapter_uid:string, scene_title:string) {
+    async create_scene(chapterId:any, title:any, position:any = -1) {
         
-        return await this.boundary.remote("create_scene", chapter_uid, scene_title);
+        return await this.boundary.remote("create_scene", chapterId, title, position);
     }
     
     
     async delete_scene(chapter_uid:string, scene_uid:string) {
         
         return await this.boundary.remote("delete_scene", chapter_uid, scene_uid);
+    }
+    
+    
+    async reorder_scene(chapterId:string, from_pos:any, to_pos:any) {
+        
+        return await this.boundary.remote("reorder_scene", chapterId, from_pos, to_pos);
     }
     
     

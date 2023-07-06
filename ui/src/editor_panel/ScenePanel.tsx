@@ -5,8 +5,9 @@ import TextSceneForm from './scene_forms/TextSceneForm';
 
 import {MainSceneForm} from './scene_forms/MainSceneForm'
 
-import {type Scene} from "src/types";
+import {type Scene} from "../types";
 import {useBookContext} from "../Book.context";
+import {useQuery} from "@tanstack/react-query";
 
 const useStyles = createStyles((theme) => ({
     tabPanel: {
@@ -15,28 +16,21 @@ const useStyles = createStyles((theme) => ({
 }))
 
 export interface ScenePanelProps {
-    scene: Scene
+    indexedScene: Scene
 }
 
-export const ScenePanel: FC<ScenePanelProps> = ({scene}) => {
-    const {api} = useBookContext();
+export const ScenePanel: FC<ScenePanelProps> = ({indexedScene}) => {
+    const {api, bookId} = useBookContext();
     const {classes} = useStyles()
     const [sceneLoaded, setSceneLoaded] = useState(false);
     const [freshScene, setFreshScene] = useState<Scene | undefined>(undefined);
 
-    useEffect(
-        () => {
-            if (!sceneLoaded) {
-                api.fetch_scene(scene.id).then((data) => {
-                    setFreshScene(data);
-                    setSceneLoaded(true);
-                });
-            }
-        }
-    )
+    const {data:scene, isLoading:sceneIsLoading} = useQuery({
+        queryFn: () => api.fetch_scene(indexedScene.id),
+        queryKey: ['book', bookId, 'chapter', indexedScene.chapterId, 'scene', indexedScene.id]
+    })
 
-
-    if (!sceneLoaded) {
+    if (sceneIsLoading) {
         return (
             <h2>Loading scene</h2>
         )
@@ -81,7 +75,7 @@ export const ScenePanel: FC<ScenePanelProps> = ({scene}) => {
                 </Tabs.Tab>
             </Tabs.List>
             <Tabs.Panel value='content'>
-                <MainSceneForm scene={freshScene}/>
+                <MainSceneForm scene={scene}/>
             </Tabs.Panel>
             <Tabs.Panel value='summary'>
                 <TextSceneForm scene={scene} field="summary" label="Summary"/>

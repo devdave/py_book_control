@@ -7,8 +7,6 @@ from .application import BCApplication
 from . import models
 from .log_helper import getLogger
 
-log = getLogger(__name__)
-
 class BCAPI:
     FILE_TYPES: T.Tuple[str] = ("Database file (*.sqlite;*.sqlite3)",)
 
@@ -66,8 +64,12 @@ class BCAPI:
 
     def fetch_chapter(self, chapter_id: str):
         with self.app.get_db() as session:
-            session = self.app.Session()
             return models.Chapter.Fetch_by_uid(session, chapter_id).asdict()
+
+    def fetch_chapter_index(self, chapter_id: str):
+        with self.app.get_db() as session:
+            return models.Chapter.Fetch_by_uid(session, chapter_id).asdict(True)
+
 
     def update_chapter(self, chapter_id: str, chapter_data: dict[str, str]):
         with self.app.get_db() as session:
@@ -76,13 +78,21 @@ class BCAPI:
             session.commit()
             return chapter.asdict()
 
+    def reorder_chapter(self, from_pos, to_pos):
+        with self.app.get_db() as session:
+            book = self.get_current_book()
+            floating = book.chapters.pop(from_pos)
+            book.chapters.insert(to_pos, floating)
+            book.chapters.reorder()
+            session.commit()
+
     def fetch_stripped_chapters(self):
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_Id(session, self.app.book_id)
             return [chapter.asdict(stripped=True) for chapter in book.chapters]
 
-    def create_chapter(self, chapter_name: str):
-        chapter = models.Chapter(title=chapter_name, uid=models.generate_id(12))
+    def create_chapter(self, new_chapter: dict):
+        chapter = models.Chapter(title=new_chapter['title'], uid=models.generate_id(12))
 
         with self.app.get_db() as session:
             book = self.app.get_book(session)
@@ -150,14 +160,31 @@ class BCAPI:
 
             return scene.asdict()
 
-    def create_scene(self, chapter_uid: str, scene_title: str):
+    def create_scene(self, chapterId, title, position = -1):
+
         with self.app.get_db() as session:
-            chapter = models.Chapter.Fetch_by_uid(session, chapter_uid)
-            scene = models.Scene(title=scene_title)
-            chapter.scenes.append(scene)
+            chapter = models.Chapter.Fetch_by_uid(session, chapterId)
+            scene = models.Scene(title=title)
+            if position >= 0:
+                chapter.scenes.insert(position, scene)
+                chapter.scenes.reorder()
+            else:
+                chapter.scenes.append(scene)
+
             session.add(scene)
             session.commit()
+
+
+
+            scenes = chapter.scenes[:]
+
+
+
+
             return scene.asdict()
+
+
+
 
     def delete_scene(self, chapter_uid: str, scene_uid: str):
         try:
@@ -172,6 +199,13 @@ class BCAPI:
         except models.NoResultFound:
             raise ValueError("Scene was already deleted");
 
+    def  reorder_scene(self, chapterId: str, from_pos, to_pos):
+        with self.app.get_db() as session:
+            chapter = models.Chapter.Fetch_by_uid(session, chapterId)
+            floating = chapter.scenes.pop(from_pos)
+            chapter.scenes.insert(to_pos, floating)
+            session.commit()
+
     def reorder_scenes(self, new_order:[models.Scene]):
         with self.app.get_db() as session:
             for authority in new_order:
@@ -179,9 +213,11 @@ class BCAPI:
                 record.order = int(authority['order'])
                 chapterId = record.chapter.id
 
+            models.Chapter.Touch(session, chapterId)
             session.commit()
 
             data = models.Chapter.Fetch_by_Id(session, chapterId).asdict()
+
 
         return data['scenes']
 

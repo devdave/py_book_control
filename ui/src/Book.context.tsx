@@ -1,28 +1,31 @@
 import { createContext, useContext } from 'react'
 
-import {type Chapter, type Scene, SplitResponse, ViewModes} from './types'
+import {type Chapter, type ChapterIndex, type Scene, type SceneIndex} from './types'
 import APIBridge from "./lib/remote";
 
 interface BookContextValue {
-  activeChapter: Chapter | undefined
-  activeScene: Scene | undefined
-  chapters: Chapter[] | undefined
+  index: Chapter[]
+  bookId: string | undefined
+  activeChapter: Chapter | ChapterIndex | undefined
+  activeScene: Scene | SceneIndex | undefined
+  chapters: Chapter[] | ChapterIndex[] | undefined
   viewMode: string
   api: APIBridge
   addChapter(): void
   addScene(chapterId: string): Promise<Scene|void>
-  createScene(chapterId: string, sceneTitle: string, order?: number, content?: string): Promise<Scene>
+  createScene(chapterId: string, sceneTitle: string, order?: number, content?: string): Promise<void>
   reorderChapter(from: number, to: number): void
   reorderScene(chapterId: string, from: number, to: number): void
-  setActiveChapter(chapter: Chapter): void
-  setActiveScene(chapter: Chapter, scene: Scene): void
+  setActiveChapter(chapter: Chapter|ChapterIndex|undefined): void
+  setActiveScene(chapter: ChapterIndex | Chapter | undefined, scene: SceneIndex | Scene | undefined): void
   updateChapter(chapter: Chapter): void
   updateScene(scene: Scene): void
   deleteScene(chapterId: string, sceneId: string): void
-  setViewMode(mode: string): void
+  fetchScene(sceneId: string): Promise<Scene>
+  setViewMode(mode: "flow"|"list"): void
   _setChapters (chapters: Chapter[]):void,
-  _setActiveChapter (chapter: Chapter): void,
-  _setActiveScene(scene: Scene): void,
+  _setActiveChapter (chapter: Chapter|ChapterIndex|undefined): void,
+  _setActiveScene(scene: Scene|SceneIndex|undefined): void,
 }
 
 // @ts-ignore

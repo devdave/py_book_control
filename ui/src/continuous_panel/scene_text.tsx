@@ -6,42 +6,66 @@ import {useBookContext} from "../Book.context";
 import {Chapter, Scene} from "../types";
 import {modals} from "@mantine/modals";
 import {clone, map} from "lodash";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 
 interface SceneTextProps {
     scene: Scene
 }
 
 const compile_scene2md = (scene: Scene) => {
-    let content = (scene.content != undefined) ? scene.content : "";
-    return `## ${scene.title}\n\n${scene.content}`;
+    if(scene){
+        let content = (scene.content != undefined) ? scene.content : "";
+        return `## ${scene.title}\n\n${scene.content}`;
+    } else {
+        return "Loading..."
+    }
+
 }
 
 
 export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
     const {
         api,
+        bookId,
         activeScene,
         activeChapter,
         setActiveChapter,
         setActiveScene,
         updateScene,
         deleteScene,
+        fetchScene
     } = useBookContext();
-    const [sceneLoaded, setSceneLoaded] = useState(false);
+
+
     const [sceneMD, setSceneMD] = useState("");
+
+    const queryClient = useQueryClient();
+
+    const changeScene = useMutation({
+        mutationFn: ({scene}:{scene:Scene})=> api.update_scene(scene.id, scene),
+        mutationKey: ['book', bookId, 'chapter', scene.chapterId],
+        onSuccess: (response)=>{
+            console.log(response);
+            queryClient.invalidateQueries(['book', bookId, 'index']);
+            queryClient.invalidateQueries(['book', bookId, 'chapter', scene.chapterId]);
+        }
+    })
 
 
     const form = useForm({
         initialValues: {
             content: compile_scene2md(scene),
-            notes: scene.notes,
-            summary: scene.summary,
+            notes: scene ? scene.notes : 'STOP! failed to load...',
+            summary: scene ? scene.summary : 'STOP! failed to load...',
         }
     });
+
+
 
     const doSplit = async (response: any) => {
         console.group("doSplit");
 
+        form.reset()
 
         if (activeScene == undefined || activeChapter == undefined) {
             //These are both undefined
@@ -54,7 +78,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
         const activeChapId = activeChapter.id;
 
         activeScene.content = response['content'];
-        await api.update_scene(activeSceneId, activeScene);
+        await api.update_scene( activeSceneId, activeScene);
 
         const newScene = await api.create_scene(activeChapId, response['split_title']);
 
@@ -73,8 +97,13 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
         await api.update_scene(newScene.id, newScene);
         const updatedChapter = await api.fetch_chapter(wasActiveChapter.id);
 
-        setActiveScene(updatedChapter, newScene);
 
+
+        await queryClient.invalidateQueries({queryKey:['book', bookId, 'index']});
+        await queryClient.invalidateQueries({queryKey:['book', bookId, 'chapter', activeChapId]});
+        await queryClient.invalidateQueries({queryKey:['book', bookId, 'scene', activeSceneId]});
+
+        setActiveScene(updatedChapter, newScene);
         console.groupEnd()
 
 
@@ -142,12 +171,12 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                     summary: form.values['summary'],
                 }
 
-            updateScene(
-                {
-                    ...scene,
-                    ...new_scene
-                }
-            );
+            // @ts-ignore
+            changeScene.mutate({scene_id:new_scene.id, scene:new_scene});
+            setSceneMD(prev => response['markdown']);
+            form.resetDirty();
+            return response['markdown'];
+
             console.log("Got safe content", response['markdown']);
             setSceneMD(prev => response['markdown']);
             form.resetDirty();
@@ -162,6 +191,11 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
     }, [form.values], {delay: 1000, runOnInitialize: false});
 
+    if(scene === undefined){
+        return (
+            <Skeleton height={100} mt={6} width="100%" radius="xl"/>
+        )
+    }
 
     return (
         <Flex

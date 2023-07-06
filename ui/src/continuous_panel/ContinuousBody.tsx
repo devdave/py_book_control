@@ -1,19 +1,31 @@
 import {Chapter, type Scene} from "../types";
 import {useDebouncedEffect} from "../lib/useDebouncedEffect";
 
-import {Button, Center, Paper, TextInput, Title} from "@mantine/core";
-import {useEffect, useRef} from "react";
+import {Button, Center, Paper, TextInput, Text, Title} from "@mantine/core";
+import {useEffect, useRef, useState} from "react";
 import {SceneText} from "./scene_text";
 import {useBookContext} from "../Book.context";
 import {useForm} from "@mantine/form";
+import {useQuery} from "@tanstack/react-query";
 
 
 export const ContinuousBody = ({}) => {
 
 
-
-    const {activeChapter, activeScene, addScene, updateChapter} = useBookContext();
+    const {api, bookId , activeChapter, activeScene, addScene, updateChapter} = useBookContext();
     const paperRefs = useRef<Record<string, HTMLDivElement>>({});
+
+    if(activeChapter == undefined){
+        throw Error("Data integrity issue, activechapter is not defined");
+        return
+    }
+
+    // @ts-ignore
+    const {data:chapter, isLoading: chapterIsLoading} = useQuery({
+        queryFn: () => api.fetch_chapter(activeChapter.id),
+        queryKey: ['book', bookId, 'chapter', activeChapter?.id]
+    })
+
 
     const form = useForm({
         initialValues: {
@@ -27,11 +39,11 @@ export const ContinuousBody = ({}) => {
     useDebouncedEffect(()=>{
         async function updateChapterTitle() {
             if(activeChapter){
+                // @ts-ignore
                 const new_chapter:Chapter = {
                     ...activeChapter,
                     title: form.values.title || "Missing chapter"
                 };
-
                 updateChapter(new_chapter);
             } else {
                 alert("Full stop! Data integrity issue.  activeChapter is not defined.");
@@ -42,7 +54,7 @@ export const ContinuousBody = ({}) => {
         if(form.isDirty()){
             updateChapterTitle().then();
         }
-    }, [form.values], {delay:500, runOnInitialize: false});
+    }, [form.values], {delay:900, runOnInitialize: false});
 
 
     useEffect(() => {
@@ -61,6 +73,12 @@ export const ContinuousBody = ({}) => {
         )
     }
 
+    if(chapterIsLoading){
+        return (
+            <Text>Loading chapter now</Text>
+        )
+    }
+
     // @ts-ignore
     return (
         <div>
@@ -75,7 +93,7 @@ export const ContinuousBody = ({}) => {
             </div>
 
 
-            {activeChapter.scenes.map((scene:Scene)=>
+            {chapter.scenes.map((scene:Scene)=>
                 <Paper key={scene.id}
                        shadow="xl"
                         p='xs'

@@ -1,13 +1,17 @@
 import {ThemeProvider} from './ThemeProvider'
 import {Book} from './Book'
 import {useEffect, useState} from "react";
-import {unset} from "lodash";
-import {ModalsProvider} from "@mantine/modals";
 
-import InputModal from "./lib/input_modal";
+import {ModalsProvider} from "@mantine/modals";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+
 import Boundary, {PYWEBVIEWREADY} from "./lib/boundary";
 import {LoadingOverlay} from "@mantine/core";
 import APIBridge from "./lib/remote";
+
+
+const queryClient = new QueryClient();
 
 
 declare global {
@@ -35,24 +39,13 @@ export default function App() {
         const bookData = await api.get_current_book();
         setBookId(bookData.id);
         setBookTitle(bookData.title);
+        console.log("Book data", bookData);
 
         setIsReady(true);
         window.removeEventListener(PYWEBVIEWREADY, doReady);
 
     }
 
-    const listFonts = (fontFaceSet:FontFaceSet):string[] => {
-        let { fonts } = document;
-        const iter = fontFaceSet.values()
-
-        let collect = new Set<string>();
-        let done = false;
-        for (const fontFace of fontFaceSet.values()) {
-            console.log(fontFace);
-        }
-
-        return [...collect.values()];
-    }
 
     const checkFonts = () => {
         const fontCheck = new Set([
@@ -77,7 +70,7 @@ export default function App() {
     useEffect(() => {
         //@ts-ignore Fuck the hell off with this window not defined shit
         if (window.pywebview !== undefined && window.pywebview.api !== undefined) {
-            setIsReady(true);
+            doReady();
         } else {
             window.addEventListener(PYWEBVIEWREADY, doReady);
         }
@@ -103,7 +96,10 @@ export default function App() {
     return (
         <ModalsProvider>
             <ThemeProvider>
-                <Book api={api} bookId={bookId} bookTitle={bookTitle}/>
+                <QueryClientProvider client={queryClient}>
+                    <Book api={api} bookId={bookId} bookTitle={bookTitle}/>
+                    <ReactQueryDevtools initialIsOpen={false}/>
+                </QueryClientProvider>
             </ThemeProvider>
         </ModalsProvider>
     )

@@ -104,7 +104,17 @@ def process_function(func_elm: ast.FunctionDef):
     if len(func_elm.args.defaults) > 0:
         names = [arg.arg for arg in func_elm.args.args]
         names.reverse()
-        defaults = [py2ts_value(elm.value) for elm in func_elm.args.defaults]
+        try:
+            defaults = []
+            for idx, elm in enumerate(func_elm.args.defaults):
+                val = py2ts_value(process_default_argument(elm))
+                defaults.append(val)
+
+            # defaults = [py2ts_value(elm.value) for elm in func_elm.args.defaults]
+        except AttributeError:
+            print(f"Unable to process {func_elm} with {func_elm.args}")
+            raise
+
         defaults.reverse()
         married = list(zip_longest(names, defaults))
         married.reverse()
@@ -136,28 +146,39 @@ def process_function(func_elm: ast.FunctionDef):
                     func_type = "any"
 
         arg_map[arg.arg] = f"{arg.arg}:{func_type}"
+        if arg.arg in mapped_defaults and mapped_defaults[arg.arg] in (None, 'None'):
+            del mapped_defaults[arg.arg]
+
         if arg.arg not in mapped_defaults:
             arg_body = f"{arg.arg}:{func_type}"
         else:
-            arg_body = f"{arg.arg}:{func_type} = {mapped_defaults[arg.arg]}"
+            arg_body = f"{arg.arg}:{func_type} = {mapped_defaults[arg.arg]}".replace("'","")
 
         definition.compiled.append(arg_body)
 
     return definition
 
 
+def process_default_argument(defaultOp):
 
+    if isinstance(defaultOp, (ast.unaryop, ast.UnaryOp,)) is True:
+        #Very likely a negative number
+        if isinstance(defaultOp.op, ast.USub):
+            return f"-{defaultOp.operand.value}"
+        elif isinstance(defaultOp.op, ast.UAdd):
+            return f"+{defaultOp.operand.value}"
+    elif isinstance(defaultOp, ast.Constant):
+        if defaultOp.value is True:
+            return 'true'
+        elif defaultOp.value is False:
+            return 'false'
+        else:
+            return str(defaultOp.value)
 
-
-
-
-
-
-
-
-
-
-    return definition
+    elif hasattr(defaultOp, 'val'):
+        return defaultOp.val
+    else:
+        raise ValueError(f"I don't know how to handle {type(defaultOp)} {vars(defaultOp)}")
 
 
 

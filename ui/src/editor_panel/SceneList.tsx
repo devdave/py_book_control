@@ -29,17 +29,42 @@ const SceneList = () => {
         }
     }, [activeScene?.id]);
 
+    const onChangeScene = useCallback(
+                (sceneId: string) => {
+                    if(activeChapter) {
+                        const scene = find(activeChapter.scenes, ['id', sceneId])
 
-    if (activeChapter === null || activeChapter === undefined) {
+                        if (scene) {
+                            setActiveScene(activeChapter, scene)
+                        }
+                    }
+                },
+                [activeChapter, setActiveScene]
+            )
+
+    const onChapterDrop =  useCallback(
+                    ({destination, source}:{destination:any, source:any}) => {
+                        if (destination && destination.index !== source.index) {
+                            if(activeChapter){
+                                reorderScene(activeChapter.id, source.index, destination.index)
+                            }
+                        }
+                    },
+                    [activeChapter?.id, reorderScene]
+                )
+
+    // @ts-ignore I don't care that activeChapter might be undefined
+    const addNewScene = useCallback(() => addScene(activeChapter.id), [activeChapter, addScene])
+
+
+
+    if (activeChapter === undefined) {
         return (
             <Group position="center">
                 <h2>Create a new Chapter</h2>
             </Group>
         )
     }
-
-    // @ts-ignore I don't care that activeChapter might be undefined
-    const addNewScene = useCallback(() => addScene(activeChapter.id), [activeChapter, addScene])
 
     if (activeScene === undefined || activeChapter === undefined || activeChapter?.scenes?.length <= 0) {
         return (
@@ -58,32 +83,10 @@ const SceneList = () => {
             classNames={{
                 content: classes.accordionContent
             }}
-            onChange={useCallback(
-                (sceneId: string) => {
-                    if(activeChapter) {
-                        const scene = find(activeChapter.scenes, ['id', sceneId])
-
-                        if (scene) {
-                            setActiveScene(activeChapter, scene)
-                        }
-                    }
-                },
-                [activeChapter, setActiveScene]
-            )}
-
-
+            onChange={onChangeScene}
         >
             <DragDropContext
-                onDragEnd={useCallback(
-                    ({destination, source}) => {
-                        if (destination && destination.index !== source.index) {
-                            if(activeChapter){
-                                reorderScene(activeChapter.id, source.index, destination.index)
-                            }
-                        }
-                    },
-                    [activeChapter?.id, reorderScene]
-                )}
+                onDragEnd={onChapterDrop}
             >
                 <Droppable droppableId='scene-list'>
                     {(droppable) => (
@@ -120,7 +123,7 @@ const SceneList = () => {
                                                 <Text weight='bold'>Scene #{scene.order+1}</Text>
                                             </Accordion.Control>
                                             <Accordion.Panel>
-                                                <ScenePanel key={scene.content} scene={scene}/>
+                                                <ScenePanel key={scene.content} indexedScene={scene}/>
                                             </Accordion.Panel>
                                         </Accordion.Item>
                                     )}
