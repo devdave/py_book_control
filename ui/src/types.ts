@@ -15,23 +15,31 @@ export interface Book extends Base{
   words: number
 }
 
-export interface Scene extends Base {
-
-
+export interface SceneIndex extends Base {
   chapterId: string
   title: string
+  order: number
+  words: number
+}
+
+export interface Scene extends SceneIndex {
+
   summary: string
   content: string
   notes: string
   location: string
   characters: string
 
-  order: number
-  words: number
-
 }
 
-export interface Chapter extends Base {
+export interface ChapterIndex extends Base {
+  title: string
+  scenes: SceneIndex[]
+  order: number
+  words: number
+}
+
+export interface Chapter extends ChapterIndex {
 
   title: string
   summary: string
