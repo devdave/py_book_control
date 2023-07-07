@@ -150,7 +150,7 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
     const reorderChapter = useCallback(
         async (from: number, to: number) => {
             const response = await api.reorder_chapter(from, to);
-            queryClient.invalidateQueries({queryKey:['book', bookId, 'chapter']});
+            await queryClient.invalidateQueries({queryKey:['book', bookId, 'chapter']});
         },
         []
     )
@@ -158,7 +158,7 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
     const reorderScene = useCallback(
         async (chapterId: string, from: number, to: number) => {
             const response = await api.reorder_scene(chapterId, from, to)
-            queryClient.invalidateQueries(['book', bookId, 'chapter']);
+            await queryClient.invalidateQueries(['book', bookId, 'chapter']);
         },
         []
     )

@@ -31,7 +31,7 @@ class Boundary {
     }
 
     private connect(){
-        if(this.isConnected === true){
+        if(this.isConnected){
             return;
         }
 
