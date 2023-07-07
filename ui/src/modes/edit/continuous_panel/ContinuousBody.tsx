@@ -4,7 +4,7 @@ import {useDebouncedEffect} from "../../../lib/useDebouncedEffect";
 import {Button, Center, Paper, TextInput, Text, Title, Group, Stack} from "@mantine/core";
 import {Ref, useEffect, useRef, useState} from "react";
 import {SceneText} from "./scene_text";
-import {useBookContext} from "../Editor.context";
+import {useEditorContext} from "../Editor.context";
 import {useForm} from "@mantine/form";
 import {useQuery} from "@tanstack/react-query";
 
@@ -15,7 +15,7 @@ interface ContinuousBodyProps {
 export const ContinuousBody:React.FC<ContinuousBodyProps> = () => {
 
 
-    const {api, bookId , activeChapter, activeScene, addScene, updateChapter} = useBookContext();
+    const {api, bookId , activeChapter, activeScene, addScene, updateChapter} = useEditorContext();
     const paperRefs = useRef<Record<string, HTMLDivElement>>({});
 
     if(activeChapter == undefined){

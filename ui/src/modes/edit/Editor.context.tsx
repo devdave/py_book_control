@@ -1,15 +1,15 @@
 import { createContext, useContext } from 'react'
 
-import {type Chapter, type ChapterIndex, type Scene, type SceneIndex} from '../../types'
+import {type Book, type Chapter, type ChapterIndex, type Scene, type SceneIndex} from '@src/types'
 import APIBridge from "@src/lib/remote";
 
 interface EditorContextValue {
   index: Chapter[]
-  bookId: string | undefined
+  activeBook: Book
   activeChapter: Chapter | ChapterIndex | undefined
   activeScene: Scene | SceneIndex | undefined
   chapters: Chapter[] | ChapterIndex[] | undefined
-  viewMode: string
+  editMode: string
   api: APIBridge
   addChapter(): void
   addScene(chapterId: string): Promise<Scene|void>
@@ -31,4 +31,4 @@ interface EditorContextValue {
 // @ts-ignore
 export const EditorContext = createContext<EditorContextValue>(null)
 
-export const useBookContext = () => useContext(EditorContext)
+export const useEditorContext = () => useContext(EditorContext)

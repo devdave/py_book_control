@@ -4,7 +4,8 @@ import {IconGripVertical} from "@tabler/icons-react";
 import {find, map} from "lodash";
 import {DragDropContext, Draggable, Droppable} from "react-beautiful-dnd";
 import {ScenePanel} from "./ScenePanel";
-import {useBookContext} from "../Editor.context";
+import {useEditorContext} from "../Editor.context";
+import {Scene} from "@src/types";
 
 const useStyles = createStyles((theme) => ({
     accordionContent: {
@@ -15,7 +16,7 @@ const useStyles = createStyles((theme) => ({
 
 const SceneList = () => {
 
-    const {activeChapter, activeScene, addScene, reorderScene, setActiveScene} = useBookContext()
+    const {activeChapter, activeScene, addScene, reorderScene, setActiveScene} = useEditorContext()
     const {classes} = useStyles();
     const accordionRefs = useRef<Record<string, HTMLDivElement>>({});
 
@@ -94,7 +95,7 @@ const SceneList = () => {
                             {...droppable.droppableProps}
                             ref={droppable.innerRef}
                         >
-                            {map(activeChapter?.scenes, (scene, sceneIdx) => (
+                            {map(activeChapter?.scenes, (scene: Scene, sceneIdx) => (
 
                                 <Draggable
                                     draggableId={scene.id}

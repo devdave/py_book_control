@@ -2,7 +2,7 @@ import {useForm} from "@mantine/form";
 import {Ref, useEffect, useRef, useState} from "react";
 import {Button, createStyles, Divider, Flex, Indicator, Skeleton, Text, Textarea} from "@mantine/core";
 import {useDebouncedEffect} from "../../../lib/useDebouncedEffect";
-import {useBookContext} from "../Editor.context";
+import {useEditorContext} from "../Editor.context";
 import {Chapter, Scene} from "../../../types";
 import {modals} from "@mantine/modals";
 import {clone, map} from "lodash";
@@ -37,7 +37,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
         updateScene,
         deleteScene,
         fetchScene
-    } = useBookContext();
+    } = useEditorContext();
 
 
 

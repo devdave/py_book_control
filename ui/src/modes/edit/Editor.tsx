@@ -21,10 +21,11 @@ import {LeftPanel} from './LeftPanel'
 import {RightPanel} from '@src/modes/edit/editor_panel/RightPanel';
 import {ContinuousBody} from '@src/modes/edit/continuous_panel';
 
-import {type Chapter, type Scene, type SceneIndex, type ChapterIndex, ViewModes} from '@src/types'
+import {type Chapter, type Scene, type SceneIndex, type ChapterIndex, EditModes, Book} from '@src/types'
 import APIBridge from "@src/lib/remote";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {ToggleInput} from "@src/lib/ToggleInput";
+import {useAppContext} from "@src/App.context";
 
 
 const useStyles = createStyles((theme) => ({
@@ -34,13 +35,12 @@ const useStyles = createStyles((theme) => ({
 }))
 
 interface EditorProps {
-    api: APIBridge
-    bookId: string
-    bookTitle: string | undefined
+
 }
 
-export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
+export const Editor: React.FC<EditorProps> = () => {
 
+    const {api, activeBook} = useAppContext();
 
     const {classes, theme} = useStyles()
     const {colorScheme, toggleColorScheme} = useMantineColorScheme()
@@ -48,11 +48,11 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
     const [chapters, _setChapters] = useState<ChapterIndex[]>([]);
     const [activeChapter, _setActiveChapter] = useState<ChapterIndex | Chapter | undefined>(undefined);
     const [activeScene, _setActiveScene] = useState<SceneIndex | Scene | undefined>(undefined);
-    const [viewMode, setViewMode] = useState<"list" | "flow">("list");
+    const [editMode, setEditMode] = useState<"list" | "flow">("list");
     const queryClient = useQueryClient();
 
     const {isLoading: indexIsloading, data: index, dataUpdatedAt: indexUpdatedAt} = useQuery({
-        queryKey: ['book', bookId, 'index'],
+        queryKey: ['book', activeBook.id, 'index'],
         queryFn: (key) => {
             return api.fetch_stripped_chapters()
         }
@@ -75,14 +75,14 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
     }, [index, indexUpdatedAt])
 
     const changeBookTitle = useMutation({
-        mutationFn: (new_title: string) => api.update_book_title(bookId, new_title)
+        mutationFn: (new_title: string) => api.update_book_title(activeBook.id, new_title)
     })
 
     const createChapter = useMutation({
         mutationFn: (newChapter: object) => api.create_chapter(newChapter),
         onSuccess: (response) => {
             console.log(response);
-            queryClient.invalidateQueries({queryKey: ['book', bookId]});
+            queryClient.invalidateQueries({queryKey: ['book', activeBook.id]});
         }
     });
 
@@ -94,7 +94,7 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
                 alert("Chapter's must have a title longer than 2 characters.");
                 return;
             }
-            createChapter.mutate({book_id: bookId, title: chapterTitle});
+            createChapter.mutate({book_id: activeBook.id, title: chapterTitle});
         },
         []
     );
@@ -103,8 +103,8 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
         mutationFn: (newScene: { [key:string]:string }) => api.create_scene(newScene['chapterId'], newScene['title']),
         onSuccess: (newScene:Scene, newSceneParts:Partial<Scene>, context)  => {
             console.log("Mutating addScene", newScene, newSceneParts, context);
-            queryClient.invalidateQueries(['book', bookId, 'chapter']);
-            queryClient.invalidateQueries(['book', bookId, 'index']);
+            queryClient.invalidateQueries(['book', activeBook.id, 'chapter']);
+            queryClient.invalidateQueries(['book', activeBook.id, 'index']);
             _setActiveScene(newScene);
         }
     })
@@ -141,7 +141,7 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
 
     const getChapter = async (chapterId: string) => {
         const {data} = useQuery({
-            queryKey: ["book", bookId, "chapter", chapterId],
+            queryKey: ["book", activeBook.id, "chapter", chapterId],
             queryFn: () => api.fetch_chapter(chapterId)
         });
         return data;
@@ -150,7 +150,7 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
     const reorderChapter = useCallback(
         async (from: number, to: number) => {
             const response = await api.reorder_chapter(from, to);
-            await queryClient.invalidateQueries({queryKey:['book', bookId, 'chapter']});
+            await queryClient.invalidateQueries({queryKey:['book', activeBook.id, 'chapter']});
         },
         []
     )
@@ -158,7 +158,7 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
     const reorderScene = useCallback(
         async (chapterId: string, from: number, to: number) => {
             const response = await api.reorder_scene(chapterId, from, to)
-            await queryClient.invalidateQueries(['book', bookId, 'chapter']);
+            await queryClient.invalidateQueries(['book', activeBook.id, 'chapter']);
         },
         []
     )
@@ -186,9 +186,9 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
 
     const changeChapter = useMutation({
         mutationFn: (alterChapter:Chapter) => api.update_chapter(alterChapter.id, alterChapter),
-        mutationKey: ['book', bookId, 'chapter'],
+        mutationKey: ['book', activeBook.id, 'chapter'],
         onSuccess: (response) => {
-            queryClient.invalidateQueries({queryKey:['book', bookId]});
+            queryClient.invalidateQueries({queryKey:['book', activeBook.id]});
         }
         }
     )
@@ -205,7 +205,7 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
     const changeScene = useMutation({
         mutationFn: (alteredScene:Scene) => api.update_scene(alteredScene.id, alteredScene),
         onSuccess: (response)=> {
-            queryClient.invalidateQueries(['book', bookId, 'chapter']);
+            queryClient.invalidateQueries(['book', activeBook.id, 'chapter']);
         }
     })
 
@@ -220,8 +220,8 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
         mutationFn: ({chapterId, sceneId}:{chapterId:string, sceneId:string}) => api.delete_scene(chapterId, sceneId),
         onSuccess: async (data, {chapterId, sceneId}, context) => {
             console.log("Deleted scene", data, chapterId, sceneId, context);
-            await queryClient.invalidateQueries(['book', bookId, 'chapter', chapterId]);
-            await queryClient.invalidateQueries(['book', bookId, 'index']);
+            await queryClient.invalidateQueries(['book', activeBook.id, 'chapter', chapterId]);
+            await queryClient.invalidateQueries(['book', activeBook.id, 'index']);
         }
     });
 
@@ -256,7 +256,7 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
 
     const fetchScene = async (sceneId: string) => {
         const {data} = useQuery({
-            queryKey: ['book', bookId, 'scene', sceneId],
+            queryKey: ['book', activeBook.id, 'scene', sceneId],
             queryFn: () => api.fetch_scene(sceneId)
         });
         return data;
@@ -267,14 +267,14 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
     const bookContextValue = useMemo(
         () => ({
             index,
-            bookId,
+            activeBook,
             activeChapter,
             activeScene,
             addChapter,
             addScene,
             createScene,
             chapters,
-            viewMode,
+            editMode,
             api,
             reorderChapter,
             reorderScene,
@@ -284,14 +284,14 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
             updateScene,
             deleteScene,
             fetchScene,
-            setViewMode,
+            setViewMode: setEditMode,
             _setChapters,
             _setActiveChapter,
             _setActiveScene,
         }),
         [
             index,
-            bookId,
+            activeBook.id,
             activeChapter,
             activeScene,
             addChapter,
@@ -305,7 +305,7 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
             updateScene,
             deleteScene,
             fetchScene,
-            setViewMode,
+            setEditMode,
             _setChapters,
             _setActiveChapter,
             _setActiveScene,
@@ -333,8 +333,8 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
         <h1>No book loaded</h1>
     )
 
-    switch (viewMode) {
-        case ViewModes.LIST:
+    switch (editMode) {
+        case EditModes.LIST:
             if (activeChapter !== undefined) {
                 rightPanel = (
                     <RightPanel key={`${activeChapter}-${activeScene}`}/>
@@ -345,7 +345,7 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
                 )
             }
             break;
-        case ViewModes.FLOW:
+        case EditModes.FLOW:
             if (activeChapter !== undefined) {
                 rightPanel = (
                     <ContinuousBody key={`${activeChapter.id} ${activeChapter.updated_on}`}/>
@@ -395,7 +395,7 @@ export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
                             px='xs'
 
                         >
-                            <ToggleInput value={bookTitle} onChange={(newVal)=>changeBookTitle.mutate(newVal)} />
+                            <ToggleInput value={activeBook.title} onChange={(newVal)=>changeBookTitle.mutate(newVal)} />
                             {/*<Title order={1}>{bookTitle}</Title>*/}
                             <Switch
                                 checked={colorScheme === 'dark'}

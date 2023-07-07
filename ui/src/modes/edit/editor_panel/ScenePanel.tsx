@@ -6,7 +6,7 @@ import TextSceneForm from './scene_forms/TextSceneForm';
 import {MainSceneForm} from './scene_forms/MainSceneForm'
 
 import {type Scene} from "../../../types";
-import {useBookContext} from "../Editor.context";
+import {useEditorContext} from "../Editor.context";
 import {useQuery} from "@tanstack/react-query";
 
 const useStyles = createStyles((theme) => ({
@@ -20,7 +20,7 @@ export interface ScenePanelProps {
 }
 
 export const ScenePanel: FC<ScenePanelProps> = ({indexedScene}) => {
-    const {api, bookId} = useBookContext();
+    const {api, bookId} = useEditorContext();
     const {classes} = useStyles()
     const [sceneLoaded, setSceneLoaded] = useState(false);
     const [freshScene, setFreshScene] = useState<Scene | undefined>(undefined);

@@ -3,7 +3,7 @@ import {useForm, zodResolver} from '@mantine/form'
 import {type FC, useCallback} from 'react'
 import z from 'zod'
 
-import {useBookContext} from '../Editor.context'
+import {useEditorContext} from '../Editor.context'
 import {type Chapter} from '../../../types'
 import {useDebouncedEffect} from '../../../lib/useDebouncedEffect'
 import {iconSizes} from "@mantine/core/lib/Stepper/Step/Step.styles";
@@ -18,7 +18,7 @@ export interface ChapterFormProps {
 }
 
 export const ChapterForm: FC<ChapterFormProps> = ({chapter}) => {
-    const {updateChapter} = useBookContext()
+    const {updateChapter} = useEditorContext()
     const form = useForm({
         initialValues: {
             summary: chapter.summary,

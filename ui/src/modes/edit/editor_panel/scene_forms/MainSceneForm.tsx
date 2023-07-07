@@ -3,7 +3,7 @@ import {useForm, zodResolver} from '@mantine/form'
 import {type FC} from 'react'
 import z from 'zod'
 
-import {useBookContext} from '../../Editor.context'
+import {useEditorContext} from '../../Editor.context'
 import {type Scene} from '../../../../types'
 import {useDebouncedEffect} from '../../../../lib/useDebouncedEffect'
 
@@ -16,7 +16,7 @@ export interface SceneFormProps {
 }
 
 export const MainSceneForm: FC<SceneFormProps> = ({scene}) => {
-    const {updateScene} = useBookContext()
+    const {updateScene} = useEditorContext()
     const form = useForm({
         initialValues: {
             content: scene.content,

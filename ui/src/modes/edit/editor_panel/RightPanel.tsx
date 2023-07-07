@@ -4,7 +4,7 @@ import {find, map} from 'lodash'
 import {type FC, useCallback, useRef} from 'react'
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
 
-import {useBookContext} from '../Editor.context'
+import {useEditorContext} from '../Editor.context'
 import {ChapterForm} from './ChapterForm'
 
 import SceneList from "./SceneList";
@@ -21,7 +21,7 @@ export interface RightPanelProps {
 }
 
 export const RightPanel: FC<RightPanelProps> = () => {
-    const {activeChapter, activeScene, addScene, reorderScene, setActiveScene} = useBookContext()
+    const {activeChapter, activeScene, addScene, reorderScene, setActiveScene} = useEditorContext()
 
     //const {classes} = useStyles()
 
