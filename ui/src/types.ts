@@ -49,10 +49,16 @@ export interface Chapter extends ChapterIndex {
   words: number
 }
 
-export enum ViewModes {
+export enum AppModes {
+  EDITOR = "editor",
+  OUTLINE = "outline",
+  STATS = "stats",
+  MANIFEST = "manifest",
+}
+
+export enum EditModes {
   LIST= 'list',
   FLOW= 'flow',
-  STATS= 'stats',
 }
 
 
@@ -61,4 +67,10 @@ export interface SplitResponse {
   split_content: string
   title: string
   split_title: string
+}
+
+export interface Font {
+  name: string
+  size: string
+  weight: string
 }
