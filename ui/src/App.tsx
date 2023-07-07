@@ -59,7 +59,11 @@ export default function App() {
     });
 
     const [fonts, setFonts] = useState<Set<string>>(new Set());
-    const [activeFont, setActiveFont] = useState<Font>({size: "", weight: "", name: "notset"});
+    const [activeFont, setActiveFont] = useState<Font>({
+        name: "Arial",
+        size: "12",
+        weight: "100"
+    });
 
 
     const boundary = new Boundary()
@@ -111,13 +115,6 @@ export default function App() {
 
         document.fonts.ready.then((fontFaceSet) => {
             checkFonts();
-            if(fonts.has("Arial")){
-                setActiveFont(prev=>({
-                    name: "Arial",
-                    size: "12",
-                    weight: "100"
-                }))
-            }
         })
 
     }, []);
