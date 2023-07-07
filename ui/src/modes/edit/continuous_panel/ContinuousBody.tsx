@@ -1,10 +1,10 @@
-import {Chapter, type Scene} from "../types";
-import {useDebouncedEffect} from "../lib/useDebouncedEffect";
+import {Chapter, type Scene} from "../../../types";
+import {useDebouncedEffect} from "../../../lib/useDebouncedEffect";
 
 import {Button, Center, Paper, TextInput, Text, Title, Group, Stack} from "@mantine/core";
 import {Ref, useEffect, useRef, useState} from "react";
 import {SceneText} from "./scene_text";
-import {useBookContext} from "../Book.context";
+import {useBookContext} from "../Editor.context";
 import {useForm} from "@mantine/form";
 import {useQuery} from "@tanstack/react-query";
 

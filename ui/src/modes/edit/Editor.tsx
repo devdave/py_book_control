@@ -14,18 +14,17 @@ import {assignWith, clone, find, forEach, map} from 'lodash'
 
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 
-import {PromptModal} from "./lib/input_modal";
+import {PromptModal} from "@src/lib/input_modal";
 
-import {BookContext} from './Book.context'
+import {EditorContext} from './Editor.context'
 import {LeftPanel} from './LeftPanel'
-import {RightPanel} from './editor_panel';
-import {ContinuousBody} from './continuous_panel';
+import {RightPanel} from '@src/modes/edit/editor_panel/RightPanel';
+import {ContinuousBody} from '@src/modes/edit/continuous_panel';
 
-import {type Chapter, type Scene, type SceneIndex, type ChapterIndex, ViewModes} from './types'
-import APIBridge from "./lib/remote";
+import {type Chapter, type Scene, type SceneIndex, type ChapterIndex, ViewModes} from '@src/types'
+import APIBridge from "@src/lib/remote";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {queryKey} from "@tanstack/react-query/build/lib/__tests__/utils";
-import {ToggleInput} from "./lib/ToggleInput";
+import {ToggleInput} from "@src/lib/ToggleInput";
 
 
 const useStyles = createStyles((theme) => ({
@@ -34,15 +33,14 @@ const useStyles = createStyles((theme) => ({
     }
 }))
 
-interface BookProps {
+interface EditorProps {
     api: APIBridge
     bookId: string
     bookTitle: string | undefined
 }
 
-export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
+export const Editor: React.FC<EditorProps> = ({api, bookId, bookTitle}) => {
 
-    const shellRef = useRef<Document|Element>();
 
     const {classes, theme} = useStyles()
     const {colorScheme, toggleColorScheme} = useMantineColorScheme()
@@ -146,6 +144,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
             queryKey: ["book", bookId, "chapter", chapterId],
             queryFn: () => api.fetch_chapter(chapterId)
         });
+        return data;
     }
 
     const reorderChapter = useCallback(
@@ -380,9 +379,8 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
 
 
     return (
-        <BookContext.Provider value={bookContextValue}>
+        <EditorContext.Provider value={bookContextValue}>
             <AppShell
-                ref={shellRef}
                 classNames={{
                     main: classes.main
                 }}
@@ -430,6 +428,6 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                     {rightPanel}
                 </Box>
             </AppShell>
-        </BookContext.Provider>
+        </EditorContext.Provider>
     )
 }

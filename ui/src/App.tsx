@@ -1,5 +1,5 @@
 import {ThemeProvider} from './ThemeProvider'
-import {Book} from './Book'
+import {Editor} from './modes/edit/Editor'
 import {useEffect, useState} from "react";
 
 import {ModalsProvider} from "@mantine/modals";
@@ -7,8 +7,9 @@ import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import Boundary, {PYWEBVIEWREADY} from "./lib/boundary";
-import {LoadingOverlay} from "@mantine/core";
-import APIBridge from "./lib/remote";
+import {LoadingOverlay, Text} from "@mantine/core";
+//import APIBridge from "./lib/remote";
+import APIBridge from '@src/lib/remote';
 
 
 const queryClient = new QueryClient();
@@ -24,7 +25,7 @@ declare global {
 export default function App() {
     const [isReady, setIsReady] = useState(false);
     const [bookTitle, setBookTitle] = useState(undefined);
-    const [bookId, setBookId] = useState(undefined);
+    const [bookId, setBookId] = useState<string>();
 
     const [fonts, setFonts] = useState<string[]>([]);
     const [activeFont, setActiveFont] = useState<string|undefined>(undefined);
@@ -42,8 +43,6 @@ export default function App() {
         console.log("Book data", bookData);
 
         setIsReady(true);
-        window.removeEventListener(PYWEBVIEWREADY, doReady);
-
     }
 
 
@@ -55,13 +54,14 @@ export default function App() {
               'American Typewriter', 'Andale Mono', 'Arial', 'Arial Black', 'Arial Narrow', 'Arial Rounded MT Bold', 'Arial Unicode MS', 'Avenir', 'Avenir Next', 'Avenir Next Condensed', 'Baskerville', 'Big Caslon', 'Bodoni 72', 'Bodoni 72 Oldstyle', 'Bodoni 72 Smallcaps', 'Bradley Hand', 'Brush Script MT', 'Chalkboard', 'Chalkboard SE', 'Chalkduster', 'Charter', 'Cochin', 'Comic Sans MS', 'Copperplate', 'Courier', 'Courier New', 'Didot', 'DIN Alternate', 'DIN Condensed', 'Futura', 'Geneva', 'Georgia', 'Gill Sans', 'Helvetica', 'Helvetica Neue', 'Herculanum', 'Hoefler Text', 'Impact', 'Lucida Grande', 'Luminari', 'Marker Felt', 'Menlo', 'Microsoft Sans Serif', 'Monaco', 'Noteworthy', 'Optima', 'Palatino', 'Papyrus', 'Phosphate', 'Rockwell', 'Savoye LET', 'SignPainter', 'Skia', 'Snell Roundhand', 'Tahoma', 'Times', 'Times New Roman', 'Trattatello', 'Trebuchet MS', 'Verdana', 'Zapfino',
             ].sort());
 
-        const fontAvailable = new Set();
+        const fontAvailable = new Set<string>();
 
       for (const font of fontCheck.values()) {
         if (document.fonts.check(`12px "${font}"`)) {
           fontAvailable.add(font);
         }
       }
+      const fontArray = [...fontAvailable.values()];
 
         console.log('Available Fonts:', [...fontAvailable.values()]);
     }
@@ -72,7 +72,7 @@ export default function App() {
         if (window.pywebview !== undefined && window.pywebview.api !== undefined) {
             doReady();
         } else {
-            window.addEventListener(PYWEBVIEWREADY, doReady);
+            window.addEventListener(PYWEBVIEWREADY, doReady, {once: true});
         }
     },[]);
 
@@ -85,7 +85,7 @@ export default function App() {
     },[]);
 
 
-    if(!isReady){
+    if(!isReady || !bookId){
         return (
             <LoadingOverlay visible={true}/>
         )
@@ -94,13 +94,11 @@ export default function App() {
 
     //Next step would be to show a Modal list "Use last book", "select another book", "Create a book"
     return (
-        <ModalsProvider>
             <ThemeProvider>
                 <QueryClientProvider client={queryClient}>
-                    <Book api={api} bookId={bookId} bookTitle={bookTitle}/>
+                    <Editor api={api} bookId={bookId} bookTitle={bookTitle}/>
                     <ReactQueryDevtools initialIsOpen={false}/>
                 </QueryClientProvider>
             </ThemeProvider>
-        </ModalsProvider>
     )
 }

@@ -5,8 +5,8 @@ import TextSceneForm from './scene_forms/TextSceneForm';
 
 import {MainSceneForm} from './scene_forms/MainSceneForm'
 
-import {type Scene} from "../types";
-import {useBookContext} from "../Book.context";
+import {type Scene} from "../../../types";
+import {useBookContext} from "../Editor.context";
 import {useQuery} from "@tanstack/react-query";
 
 const useStyles = createStyles((theme) => ({

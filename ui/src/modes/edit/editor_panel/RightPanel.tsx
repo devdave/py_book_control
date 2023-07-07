@@ -4,7 +4,7 @@ import {find, map} from 'lodash'
 import {type FC, useCallback, useRef} from 'react'
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
 
-import {useBookContext} from '../Book.context'
+import {useBookContext} from '../Editor.context'
 import {ChapterForm} from './ChapterForm'
 
 import SceneList from "./SceneList";

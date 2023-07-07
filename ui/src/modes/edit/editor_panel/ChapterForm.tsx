@@ -3,9 +3,9 @@ import {useForm, zodResolver} from '@mantine/form'
 import {type FC, useCallback} from 'react'
 import z from 'zod'
 
-import {useBookContext} from '../Book.context'
-import {type Chapter} from '../types'
-import {useDebouncedEffect} from '../lib/useDebouncedEffect'
+import {useBookContext} from '../Editor.context'
+import {type Chapter} from '../../../types'
+import {useDebouncedEffect} from '../../../lib/useDebouncedEffect'
 import {iconSizes} from "@mantine/core/lib/Stepper/Step/Step.styles";
 import {IconPlus} from "@tabler/icons-react";
 

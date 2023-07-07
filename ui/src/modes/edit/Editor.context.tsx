@@ -1,9 +1,9 @@
 import { createContext, useContext } from 'react'
 
-import {type Chapter, type ChapterIndex, type Scene, type SceneIndex} from './types'
-import APIBridge from "./lib/remote";
+import {type Chapter, type ChapterIndex, type Scene, type SceneIndex} from '../../types'
+import APIBridge from "../../lib/remote";
 
-interface BookContextValue {
+interface EditorContextValue {
   index: Chapter[]
   bookId: string | undefined
   activeChapter: Chapter | ChapterIndex | undefined
@@ -29,6 +29,6 @@ interface BookContextValue {
 }
 
 // @ts-ignore
-export const BookContext = createContext<BookContextValue>(null)
+export const EditorContext = createContext<EditorContextValue>(null)
 
-export const useBookContext = () => useContext(BookContext)
+export const useBookContext = () => useContext(EditorContext)

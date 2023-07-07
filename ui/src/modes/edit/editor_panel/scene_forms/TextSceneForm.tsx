@@ -3,9 +3,9 @@ import {useForm, zodResolver} from '@mantine/form'
 import {type FC} from 'react'
 import z from 'zod'
 
-import {useBookContext} from '../../Book.context'
-import {type Scene} from '../../types'
-import {useDebouncedEffect} from '../../lib/useDebouncedEffect'
+import {useBookContext} from '../../Editor.context'
+import {type Scene} from '../../../../types'
+import {useDebouncedEffect} from '../../../../lib/useDebouncedEffect'
 
 interface TextSceneFormProps {
     scene: Scene

@@ -17,8 +17,8 @@ import {map} from 'lodash'
 import {type FC, useCallback} from 'react'
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
 
-import {useBookContext} from './Book.context'
-import {ChapterIndex, ViewModes} from "./types";
+import {useBookContext} from './Editor.context'
+import {ChapterIndex, ViewModes} from "../../types";
 
 interface LeftPanelProps {
     index: ChapterIndex[]

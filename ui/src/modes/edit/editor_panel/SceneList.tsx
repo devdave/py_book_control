@@ -4,7 +4,7 @@ import {IconGripVertical} from "@tabler/icons-react";
 import {find, map} from "lodash";
 import {DragDropContext, Draggable, Droppable} from "react-beautiful-dnd";
 import {ScenePanel} from "./ScenePanel";
-import {useBookContext} from "../Book.context";
+import {useBookContext} from "../Editor.context";
 
 const useStyles = createStyles((theme) => ({
     accordionContent: {
