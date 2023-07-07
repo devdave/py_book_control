@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react'
 
 import {type Chapter, type ChapterIndex, type Scene, type SceneIndex} from '../../types'
-import APIBridge from "../../lib/remote";
+import APIBridge from "@src/lib/remote";
 
 interface EditorContextValue {
   index: Chapter[]
