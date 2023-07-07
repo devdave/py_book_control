@@ -1,5 +1,5 @@
 import {useForm} from "@mantine/form";
-import {useEffect, useState} from "react";
+import {Ref, useEffect, useRef, useState} from "react";
 import {Button, createStyles, Divider, Flex, Indicator, Skeleton, Text, Textarea} from "@mantine/core";
 import {useDebouncedEffect} from "../lib/useDebouncedEffect";
 import {useBookContext} from "../Book.context";
@@ -7,6 +7,7 @@ import {Chapter, Scene} from "../types";
 import {modals} from "@mantine/modals";
 import {clone, map} from "lodash";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {useIntersection} from "@mantine/hooks";
 
 interface SceneTextProps {
     scene: Scene
@@ -24,6 +25,8 @@ const compile_scene2md = (scene: Scene) => {
 
 
 export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
+
+
     const {
         api,
         bookId,
@@ -37,7 +40,19 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
     } = useBookContext();
 
 
+
     const [sceneMD, setSceneMD] = useState("");
+
+    // const {ref, entry} = useIntersection({
+    //     root: document.querySelector(".mantine-AppShell-root")[0],
+    //     rootMargin: "10px",
+    //     threshold: 0.7
+    // });
+    //
+    // if(entry && entry.isIntersecting && activeScene && scene && activeScene.id != scene.id){
+    //     console.log("Changing scene", entry, activeScene, scene);
+    //     setActiveScene(activeChapter, scene);
+    // }
 
     const queryClient = useQueryClient();
 
@@ -199,6 +214,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
     return (
         <Flex
+            // ref={ref}
             mih={50}
             gap="md"
             justify="center"

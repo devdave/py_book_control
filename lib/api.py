@@ -43,6 +43,13 @@ class BCAPI:
             self.app.book = models.Book.Fetch_by_UID(session, book_uid)
             return self.app.book.asdict()
 
+    def update_book_title(self, book_uid: str, new_title: str):
+        with self.app.get_db() as session:
+            book = models.Book.Fetch_by_UID(session, book_uid)
+            book.title = new_title
+            session.commit()
+            return book.asdict(True)
+
     def find_source(self):
         result = self.app.main_window.create_file_dialog(
             webview.OPEN_DIALOG, allow_multiple=False, file_types=self.FILE_TYPES

@@ -1,15 +1,18 @@
 import {Chapter, type Scene} from "../types";
 import {useDebouncedEffect} from "../lib/useDebouncedEffect";
 
-import {Button, Center, Paper, TextInput, Text, Title} from "@mantine/core";
-import {useEffect, useRef, useState} from "react";
+import {Button, Center, Paper, TextInput, Text, Title, Group, Stack} from "@mantine/core";
+import {Ref, useEffect, useRef, useState} from "react";
 import {SceneText} from "./scene_text";
 import {useBookContext} from "../Book.context";
 import {useForm} from "@mantine/form";
 import {useQuery} from "@tanstack/react-query";
 
+interface ContinuousBodyProps {
 
-export const ContinuousBody = ({}) => {
+}
+
+export const ContinuousBody:React.FC<ContinuousBodyProps> = () => {
 
 
     const {api, bookId , activeChapter, activeScene, addScene, updateChapter} = useBookContext();
@@ -17,7 +20,6 @@ export const ContinuousBody = ({}) => {
 
     if(activeChapter == undefined){
         throw Error("Data integrity issue, activechapter is not defined");
-        return
     }
 
     // @ts-ignore
@@ -69,19 +71,24 @@ export const ContinuousBody = ({}) => {
 
     if(!activeChapter){
         return (
-            <Title order={2}>Missing active chapter</Title>
+            <>
+                <Title order={2}>Missing active chapter</Title>
+            </>
+
         )
     }
 
     if(chapterIsLoading){
         return (
-            <Text>Loading chapter now</Text>
+            <>
+                <Text>Loading chapter...</Text>
+            </>
         )
     }
 
     // @ts-ignore
     return (
-        <div>
+        <Stack>
             <div
                     style={{
                         position: "sticky",
@@ -116,7 +123,7 @@ export const ContinuousBody = ({}) => {
                     <Button onClick={()=>addScene(activeChapter.id)}>Create a scene</Button>
                 </Center>
             }
-        </div>
+        </Stack>
     );
 
 }

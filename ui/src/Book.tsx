@@ -12,7 +12,7 @@ import {
 import {IconMoonStars, IconSun} from '@tabler/icons-react'
 import {assignWith, clone, find, forEach, map} from 'lodash'
 
-import {useCallback, useEffect, useMemo, useState} from 'react'
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 
 import {PromptModal} from "./lib/input_modal";
 
@@ -25,6 +25,7 @@ import {type Chapter, type Scene, type SceneIndex, type ChapterIndex, ViewModes}
 import APIBridge from "./lib/remote";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {queryKey} from "@tanstack/react-query/build/lib/__tests__/utils";
+import {ToggleInput} from "./lib/ToggleInput";
 
 
 const useStyles = createStyles((theme) => ({
@@ -35,11 +36,13 @@ const useStyles = createStyles((theme) => ({
 
 interface BookProps {
     api: APIBridge
-    bookId: string | undefined
+    bookId: string
     bookTitle: string | undefined
 }
 
 export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
+
+    const shellRef = useRef<Document|Element>();
 
     const {classes, theme} = useStyles()
     const {colorScheme, toggleColorScheme} = useMantineColorScheme()
@@ -57,8 +60,6 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
         }
     });
 
-    console.log("Index", indexUpdatedAt);
-
     useEffect(()=>{
         if(!indexIsloading){
             if(activeChapter === undefined){
@@ -69,8 +70,15 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                     }
                 }
             }
+            if(activeScene == undefined && activeChapter && activeChapter.scenes.length > 0){
+                _setActiveScene(activeChapter.scenes[0]);
+            }
         }
     }, [index, indexUpdatedAt])
+
+    const changeBookTitle = useMutation({
+        mutationFn: (new_title: string) => api.update_book_title(bookId, new_title)
+    })
 
     const createChapter = useMutation({
         mutationFn: (newChapter: object) => api.create_chapter(newChapter),
@@ -95,9 +103,11 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
 
     const _addScene = useMutation({
         mutationFn: (newScene: { [key:string]:string }) => api.create_scene(newScene['chapterId'], newScene['title']),
-        onSuccess: (response)  => {
-            console.log(response);
-            queryClient.invalidateQueries(['book', bookId, 'chapter'])
+        onSuccess: (newScene:Scene, newSceneParts:Partial<Scene>, context)  => {
+            console.log("Mutating addScene", newScene, newSceneParts, context);
+            queryClient.invalidateQueries(['book', bookId, 'chapter']);
+            queryClient.invalidateQueries(['book', bookId, 'index']);
+            _setActiveScene(newScene);
         }
     })
 
@@ -209,17 +219,38 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
 
     const _deleteScene = useMutation({
         mutationFn: ({chapterId, sceneId}:{chapterId:string, sceneId:string}) => api.delete_scene(chapterId, sceneId),
-        onSuccess: (data, {chapterId, sceneId}, context) => {
+        onSuccess: async (data, {chapterId, sceneId}, context) => {
             console.log("Deleted scene", data, chapterId, sceneId, context);
-            queryClient.invalidateQueries(['book', bookId, 'chapter', chapterId]);
-            queryClient.invalidateQueries(['book', bookId, 'index']);
+            await queryClient.invalidateQueries(['book', bookId, 'chapter', chapterId]);
+            await queryClient.invalidateQueries(['book', bookId, 'index']);
         }
     });
 
     const deleteScene = useCallback(
         async (chapterId: string, sceneId: string) => {
 
-            _deleteScene.mutate({chapterId, sceneId})
+            const target:Scene|SceneIndex|undefined|any = find(activeChapter?.scenes, (scene)=>{
+                if(scene.id == sceneId){
+                    return scene;
+                }
+            });
+
+            _deleteScene.mutate({chapterId, sceneId});
+
+            if(target && target.order > 0){
+                const newSceneOrderPos = target.order - 1;
+                const newFocus: Scene|SceneIndex|any = find(activeChapter?.scenes, (scene)=>{
+                    if(scene.order == newSceneOrderPos){
+                        return scene;
+                    }
+                });
+
+                if(newFocus){
+                    _setActiveScene(newFocus);
+                }
+            } else {
+                _setActiveScene(undefined);
+            }
 
         }
         , []);
@@ -351,6 +382,7 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
     return (
         <BookContext.Provider value={bookContextValue}>
             <AppShell
+                ref={shellRef}
                 classNames={{
                     main: classes.main
                 }}
@@ -363,8 +395,10 @@ export const Book: React.FC<BookProps> = ({api, bookId, bookTitle}) => {
                             position='apart'
                             h={60}
                             px='xs'
+
                         >
-                            <Title order={1}>{bookTitle}</Title>
+                            <ToggleInput value={bookTitle} onChange={(newVal)=>changeBookTitle.mutate(newVal)} />
+                            {/*<Title order={1}>{bookTitle}</Title>*/}
                             <Switch
                                 checked={colorScheme === 'dark'}
                                 onChange={onToggleColorScheme}

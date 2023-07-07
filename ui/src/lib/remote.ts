@@ -44,6 +44,12 @@ class APIBridge {
     }
     
     
+    async update_book_title(book_uid:string, new_title:string) {
+        
+        return await this.boundary.remote("update_book_title", book_uid, new_title);
+    }
+    
+    
     async find_source() {
         
         return await this.boundary.remote("find_source", );
