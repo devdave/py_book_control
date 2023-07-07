@@ -141,33 +141,32 @@ export default function App() {
         [api]
     )
 
-    if (appMode == AppModes.MANIFEST) {
-        return (
-            <AppWrapper value={AppContextValue}>
-                <Text>Manifest</Text>
-            </AppWrapper>
-        )
-    } else if (appMode == AppModes.EDITOR) {
-        return (
-            <AppWrapper value={AppContextValue}>
-                <Editor/>
-            </AppWrapper>
-        )
-    } else if (appMode == AppModes.STATS) {
-        return (
-            <AppWrapper value={AppContextValue}>
-                <Text>Stats</Text>
-            </AppWrapper>
-        )
-    } else {
-        return (
-            <AppWrapper value={AppContextValue}>
-                <Text>Unknown app mode {appMode}</Text>
-            </AppWrapper>
-        )
-    }
-
-
-    //Next step would be to show a Modal list "Use last book", "select another book", "Create a book"
-
+    return (
+        <AppWrapper value={AppContextValue}>
+            {useMemo(()=>{
+                switch (appMode){
+                    case AppModes.OUTLINE:
+                        return (
+                            <Text>Outline mode</Text>
+                        );
+                    case AppModes.STATS:
+                        return (
+                            <Text>Stats mode</Text>
+                        );
+                    case AppModes.EDITOR:
+                        return (
+                            <Editor/>
+                        )
+                    case AppModes.MANIFEST:
+                        return (
+                            <Text>Manifest</Text>
+                        )
+                    default:
+                        return (
+                            <Text>Application error: unexpected mode {appMode}</Text>
+                        )
+                }
+            },[appMode])}
+        </AppWrapper>
+    )
 }
