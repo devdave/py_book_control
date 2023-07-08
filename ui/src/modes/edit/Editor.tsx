@@ -241,11 +241,19 @@ export const Editor: React.FC<EditorProps> = () => {
             console.log("Deleted scene", data, chapterId, sceneId, context);
             await queryClient.invalidateQueries(['book', activeBook.id, 'chapter', chapterId]);
             await queryClient.invalidateQueries(['book', activeBook.id, 'index']);
+
             _setActiveChapter((prior)=>{
+                if(prior == undefined){
+                    console.log("Error: somehow the user deleted a scene without there being an active chapter")
+                    Error("Integrity issue: Deleted a scene without an active scene")
+                    return;
+                }
                 prior.scenes = prior.scenes.filter((scene)=>scene.id != sceneId);
                 prior.updated_on = new Date(Date.now()).toUTCString();
                 return prior;
             })
+
+
         }
     });
 
