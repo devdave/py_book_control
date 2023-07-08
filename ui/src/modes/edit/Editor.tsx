@@ -151,11 +151,7 @@ export const Editor: React.FC<EditorProps> = () => {
     );
 
     const getChapter = async (chapterId: string) => {
-        const {data} = useQuery({
-            queryKey: ["book", activeBook.id, "chapter", chapterId],
-            queryFn: () => api.fetch_chapter(chapterId)
-        });
-        return data;
+        return await api.fetch_chapter(chapterId);
     }
 
     const reorderChapter = useCallback(
