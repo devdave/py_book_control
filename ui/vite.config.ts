@@ -9,8 +9,8 @@ export default defineConfig({
     plugins: [react()],
     resolve: {
         alias: {
-            'src': fileURLToPath(new URL('./src', import.meta.url)),
-            "@": path.resolve(__dirname, "./src"),
+            '@src': fileURLToPath(new URL('./src', import.meta.url)),
+
         }
     }
 });
