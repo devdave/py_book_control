@@ -90,13 +90,18 @@ class Book(Base):
     def asdict(self, stripped=True):
         data = dict(
             type="book",
-            id=self.id,
+            id=self.uid,
             title=self.title,
             updated_on=str(self.updated_on),
             created_on=str(self.created_on),
+            words=str(self.words),
+            notes=self.notes
         )
         if stripped is False:
             data["chapters"] = [chapter.asdict() for chapter in self.chapters]
+        else:
+            # return an empty list so we can get a count
+            data["chapters"] = list(range(len(self.chapters)))
 
         return data
 
