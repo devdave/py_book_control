@@ -17,7 +17,7 @@ class BCApplication:
 
         with self.get_db() as session:
             try:
-                self.book_id = models.Book.Fetch_by_UID(session, 1).id
+                self.book_id = models.Book.Fetch_by_Id(session, 1).id
             except models.NoResultFound:
                 new_book = models.Book(title="Test1")
                 session.add(new_book)
