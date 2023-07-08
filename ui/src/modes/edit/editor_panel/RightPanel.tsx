@@ -1,4 +1,4 @@
-import {Accordion, ActionIcon, Center, createStyles, Group, Stack, Text, Title} from '@mantine/core'
+import {Accordion, ActionIcon, Center, createStyles, Group, Stack, Text, Textarea, Title} from '@mantine/core'
 import {IconGripVertical, IconPlus} from '@tabler/icons-react'
 import {find, map} from 'lodash'
 import {type FC, useCallback, useRef} from 'react'
@@ -36,7 +36,11 @@ export const RightPanel: FC<RightPanelProps> = () => {
 
     return (
         <Stack spacing='xs'>
-            {/*<Title order={4}>Chapter {activeChapter.order+1} {activeChapter.title}</Title>*/}
+            <details>
+                <summary>Book notes</summary>
+                <Textarea></Textarea>
+            </details>
+
             <ChapterForm chapter={activeChapter}/>
             <Group
                 position='apart'
@@ -56,7 +60,7 @@ export const RightPanel: FC<RightPanelProps> = () => {
                     <IconPlus/>
                 </ActionIcon>
             </Group>
-            <SceneList/>
+            <SceneList key={activeChapter?.updated_on}/>
         </Stack>
     )
 }

@@ -67,16 +67,16 @@ const SceneList = () => {
         )
     }
 
-    if (activeScene === undefined || activeChapter === undefined || activeChapter?.scenes?.length <= 0) {
+    if (activeScene === undefined || activeChapter?.scenes?.length <= 0) {
         return (
             <Group position="center">
-                <Button onClick={addNewScene} >Create a new scene</Button>
+                <Button onClick={addNewScene}>Create a new scene</Button>
             </Group>
         )
     }
 
     return (
-
+        <>
         <Accordion
             variant="contained"
             radius="md"
@@ -136,6 +136,10 @@ const SceneList = () => {
                 </Droppable>
             </DragDropContext>
         </Accordion>
+        <Group position="center">
+            <Button onClick={addNewScene}>Create a new scene</Button>
+        </Group>
+    </>
     );
 };
 

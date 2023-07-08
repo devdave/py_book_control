@@ -24,9 +24,10 @@ export const Manifest = () => {
         isFetched: highlightedIsFetched,
         isLoading: highlightedIsLoading
     } = useQuery({
+        enabled: highlightBookID !== undefined,
         queryFn: () => api.fetch_book_simple(highlightBookID),
         queryKey: ['book', highlightBookID],
-        enabled: highlightBookID !== undefined
+
     });
 
 

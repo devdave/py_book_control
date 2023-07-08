@@ -65,7 +65,7 @@ export const ChapterForm: FC<ChapterFormProps> = ({chapter}) => {
                     {...form.getInputProps('notes')}
                     />
             </details>
-            <details open>
+            <details>
                 <summary>Chapter Summary</summary>
                     <Textarea
                         autoCapitalize='sentences'

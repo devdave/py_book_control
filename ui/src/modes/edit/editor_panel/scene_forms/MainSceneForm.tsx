@@ -37,7 +37,7 @@ export const MainSceneForm: FC<SceneFormProps> = ({scene}) => {
         },
         [form.values],
         {
-            delay: 300
+            delay: 700
         }
     )
 
