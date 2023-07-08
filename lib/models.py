@@ -83,8 +83,8 @@ class Book(Base):
         return session.scalars(stmt).all()
 
     @classmethod
-    def Fetch_by_UID(cls, session, id):
-        stmt = select(cls).where(cls.id == id)
+    def Fetch_by_UID(cls, session, uid):
+        stmt = select(cls).where(cls.uid == uid)
         return session.scalars(stmt).one()
 
     def asdict(self, stripped=True):
