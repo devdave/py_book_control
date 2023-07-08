@@ -180,19 +180,14 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
             const new_scene =
                 {
                     id: scene.id,
+                    chapterId: scene.chapterId,
                     title: response['title'],
                     content: response['content'],
                     notes: form.values['notes'],
                     summary: form.values['summary'],
                 }
 
-            // @ts-ignore
-            changeScene.mutate({scene_id:new_scene.id, scene:new_scene});
-            setSceneMD(prev => response['markdown']);
-            form.resetDirty();
-            return response['markdown'];
-
-            console.log("Got safe content", response['markdown']);
+            updateScene(new_scene);
             setSceneMD(prev => response['markdown']);
             form.resetDirty();
             return response['markdown'];
