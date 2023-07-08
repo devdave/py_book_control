@@ -172,7 +172,7 @@ class BCAPI:
             scene.update(new_data)
             session.commit()
 
-            return scene.asdict()
+            return (scene.asdict(), scene.chapter.asdict(),)
 
     def create_scene(self, chapterId, title, position = -1):
 
@@ -188,14 +188,7 @@ class BCAPI:
             session.add(scene)
             session.commit()
 
-
-
-            scenes = chapter.scenes[:]
-
-
-
-
-            return scene.asdict()
+            return (scene.asdict(), chapter.asdict(),)
 
 
 
@@ -208,6 +201,7 @@ class BCAPI:
                 parent.scenes.remove(scene)
                 session.delete(scene)
                 parent.scenes.reorder()
+                parent.touch()
                 session.commit()
                 return True
         except models.NoResultFound:
@@ -222,7 +216,11 @@ class BCAPI:
 
     def reorder_scenes(self, new_order:[models.Scene]):
         with self.app.get_db() as session:
+            self.log.info("Reordering scenes: {}", new_order)
+
             for authority in new_order:
+                self.log("Scene authority is {}", authority)
+
                 record = models.Scene.Fetch_by_uid(session, authority['id'])
                 record.order = int(authority['order'])
                 chapterId = record.chapter.id
