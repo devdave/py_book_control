@@ -40,8 +40,9 @@ class BCAPI:
 
     def set_current_book(self, book_uid: str):
         with self.app.get_db() as session:
-            self.app.book = models.Book.Fetch_by_UID(session, book_uid)
-            return self.app.book.asdict()
+            book = models.Book.Fetch_by_UID(session, book_uid)
+            self.app.book_id = book.id
+            return book.asdict()
 
     def update_book_title(self, book_uid: str, new_title: str):
         with self.app.get_db() as session:
