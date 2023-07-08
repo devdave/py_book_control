@@ -6,8 +6,8 @@ import {useEditorContext} from "../Editor.context";
 import {Chapter, Scene} from "../../../types";
 import {modals} from "@mantine/modals";
 import {clone, map} from "lodash";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {useIntersection} from "@mantine/hooks";
+import {useQueryClient} from "@tanstack/react-query";
+
 
 interface SceneTextProps {
     scene: Scene
@@ -29,42 +29,18 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
     const {
         api,
-        bookId,
+        activeBook,
         activeScene,
         activeChapter,
-        setActiveChapter,
         setActiveScene,
         updateScene,
         deleteScene,
-        fetchScene
     } = useEditorContext();
 
 
 
     const [sceneMD, setSceneMD] = useState("");
-
-    // const {ref, entry} = useIntersection({
-    //     root: document.querySelector(".mantine-AppShell-root")[0],
-    //     rootMargin: "10px",
-    //     threshold: 0.7
-    // });
-    //
-    // if(entry && entry.isIntersecting && activeScene && scene && activeScene.id != scene.id){
-    //     console.log("Changing scene", entry, activeScene, scene);
-    //     setActiveScene(activeChapter, scene);
-    // }
-
     const queryClient = useQueryClient();
-
-    const changeScene = useMutation({
-        mutationFn: ({scene}:{scene:Scene})=> api.update_scene(scene.id, scene),
-        mutationKey: ['book', bookId, 'chapter', scene.chapterId],
-        onSuccess: (response)=>{
-            console.log(response);
-            queryClient.invalidateQueries(['book', bookId, 'index']);
-            queryClient.invalidateQueries(['book', bookId, 'chapter', scene.chapterId]);
-        }
-    })
 
 
     const form = useForm({
@@ -87,7 +63,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
             console.error("Cannot split scenes when there is no active scene or chapter.");
             throw new Error("Cannot split scenes when there is no active scene or chapter.");
         }
-        const wasActiveChapter = clone(activeChapter);
+
 
         const activeSceneId = activeScene.id;
         const activeChapId = activeChapter.id;
@@ -95,30 +71,13 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
         activeScene.content = response['content'];
         await api.update_scene( activeSceneId, activeScene);
 
-        const newScene = await api.create_scene(activeChapId, response['split_title']);
+        const newSceneAndChapter = await api.create_scene(activeChapId, response['split_title'], activeScene.order+1);
 
-        newScene.order = activeScene.order + 1;
-        newScene.content = response['split_content'];
+        await queryClient.invalidateQueries({queryKey:['book', activeBook.id, 'index']});
+        await queryClient.invalidateQueries({queryKey:['book', activeBook.id, 'chapter', activeChapId]});
+        await queryClient.invalidateQueries({queryKey:['book', activeBook.id, 'scene', activeSceneId]});
 
-        let newScenes = clone(activeChapter.scenes);
-        newScenes.splice(newScene.order, 0, newScene);
-        const renumbered = map(newScenes, (newScene, idx) => {
-            newScene.order = idx;
-            return newScene;
-        })
-
-
-        await api.reorder_scenes(renumbered);
-        await api.update_scene(newScene.id, newScene);
-        const updatedChapter = await api.fetch_chapter(wasActiveChapter.id);
-
-
-
-        await queryClient.invalidateQueries({queryKey:['book', bookId, 'index']});
-        await queryClient.invalidateQueries({queryKey:['book', bookId, 'chapter', activeChapId]});
-        await queryClient.invalidateQueries({queryKey:['book', bookId, 'scene', activeSceneId]});
-
-        setActiveScene(updatedChapter, newScene);
+        setActiveScene(newSceneAndChapter[1], newSceneAndChapter[0]);
         console.groupEnd()
 
 
@@ -129,7 +88,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
         async function reprocessMDnSave() {
 
-            if(form.values['content'] != undefined && form.values['content'].trim().length == 0){
+            if(form.values['content'].trim().length == 0) {
                 modals.openConfirmModal({
                     modalId: "shouldDeleteScene",
                     title: "Scene body empty",
@@ -176,6 +135,8 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
             }
 
+
+            //Else we're doing some simple update logic
 
             const new_scene =
                 {
