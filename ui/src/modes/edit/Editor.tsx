@@ -362,41 +362,6 @@ export const Editor: React.FC<EditorProps> = () => {
         );
     }
 
-    let rightPanel = (
-        <h1>No book loaded</h1>
-    )
-
-    switch (editMode) {
-        case EditModes.LIST:
-            if (activeChapter !== undefined) {
-                rightPanel = (
-                    <RightPanel key={`${activeChapter.updated_on} ${activeChapter.id}-${activeScene?.id}`}/>
-                )
-            } else {
-                rightPanel = (
-                    <h2>Create a new chapter!</h2>
-                )
-            }
-            break;
-        case EditModes.FLOW:
-            if (activeChapter !== undefined) {
-                rightPanel = (
-                    <ContinuousBody key={`${activeChapter.id} ${activeChapter.updated_on}`}/>
-                )
-            } else {
-                rightPanel = (
-                    <h2>Create a new chapter!</h2>
-                )
-            }
-
-
-    }
-
-    // if (!activeChapter) {
-    //     return (
-    //         <Title order={3}>There is no activeChapter</Title>
-    //     )
-    // }
 
 
     const sceneKeys = (activeChapter)
@@ -412,7 +377,7 @@ export const Editor: React.FC<EditorProps> = () => {
 
 
     return (
-        <EditorContext.Provider value={bookContextValue}>
+        <EditorContext.Provider value={editorContextValue}>
             <AppShell
                 classNames={{
                     main: classes.main
@@ -467,7 +432,7 @@ export const Editor: React.FC<EditorProps> = () => {
                     px='md'
                     py='sm'
                 >
-                    {rightPanel}
+                    <Body/>
                 </Box>
             </AppShell>
         </EditorContext.Provider>
