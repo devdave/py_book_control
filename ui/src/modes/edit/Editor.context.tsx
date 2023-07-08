@@ -1,15 +1,15 @@
 import { createContext, useContext } from 'react'
 
-import {type Book, type Chapter, type ChapterIndex, type Scene, type SceneIndex} from '@src/types'
+import {type Book, type Chapter, type ChapterIndex, EditModes, type Scene, type SceneIndex} from '@src/types'
 import APIBridge from "@src/lib/remote";
 
-interface EditorContextValue {
+export interface EditorContextValue {
   index: Chapter[]
   activeBook: Book
   activeChapter: Chapter | ChapterIndex | undefined
   activeScene: Scene | SceneIndex | undefined
   chapters: Chapter[] | ChapterIndex[] | undefined
-  editMode: string
+  editMode: EditModes
   api: APIBridge
   addChapter(): void
   addScene(chapterId: string): Promise<Scene|void>
@@ -22,7 +22,7 @@ interface EditorContextValue {
   updateScene(scene: Partial<Scene>): void
   deleteScene(chapterId: string, sceneId: string): void
   fetchScene(sceneId: string): Promise<Scene>
-  setViewMode(mode: "flow"|"list"): void
+  setEditMode(mode: EditModes): void
   _setChapters (chapters: Chapter[]):void,
   _setActiveChapter (chapter: Chapter|ChapterIndex|undefined): void,
   _setActiveScene(scene: Scene|SceneIndex|undefined): void,

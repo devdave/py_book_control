@@ -34,9 +34,8 @@ export const LeftPanel: FC<LeftPanelProps> = ({index}) => {
         reorderChapter,
         setActiveChapter,
         setActiveScene,
-        setViewMode,
-        viewMode
-
+        setEditMode,
+        editMode
     } =
         useEditorContext()
 
@@ -47,8 +46,8 @@ export const LeftPanel: FC<LeftPanelProps> = ({index}) => {
             {/*<Title order={3}>Chapters</Title>*/}
 
             <SegmentedControl
-                value={viewMode}
-                onChange={setViewMode}
+                value={editMode}
+                onChange={setEditMode}
                 data={[
                     {
                         value: EditModes['LIST'],
