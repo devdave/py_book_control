@@ -7,7 +7,6 @@ import {
     Header,
     LoadingOverlay,
     Switch,
-    Title,
     useMantineColorScheme
 } from '@mantine/core'
 import {IconArrowBack, IconMoonStars, IconSun} from '@tabler/icons-react'
@@ -17,10 +16,10 @@ import {useCallback, useEffect, useMemo, useState} from 'react'
 
 import {PromptModal} from "@src/lib/input_modal";
 
-import {EditorContext} from './Editor.context'
+import {EditorContext, type EditorContextValue} from './Editor.context'
 import {LeftPanel} from './LeftPanel'
-import {RightPanel} from '@src/modes/edit/editor_panel/RightPanel';
-import {ContinuousBody} from '@src/modes/edit/continuous_panel';
+import {Body} from "@src/modes/edit/Body";
+
 
 import {AppModes, type Chapter, type ChapterIndex, EditModes, type Scene, type SceneIndex} from '@src/types'
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
@@ -48,7 +47,7 @@ export const Editor: React.FC<EditorProps> = () => {
     const [chapters, _setChapters] = useState<ChapterIndex[]>([]);
     const [activeChapter, _setActiveChapter] = useState<ChapterIndex | Chapter | undefined>(undefined);
     const [activeScene, _setActiveScene] = useState<SceneIndex | Scene | undefined>(undefined);
-    const [editMode, setEditMode] = useState<"list" | "flow">("list");
+    const [editMode, setEditMode] = useState<EditModes>(EditModes.LIST);
     const queryClient = useQueryClient();
 
     const {isLoading: indexIsloading, data: index, dataUpdatedAt: indexUpdatedAt} = useQuery({
@@ -317,7 +316,7 @@ export const Editor: React.FC<EditorProps> = () => {
             updateScene,
             deleteScene,
             fetchScene,
-            setViewMode: setEditMode,
+            setEditMode,
             _setChapters,
             _setActiveChapter,
             _setActiveScene,
