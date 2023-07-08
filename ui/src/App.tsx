@@ -1,7 +1,8 @@
 import Boundary, {PYWEBVIEWREADY} from "@src/lib/boundary";
 import APIBridge from '@src/lib/remote';
 import {ThemeProvider} from '@src/ThemeProvider'
-import {Editor} from '@src/modes/edit/Editor'
+import {Editor} from "@src/modes/edit/Editor";
+
 import {AppContext, AppContextValue} from '@src/App.context'
 
 import {ReactNode, useEffect, useMemo, useState} from "react";
@@ -11,6 +12,7 @@ import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 
 import {LoadingOverlay, Text} from "@mantine/core";
 import {AppModes, Book, Font} from "@src/types";
+import {Manifest} from "@src/modes/manifest/Manifest";
 //import APIBridge from "./lib/remote";
 
 
@@ -77,7 +79,7 @@ export default function App() {
         setActiveBook(bookData)
         console.log("Book data", bookData);
 
-        setIsReady(true);
+        setIsReady( (oldval) => true);
     }
 
 
@@ -120,12 +122,6 @@ export default function App() {
     }, []);
 
 
-    if (!isReady) {
-        return (
-            <LoadingOverlay visible={true}/>
-        )
-    }
-
     const AppContextValue = useMemo<AppContextValue>(
         () => ({
             api,
@@ -144,6 +140,11 @@ export default function App() {
     return (
         <AppWrapper value={AppContextValue}>
             {useMemo(()=>{
+                if(!isReady){
+                    return (
+                        <Text>Not ready yet {isReady ? 'true' : 'false'}</Text>
+                    )
+                }
                 switch (appMode){
                     case AppModes.OUTLINE:
                         return (
@@ -159,14 +160,14 @@ export default function App() {
                         )
                     case AppModes.MANIFEST:
                         return (
-                            <Text>Manifest</Text>
+                            <Manifest/>
                         )
                     default:
                         return (
                             <Text>Application error: unexpected mode {appMode}</Text>
                         )
                 }
-            },[appMode])}
+            },[appMode, isReady, activeBook])}
         </AppWrapper>
     )
 }

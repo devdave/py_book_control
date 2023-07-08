@@ -1,4 +1,5 @@
 import {
+    ActionIcon,
     AppShell,
     Box,
     createStyles,
@@ -9,10 +10,10 @@ import {
     Title,
     useMantineColorScheme
 } from '@mantine/core'
-import {IconMoonStars, IconSun} from '@tabler/icons-react'
-import {assignWith, clone, find, forEach, map} from 'lodash'
+import {IconArrowBack, IconMoonStars, IconSun} from '@tabler/icons-react'
+import {find} from 'lodash'
 
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
+import {useCallback, useEffect, useMemo, useState} from 'react'
 
 import {PromptModal} from "@src/lib/input_modal";
 
@@ -21,8 +22,7 @@ import {LeftPanel} from './LeftPanel'
 import {RightPanel} from '@src/modes/edit/editor_panel/RightPanel';
 import {ContinuousBody} from '@src/modes/edit/continuous_panel';
 
-import {type Chapter, type Scene, type SceneIndex, type ChapterIndex, EditModes, Book} from '@src/types'
-import APIBridge from "@src/lib/remote";
+import {AppModes, type Chapter, type ChapterIndex, EditModes, type Scene, type SceneIndex} from '@src/types'
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {ToggleInput} from "@src/lib/ToggleInput";
 import {useAppContext} from "@src/App.context";
@@ -40,7 +40,7 @@ interface EditorProps {
 
 export const Editor: React.FC<EditorProps> = () => {
 
-    const {api, activeBook} = useAppContext();
+    const {api, activeBook, setAppMode} = useAppContext();
 
     const {classes, theme} = useStyles()
     const {colorScheme, toggleColorScheme} = useMantineColorScheme()
@@ -59,6 +59,12 @@ export const Editor: React.FC<EditorProps> = () => {
     });
 
     useEffect(()=>{
+        if(indexIsloading){
+            _setActiveChapter(undefined);
+            _setActiveScene(undefined);
+            return;
+        }
+
         if(!indexIsloading){
             if(activeChapter === undefined){
                 if(index.length > 0){
@@ -72,7 +78,7 @@ export const Editor: React.FC<EditorProps> = () => {
                 _setActiveScene(activeChapter.scenes[0]);
             }
         }
-    }, [index, indexUpdatedAt])
+    }, [activeBook, index, indexUpdatedAt])
 
     const changeBookTitle = useMutation({
         mutationFn: (new_title: string) => api.update_book_title(activeBook.id, new_title)
@@ -359,11 +365,11 @@ export const Editor: React.FC<EditorProps> = () => {
 
     }
 
-    if (!activeChapter) {
-        return (
-            <Title order={3}>There is no activeChapter</Title>
-        )
-    }
+    // if (!activeChapter) {
+    //     return (
+    //         <Title order={3}>There is no activeChapter</Title>
+    //     )
+    // }
 
 
     const sceneKeys = (activeChapter)
@@ -374,7 +380,7 @@ export const Editor: React.FC<EditorProps> = () => {
 
 
     const leftPanel = (
-        <LeftPanel index={index} key={`${activeChapter.id} ${indexUpdatedAt} ${superKey}`}/>
+        <LeftPanel index={index} key={`${index.id} ${activeChapter?.id} ${indexUpdatedAt} ${superKey}`}/>
     )
 
 
@@ -395,7 +401,16 @@ export const Editor: React.FC<EditorProps> = () => {
                             px='xs'
 
                         >
-                            <ToggleInput value={activeBook.title} onChange={(newVal)=>changeBookTitle.mutate(newVal)} />
+                            <Group>
+                                <ActionIcon
+                                    title="Go back to book list"
+                                    onClick={()=>{setAppMode(AppModes.MANIFEST)}}
+                                ><IconArrowBack/></ActionIcon>
+                                <ToggleInput title="Double click to edit"
+                                             value={activeBook.title}
+                                             onChange={(newVal) => changeBookTitle.mutate(newVal)}/>
+                            </Group>
+
                             {/*<Title order={1}>{bookTitle}</Title>*/}
                             <Switch
                                 checked={colorScheme === 'dark'}

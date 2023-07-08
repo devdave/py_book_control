@@ -9,9 +9,10 @@ import {IconEdit} from "@tabler/icons-react";
 interface ToggleInputProps {
     value: string | undefined
     onChange: (new_value:string) => void
+    title: string | undefined
 }
 
-export const ToggleInput:React.FC<ToggleInputProps> = ({value, onChange}) => {
+export const ToggleInput:React.FC<ToggleInputProps> = ({value, onChange, title}) => {
 
     const [lastTouched, setLastTouched] = useState<number>(10000);
     const [state, toggle] = useToggle(['text', 'input']);
@@ -64,6 +65,7 @@ export const ToggleInput:React.FC<ToggleInputProps> = ({value, onChange}) => {
 
     return (
         <Title
+            title={title}
             order={1}
             onDoubleClick={()=>toggle()}
             style={{

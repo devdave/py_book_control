@@ -50,6 +50,12 @@ class APIBridge {
     }
     
     
+    async fetch_book_simple(book_uid:string) {
+        
+        return await this.boundary.remote("fetch_book_simple", book_uid);
+    }
+    
+    
     async find_source() {
         
         return await this.boundary.remote("find_source", );

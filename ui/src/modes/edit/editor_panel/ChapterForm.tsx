@@ -10,7 +10,7 @@ import {iconSizes} from "@mantine/core/lib/Stepper/Step/Step.styles";
 import {IconPlus} from "@tabler/icons-react";
 
 const formSchema = z.object({
-    title: z.string().trim().nonempty('Cannot be empty').min(3, 'Must be at least 4 characters')
+    title: z.string().trim().nonempty('Cannot be empty').min(3, 'Must be at least 3 characters')
 })
 
 export interface ChapterFormProps {
