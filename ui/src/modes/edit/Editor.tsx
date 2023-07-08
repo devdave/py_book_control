@@ -297,7 +297,7 @@ export const Editor: React.FC<EditorProps> = () => {
 
     const onToggleColorScheme = useCallback(() => toggleColorScheme(), [toggleColorScheme])
 
-    const bookContextValue = useMemo(
+    const editorContextValue = useMemo<EditorContextValue>(
         () => ({
             index,
             activeBook,
