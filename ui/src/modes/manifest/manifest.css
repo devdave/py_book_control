@@ -1,0 +1,11 @@
+
+
+.bookrow {
+    cursor: pointer;
+}
+
+.highlight {
+    background: blue;
+    color: white;
+    border: outset thin black;
+}

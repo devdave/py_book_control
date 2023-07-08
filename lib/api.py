@@ -51,6 +51,12 @@ class BCAPI:
             session.commit()
             return book.asdict(True)
 
+    def fetch_book_simple(self, book_uid: str):
+        with self.app.get_db() as session:
+            self.log.info("book_ui == `{}`", book_uid)
+            book = models.Book.Fetch_by_UID(session, book_uid)
+            return book.asdict(stripped=True)
+
     def find_source(self):
         result = self.app.main_window.create_file_dialog(
             webview.OPEN_DIALOG, allow_multiple=False, file_types=self.FILE_TYPES
