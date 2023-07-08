@@ -37,6 +37,9 @@ class Base(DeclarativeBase):
         stmt = update(cls).where(cls.id == fetch_id).values()
         session.execute(stmt)
 
+    def touch(self):
+        self.updated_on = DT.datetime.now()
+
 
     @classmethod
     def Fetch_by_Id(cls, session: Session, fetch_id: int):
@@ -208,7 +211,10 @@ class Scene(Base):
     @hybrid_property
     def words(self):
         cleaned = "" + self.content
-        return len(cleaned.replace('",.!?', " ").split(" "))
+        if cleaned == "":
+            return 0
+
+        return len(cleaned.replace('",.!?', " ").strip().split(" "))
 
     def asdict(self, stripped=False):
         data = dict(
