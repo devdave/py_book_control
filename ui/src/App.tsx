@@ -133,6 +133,7 @@ export default function App() {
             setFonts,
             activeFont,
             setActiveFont,
+            debounceTime: 800
         }),
         [api]
     )

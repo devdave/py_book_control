@@ -17,6 +17,8 @@ export interface AppContextValue {
     activeFont: Font
     setActiveFont: (font: Font)=>void
 
+    debounceTime: number
+
 }
 
 // @ts-ignore
