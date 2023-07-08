@@ -8,6 +8,7 @@ import {useEditorContext} from '../Editor.context'
 import {ChapterForm} from './ChapterForm'
 
 import SceneList from "./SceneList";
+import {Chapter} from "@src/types";
 
 
 const useStyles = createStyles((theme) => ({
@@ -41,7 +42,7 @@ export const RightPanel: FC<RightPanelProps> = () => {
                 <Textarea></Textarea>
             </details>
 
-            <ChapterForm chapter={activeChapter}/>
+            <ChapterForm chapter={activeChapter as Chapter}/>
             <Group
                 position='apart'
                 spacing='xs'

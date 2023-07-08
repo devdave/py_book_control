@@ -1,11 +1,11 @@
-import {Center, createStyles, Tabs} from '@mantine/core'
+import {Center, createStyles, Skeleton, Tabs} from '@mantine/core'
 import {type FC, useEffect, useState} from 'react'
 import {IconId, IconMapPin, IconNote, IconUsers, IconVocabulary} from '@tabler/icons-react'
 import TextSceneForm from './scene_forms/TextSceneForm';
 
 import {MainSceneForm} from './scene_forms/MainSceneForm'
 
-import {type Scene} from "../../../types";
+import {type Scene} from "@src/types";
 import {useEditorContext} from "../Editor.context";
 import {useQuery} from "@tanstack/react-query";
 
@@ -20,19 +20,24 @@ export interface ScenePanelProps {
 }
 
 export const ScenePanel: FC<ScenePanelProps> = ({indexedScene}) => {
-    const {api, bookId} = useEditorContext();
+    const {api, activeBook } = useEditorContext();
     const {classes} = useStyles()
     const [sceneLoaded, setSceneLoaded] = useState(false);
     const [freshScene, setFreshScene] = useState<Scene | undefined>(undefined);
 
     const {data:scene, isLoading:sceneIsLoading} = useQuery({
         queryFn: () => api.fetch_scene(indexedScene.id),
-        queryKey: ['book', bookId, 'chapter', indexedScene.chapterId, 'scene', indexedScene.id]
+        queryKey: ['book', activeBook.id, 'chapter', indexedScene.chapterId, 'scene', indexedScene.id]
     })
 
     if (sceneIsLoading) {
         return (
-            <h2>Loading scene</h2>
+            <>
+                <h2>Loading scene</h2>
+                <Skeleton/>
+                <Skeleton/>
+                <Skeleton/>
+            </>
         )
     }
 

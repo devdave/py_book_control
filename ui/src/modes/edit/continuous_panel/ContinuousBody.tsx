@@ -7,6 +7,7 @@ import {SceneText} from "./scene_text";
 import {useEditorContext} from "../Editor.context";
 import {useForm} from "@mantine/form";
 import {useQuery} from "@tanstack/react-query";
+import {useAppContext} from "@src/App.context";
 
 interface ContinuousBodyProps {
 
@@ -15,7 +16,8 @@ interface ContinuousBodyProps {
 export const ContinuousBody:React.FC<ContinuousBodyProps> = () => {
 
 
-    const {api, bookId , activeChapter, activeScene, addScene, updateChapter} = useEditorContext();
+    const {debounceTime} = useAppContext();
+    const {api, activeBook , activeChapter, activeScene, addScene, updateChapter} = useEditorContext();
     const paperRefs = useRef<Record<string, HTMLDivElement>>({});
 
     if(activeChapter == undefined){
@@ -25,7 +27,7 @@ export const ContinuousBody:React.FC<ContinuousBodyProps> = () => {
     // @ts-ignore
     const {data:chapter, isLoading: chapterIsLoading} = useQuery({
         queryFn: () => api.fetch_chapter(activeChapter.id),
-        queryKey: ['book', bookId, 'chapter', activeChapter?.id]
+        queryKey: ['book', activeBook.id, 'chapter', activeChapter?.id]
     })
 
 
@@ -56,7 +58,7 @@ export const ContinuousBody:React.FC<ContinuousBodyProps> = () => {
         if(form.isDirty()){
             updateChapterTitle().then();
         }
-    }, [form.values], {delay:900, runOnInitialize: false});
+    }, [form.values], {delay:debounceTime, runOnInitialize: false});
 
 
     useEffect(() => {
@@ -89,16 +91,8 @@ export const ContinuousBody:React.FC<ContinuousBodyProps> = () => {
     // @ts-ignore
     return (
         <Stack>
-            <div
-                    style={{
-                        position: "sticky",
-                        top: "0",
-                    }}
-            >
-                <TextInput
-                    {...form.getInputProps('title')}/>
-            </div>
-
+            {/*Chapter title*/}
+            <TextInput {...form.getInputProps('title')}/>
 
             {chapter.scenes.map((scene:Scene)=>
                 <Paper key={scene.id}
