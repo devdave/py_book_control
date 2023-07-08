@@ -107,11 +107,16 @@ export const Editor: React.FC<EditorProps> = () => {
 
     const _addScene = useMutation({
         mutationFn: (newScene: { [key:string]:string }) => api.create_scene(newScene['chapterId'], newScene['title']),
-        onSuccess: (newScene:Scene, newSceneParts:Partial<Scene>, context)  => {
-            console.log("Mutating addScene", newScene, newSceneParts, context);
+        onSuccess: (newSceneAndChapter:[Scene,Chapter], newSceneParts:Partial<Scene>, context)  => {
+            console.log("Added a new scene: ", newSceneAndChapter);
+            _setActiveScene(newSceneAndChapter[0]);
+            _setActiveChapter(newSceneAndChapter[1]);
+
             queryClient.invalidateQueries(['book', activeBook.id, 'chapter']);
+            queryClient.invalidateQueries(['book', activeBook.id, 'chapter', newSceneParts['chapterId']]);
             queryClient.invalidateQueries(['book', activeBook.id, 'index']);
-            _setActiveScene(newScene);
+
+
         }
     })
 
@@ -210,8 +215,20 @@ export const Editor: React.FC<EditorProps> = () => {
 
     const changeScene = useMutation({
         mutationFn: (alteredScene:Scene) => api.update_scene(alteredScene.id, alteredScene),
-        onSuccess: (response)=> {
+        onSuccess: (sceneAndChapter:[Scene, Chapter], request:Partial<Scene>)=> {
+            console.log("changed scene", sceneAndChapter);
+            if(activeChapter?.id == sceneAndChapter[1].id){
+                console.log("Updated activeChapter")
+                _setActiveChapter(sceneAndChapter[1]);
+            }
+            if(activeScene?.id == sceneAndChapter[0].id){
+                console.log("Updated activeScene")
+                _setActiveScene(sceneAndChapter[0]);
+            }
+
             queryClient.invalidateQueries(['book', activeBook.id, 'chapter']);
+            queryClient.invalidateQueries(['book', activeBook.id, 'index']);
+
         }
     })
 
@@ -228,6 +245,11 @@ export const Editor: React.FC<EditorProps> = () => {
             console.log("Deleted scene", data, chapterId, sceneId, context);
             await queryClient.invalidateQueries(['book', activeBook.id, 'chapter', chapterId]);
             await queryClient.invalidateQueries(['book', activeBook.id, 'index']);
+            _setActiveChapter((prior)=>{
+                prior.scenes = prior.scenes.filter((scene)=>scene.id != sceneId);
+                prior.updated_on = new Date(Date.now()).toUTCString();
+                return prior;
+            })
         }
     });
 
@@ -343,7 +365,7 @@ export const Editor: React.FC<EditorProps> = () => {
         case EditModes.LIST:
             if (activeChapter !== undefined) {
                 rightPanel = (
-                    <RightPanel key={`${activeChapter}-${activeScene}`}/>
+                    <RightPanel key={`${activeChapter.updated_on} ${activeChapter.id}-${activeScene?.id}`}/>
                 )
             } else {
                 rightPanel = (
@@ -380,7 +402,7 @@ export const Editor: React.FC<EditorProps> = () => {
 
 
     const leftPanel = (
-        <LeftPanel index={index} key={`${index.id} ${activeChapter?.id} ${indexUpdatedAt} ${superKey}`}/>
+        <LeftPanel index={index} key={`${index.id} ${activeChapter?.id} ${activeScene?.id} ${indexUpdatedAt} ${superKey}`}/>
     )
 
 
