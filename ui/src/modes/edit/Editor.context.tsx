@@ -19,7 +19,7 @@ interface EditorContextValue {
   setActiveChapter(chapter: Chapter|ChapterIndex|undefined): void
   setActiveScene(chapter: ChapterIndex | Chapter | undefined, scene: SceneIndex | Scene | undefined): void
   updateChapter(chapter: Chapter): void
-  updateScene(scene: Scene): void
+  updateScene(scene: Partial<Scene>): void
   deleteScene(chapterId: string, sceneId: string): void
   fetchScene(sceneId: string): Promise<Scene>
   setViewMode(mode: "flow"|"list"): void
