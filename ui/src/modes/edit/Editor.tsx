@@ -260,25 +260,26 @@ export const Editor: React.FC<EditorProps> = () => {
     const deleteScene = useCallback(
         async (chapterId: string, sceneId: string) => {
 
-            const target:Scene|SceneIndex|undefined|any = find(activeChapter?.scenes, (scene)=>{
+            console.log("Deleting scene: ", chapterId, sceneId);
+            const chapter:Chapter = await getChapter(chapterId);
+
+            const target:Scene|SceneIndex|undefined|any = find(chapter.scenes, (scene)=>{
                 if(scene.id == sceneId){
                     return scene;
                 }
             });
 
+
+            const newActiveScene: Scene|SceneIndex|undefined|any = find(chapter.scenes, (test)=>{
+                if(test.order == target.order -1){
+                    return test;
+                }
+            })
+
             _deleteScene.mutate({chapterId, sceneId});
 
-            if(target && target.order > 0){
-                const newSceneOrderPos = target.order - 1;
-                const newFocus: Scene|SceneIndex|any = find(activeChapter?.scenes, (scene)=>{
-                    if(scene.order == newSceneOrderPos){
-                        return scene;
-                    }
-                });
-
-                if(newFocus){
-                    _setActiveScene(newFocus);
-                }
+            if(newActiveScene){
+                _setActiveScene(newActiveScene);
             } else {
                 _setActiveScene(undefined);
             }
