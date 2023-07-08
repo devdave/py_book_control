@@ -215,11 +215,12 @@ class BCAPI:
             session.commit()
 
     def reorder_scenes(self, new_order:[models.Scene]):
+
         with self.app.get_db() as session:
             self.log.info("Reordering scenes: {}", new_order)
 
             for authority in new_order:
-                self.log("Scene authority is {}", authority)
+                self.log.info("Scene authority is {}", authority)
 
                 record = models.Scene.Fetch_by_uid(session, authority['id'])
                 record.order = int(authority['order'])
