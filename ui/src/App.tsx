@@ -10,7 +10,7 @@ import {ReactNode, useEffect, useMemo, useState} from "react";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 
-import {LoadingOverlay, Text} from "@mantine/core";
+import {Text} from "@mantine/core";
 import {AppModes, Book, Font} from "@src/types";
 import {Manifest} from "@src/modes/manifest/Manifest";
 //import APIBridge from "./lib/remote";
@@ -74,12 +74,18 @@ export default function App() {
 
     const doReady = async () => {
 
-        const bookData: Book = await api.get_current_book();
+        const response = await api.get_current_book();
 
-        setActiveBook(bookData)
-        console.log("Book data", bookData);
+        console.log("Current book response:", response);
 
-        setIsReady( (oldval) => true);
+        if(response !== false){
+            if(response['id'] !== undefined){
+                setActiveBook(response as Book);
+                setAppMode(AppModes.EDITOR);
+            }
+        }
+
+        setIsReady( () => true);
     }
 
 
@@ -137,6 +143,8 @@ export default function App() {
         }),
         [api]
     )
+
+
 
     return (
         <AppWrapper value={AppContextValue}>
