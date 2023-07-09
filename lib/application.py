@@ -9,29 +9,30 @@ class BCApplication:
 
     def __init__(self):
         self.main_window = None
+        self.book_id = None
 
+        # Makes sure we can connect
         engine, Session = models.connect()
-        self.Session = Session
 
 
-
-        with self.get_db() as session:
-            try:
-                self.book_id = models.Book.Fetch_by_Id(session, 1).id
-            except models.NoResultFound:
-                new_book = models.Book(title="Test1")
-                session.add(new_book)
-                session.commit()
-                self.book_id = new_book.id
+    @property
+    def has_active_book(self):
+        return self.book_id is not None
 
     def get_book(self, session: models.Session) -> models.Book:
-        return models.Book.Fetch_by_Id(session, self.book_id)
+        if self.has_active_book:
+            return models.Book.Fetch_by_Id(session, self.book_id)
+
+        return False
 
     def set_window(self, main_window):
         self.main_window = main_window
 
     def fetch_chapters(self, session):
-        return [chapter for chapter in self.get_book(session).chapters]
+        if self.has_active_book:
+            return [chapter for chapter in self.get_book(session).chapters]
+
+        return False
 
     @contextmanager
     def get_db(self):
