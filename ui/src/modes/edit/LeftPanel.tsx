@@ -18,7 +18,7 @@ import {type FC, useCallback} from 'react'
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
 
 import {useEditorContext} from './Editor.context'
-import {ChapterIndex, EditModes} from "../../types";
+import {Chapter, ChapterIndex, EditModes} from "../../types";
 
 interface LeftPanelProps {
     index: ChapterIndex[]
@@ -38,6 +38,12 @@ export const LeftPanel: FC<LeftPanelProps> = ({index}) => {
         editMode
     } =
         useEditorContext()
+
+
+    const handleChapterChange = (chapter: Chapter) => {
+        console.log("Changing chapters!");
+        setActiveChapter(chapter);
+    }
 
 
     return (
