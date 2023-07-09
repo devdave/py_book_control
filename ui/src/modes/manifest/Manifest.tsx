@@ -1,17 +1,40 @@
-import {Header, Paper, Skeleton, Stack, Table, Text, Title} from "@mantine/core";
+import {
+    createStyles,
+    Group,
+    Header,
+    Paper,
+    Skeleton,
+    Stack,
+    Switch,
+    Table,
+    Text,
+    Title,
+    useMantineColorScheme
+} from "@mantine/core";
 import {useAppContext} from "@src/App.context";
 import {useQuery} from "@tanstack/react-query";
 import {AppModes, Book} from "@src/types";
-import {MouseEventHandler, useState} from "react";
+import {MouseEventHandler, useCallback, useState} from "react";
 
 import "./manifest.css";
+import {IconMoonStars, IconSun} from "@tabler/icons-react";
 
+const useStyles = createStyles((theme) => ({
+    main: {
+        backgroundColor: theme.colorScheme === 'light' ? theme.colors.gray[0] : theme.colors.dark[6]
+    }
+}))
 
 export const Manifest = () => {
 
     const {api, setActiveBook, setAppMode} = useAppContext();
 
+    const {classes, theme} = useStyles()
+    const {colorScheme, toggleColorScheme} = useMantineColorScheme()
+
     const [highlightBookID, setHighLightBookID] = useState<string | undefined>();
+
+    const onToggleColorScheme = useCallback(() => toggleColorScheme(), [toggleColorScheme])
 
     const {data: books, isLoading: booksAreLoading} = useQuery({
         queryFn: () => api.list_books(true),
@@ -25,7 +48,7 @@ export const Manifest = () => {
         isLoading: highlightedIsLoading
     } = useQuery({
         enabled: highlightBookID !== undefined,
-        queryFn: () => api.fetch_book_simple(highlightBookID),
+        queryFn: () => api.fetch_book_simple(highlightBookID as string),
         queryKey: ['book', highlightBookID],
 
     });
@@ -69,8 +92,30 @@ export const Manifest = () => {
 
 
     return <Stack p={"md"}>
+
         <Header height={60}>
-            <Title order={1}>Open or create a new book</Title>
+            <Group align={"center"} position={"apart"}>
+                <Title order={1}>Open or create a new book</Title>
+                <Switch
+                    checked={colorScheme === 'dark'}
+                    onChange={onToggleColorScheme}
+                    size='lg'
+                    onLabel={
+                        <IconMoonStars
+                            color={theme.white}
+                            size='1.25rem'
+                            stroke={1.5}
+                        />
+                    }
+                    offLabel={
+                        <IconSun
+                            color={theme.colors.gray[6]}
+                            size='1.25rem'
+                            stroke={1.5}
+                        />
+                    }
+                />
+            </Group>
         </Header>
 
 
