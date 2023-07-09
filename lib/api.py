@@ -34,8 +34,11 @@ class BCAPI:
             ]
 
     def get_current_book(self, stripped: bool = True):
-        with self.app.get_db() as session:
-            return self.app.get_book(session).asdict(stripped=stripped)
+        if self.app.has_active_book:
+            with self.app.get_db() as session:
+                return self.app.get_book(session).asdict(stripped=stripped)
+
+        return False
 
 
     def set_current_book(self, book_uid: str):
@@ -73,8 +76,11 @@ class BCAPI:
             )
 
     def fetch_chapters(self):
-        with self.app.get_db() as session:
-            return [chapter.asdict() for chapter in self.app.fetch_chapters(session)]
+        if self.app.has_active_book:
+            with self.app.get_db() as session:
+                return [chapter.asdict() for chapter in self.app.fetch_chapters(session)]
+
+        return []
 
     def fetch_chapter(self, chapter_id: str):
         with self.app.get_db() as session:
@@ -93,17 +99,24 @@ class BCAPI:
             return chapter.asdict()
 
     def reorder_chapter(self, from_pos, to_pos):
-        with self.app.get_db() as session:
-            book = self.get_current_book()
-            floating = book.chapters.pop(from_pos)
-            book.chapters.insert(to_pos, floating)
-            book.chapters.reorder()
-            session.commit()
+        if self.app.has_active_book:
+            with self.app.get_db() as session:
+                book = self.get_current_book()
+                floating = book.chapters.pop(from_pos)
+                book.chapters.insert(to_pos, floating)
+                book.chapters.reorder()
+                session.commit()
+                return True
+
+        return False
 
     def fetch_stripped_chapters(self):
-        with self.app.get_db() as session:
-            book = models.Book.Fetch_by_Id(session, self.app.book_id)
-            return [chapter.asdict(stripped=True) for chapter in book.chapters]
+        if self.app.has_active_book:
+            with self.app.get_db() as session:
+                book = models.Book.Fetch_by_Id(session, self.app.book_id)
+                return [chapter.asdict(stripped=True) for chapter in book.chapters]
+
+        return []
 
     def create_chapter(self, new_chapter: dict):
         chapter = models.Chapter(title=new_chapter['title'], uid=models.generate_id(12))
@@ -148,22 +161,6 @@ class BCAPI:
 
 
         return response
-
-        # if response['status'] == 'success':
-        #     with self.app.get_db() as session:
-        #         sceneRecord = models.Scene.Fetch_by_uid(session, scene_uid) # type: models.Scene
-        #         sceneRecord.update(response)
-        #         session.commit()
-        #         response['updated_on'] = models.Scene.FMT_STR.format(sceneRecord.updated_on)
-        #         self.log.debug("updated record hopefully")
-        #         return response
-        # elif response['status'] == 'split':
-        #     self.log.debug("TODO split implementation")
-        #     return response
-        # else:
-        #     self.log.error("Got a non-success status {}", response)
-        #     return response
-
 
 
     def update_scene(self, scene_uid: str, new_data: T.Dict[str, str]):
@@ -235,14 +232,3 @@ class BCAPI:
         return data['scenes']
 
 
-    def boot_up(self):
-        """
-        Will be deprecated, automatically loads up the 1st Book for use with the app.
-            :return: bool
-        """
-        result = self.app.main_window.create_confirmation_dialog(
-            "Startup", "Click Ok to open an existing book."
-        )
-        if result:
-            # self.find_source()
-            return True
