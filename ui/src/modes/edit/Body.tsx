@@ -24,7 +24,7 @@ export const Body = () => {
         case EditModes.FLOW:
             if (activeChapter !== undefined) {
                 return (
-                    <ContinuousBody key={`${activeChapter.id} ${activeChapter.updated_on}`}/>
+                    <ContinuousBody key={`${activeChapter.updated_on} ${activeChapter.id}`}/>
                 )
             } else {
                 return (
