@@ -45,8 +45,11 @@ export const Editor: React.FC<EditorProps> = () => {
     const {colorScheme, toggleColorScheme} = useMantineColorScheme()
 
     const [chapters, _setChapters] = useState<ChapterIndex[]>([]);
+
+    const [activeElement, _setActiveElement] = useState();
     const [activeChapter, _setActiveChapter] = useState<ChapterIndex | Chapter | undefined>(undefined);
     const [activeScene, _setActiveScene] = useState<SceneIndex | Scene | undefined>(undefined);
+
     const [editMode, setEditMode] = useState<EditModes>(EditModes.LIST);
     const queryClient = useQueryClient();
 
