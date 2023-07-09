@@ -12,13 +12,14 @@ import {
     Title, Tooltip,
     useMantineTheme
 } from '@mantine/core'
-import {IconArticle, IconChevronRight, IconGripVertical, IconList, IconPlus} from '@tabler/icons-react'
+import {IconArticle, IconBook, IconChevronRight, IconGripVertical, IconList, IconPlus} from '@tabler/icons-react'
 import {map} from 'lodash'
 import {type FC, useCallback} from 'react'
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
 
 import {useEditorContext} from './Editor.context'
 import {Chapter, ChapterIndex, EditModes} from "../../types";
+import {useAppContext} from "@src/App.context";
 
 interface LeftPanelProps {
     index: ChapterIndex[]
@@ -39,6 +40,7 @@ export const LeftPanel: FC<LeftPanelProps> = ({index}) => {
     } =
         useEditorContext()
 
+    const {activeBook} = useAppContext();
 
     const handleChapterChange = (chapter: Chapter) => {
         console.log("Changing chapters!");
@@ -85,6 +87,18 @@ export const LeftPanel: FC<LeftPanelProps> = ({index}) => {
 
             <Divider color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]}/>
             <ScrollArea>
+                {/*Book link*/}
+                <NavLink
+                    label={`Book: ${activeBook.title}`}
+                    active={false}
+                    opened={true}
+                    icon={
+                        <Center>
+                            <IconBook/>
+                        </Center>
+                    }
+                >
+
                 <DragDropContext
                     onDragEnd={useCallback(
                         ({destination, source}) => {
@@ -172,6 +186,7 @@ export const LeftPanel: FC<LeftPanelProps> = ({index}) => {
                         )}
                     </Droppable>
                 </DragDropContext>
+                </NavLink>
             </ScrollArea>
         </Navbar>
     )
