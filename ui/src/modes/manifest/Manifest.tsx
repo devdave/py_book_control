@@ -37,6 +37,7 @@ export const Manifest = () => {
     const onToggleColorScheme = useCallback(() => toggleColorScheme(), [toggleColorScheme])
 
     const {data: books, isLoading: booksAreLoading} = useQuery({
+        staleTime: 30000,
         queryFn: () => api.list_books(true),
         queryKey: ["books", "index"]
     });
@@ -48,6 +49,7 @@ export const Manifest = () => {
         isLoading: highlightedIsLoading
     } = useQuery({
         enabled: highlightBookID !== undefined,
+        staleTime: 10000,
         queryFn: () => api.fetch_book_simple(highlightBookID as string),
         queryKey: ['book', highlightBookID],
 
