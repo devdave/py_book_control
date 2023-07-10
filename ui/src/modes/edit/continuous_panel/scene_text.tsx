@@ -1,6 +1,6 @@
 import {useForm} from "@mantine/form";
 import {Ref, useEffect, useRef, useState} from "react";
-import {Button, createStyles, Divider, Flex, Indicator, Skeleton, Text, Textarea} from "@mantine/core";
+import {Button, createStyles, Divider, Flex, Indicator, Skeleton, Text, Textarea, TextInput} from "@mantine/core";
 import {useDebouncedEffect} from "../../../lib/useDebouncedEffect";
 import {useEditorContext} from "../Editor.context";
 import {Chapter, Scene} from "../../../types";
@@ -48,6 +48,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
             content: compile_scene2md(scene),
             notes: scene ? scene.notes : 'STOP! failed to load...',
             summary: scene ? scene.summary : 'STOP! failed to load...',
+            location: scene? scene.location : "STOP! Failed to load..."
         }
     });
 
@@ -146,6 +147,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                     content: response['content'],
                     notes: form.values['notes'],
                     summary: form.values['summary'],
+                    location: form.values['location'],
                 }
 
             updateScene(new_scene);
@@ -211,6 +213,19 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                 direction="column"
                 style={{height: "100%"}}
             >
+
+                <Indicator
+                    processing
+                    color="red"
+                    disabled={!form.isDirty("location")}
+                >
+                    <textarea
+                        label="Location"
+                        placeholder="Scene location"
+                        {...form.getInputProps("location")}
+                    />
+                </Indicator>
+
                 <label>Notes</label>
                 <Indicator
                     processing
