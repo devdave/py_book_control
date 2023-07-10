@@ -107,7 +107,7 @@ export const ContinuousBody:React.FC<ContinuousBodyProps> = () => {
                 }}
                 >
                     {scene &&
-                        <SceneText key={`${scene.id} ${scene.updated_on} ${scene.order}`} scene={scene}/>
+                        <SceneText key={`${scene.id} ${scene.order}`} scene={scene}/>
                     }
 
                 </Paper>
