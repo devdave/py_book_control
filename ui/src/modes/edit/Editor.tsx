@@ -14,7 +14,7 @@ import {find} from 'lodash'
 
 import {useCallback, useEffect, useMemo, useState} from 'react'
 
-import {PromptModal} from "@src/lib/input_modal";
+import {PromptModal} from "@src/widget/input_modal";
 
 import {EditorContext, type EditorContextValue} from './Editor.context'
 import {LeftPanel} from './LeftPanel'
@@ -23,7 +23,7 @@ import {Body} from "@src/modes/edit/Body";
 
 import {AppModes, type Chapter, type ChapterIndex, EditModes, type Scene, type SceneIndex} from '@src/types'
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {ToggleInput} from "@src/lib/ToggleInput";
+import {ToggleInput} from "@src/widget/ToggleInput";
 import {useAppContext} from "@src/App.context";
 
 
@@ -83,7 +83,11 @@ export const Editor: React.FC<EditorProps> = () => {
     }, [activeBook, index, indexUpdatedAt])
 
     const changeBookTitle = useMutation({
-        mutationFn: (new_title: string) => api.update_book_title(activeBook.id, new_title)
+        mutationFn: (new_title: string) => api.update_book_title(activeBook.id, new_title),
+        onSuccess: (response, new_title) => {
+            queryClient.invalidateQueries({queryKey: ['book', activeBook.id, 'index']});
+            activeBook.title = new_title;
+        }
     })
 
     const createChapter = useMutation({
@@ -159,7 +163,7 @@ export const Editor: React.FC<EditorProps> = () => {
     const reorderChapter = useCallback(
         async (from: number, to: number) => {
             const response = await api.reorder_chapter(from, to);
-            await queryClient.invalidateQueries({queryKey:['book', activeBook.id, 'chapter']});
+            await queryClient.invalidateQueries({queryKey:['book', activeBook.id, 'index']});
         },
         []
     )
@@ -374,7 +378,7 @@ export const Editor: React.FC<EditorProps> = () => {
 
 
     const leftPanel = (
-        <LeftPanel index={index} key={`${index.id} ${activeChapter?.id} ${activeScene?.id} ${indexUpdatedAt} ${superKey}`}/>
+        <LeftPanel index={index} key={`${activeChapter?.id} ${activeScene?.id}  ${activeBook.updated_on} ${indexUpdatedAt} ${superKey}`}/>
     )
 
 
