@@ -5,14 +5,14 @@ from contextlib import contextmanager
 class BCApplication:
     main_window: webview.Window
     book_id: int
-    session: models.scoped_session
+    Session: models.scoped_session
 
     def __init__(self):
         self.main_window = None
         self.book_id = None
 
         # Makes sure we can connect
-        engine, Session = models.connect()
+        self.engine, self.Session = models.connect()
 
 
     @property
