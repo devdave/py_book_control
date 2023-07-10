@@ -2,7 +2,7 @@ import {Indicator, Text, TextInput, Title} from "@mantine/core";
 import {useState} from "react";
 import {useToggle} from "@mantine/hooks";
 import {useForm} from "@mantine/form";
-import {useDebouncedEffect} from "./useDebouncedEffect";
+import {useDebouncedEffect} from "../lib/useDebouncedEffect";
 import {IconEdit} from "@tabler/icons-react";
 
 

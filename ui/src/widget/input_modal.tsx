@@ -1,7 +1,7 @@
 import {modals} from "@mantine/modals";
 import {Button, Group, TextInput} from "@mantine/core";
 import React from "react";
-import {GenerateRandomString} from "./utils";
+import {GenerateRandomString} from "../lib/utils";
 
 type Callback<Type> = (arg: Type) => void;
 
