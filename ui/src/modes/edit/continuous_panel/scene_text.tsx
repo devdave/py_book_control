@@ -1,12 +1,28 @@
 import {useForm} from "@mantine/form";
 import {Ref, useEffect, useRef, useState} from "react";
-import {Button, createStyles, Divider, Flex, Indicator, Skeleton, Text, Textarea, TextInput} from "@mantine/core";
-import {useDebouncedEffect} from "../../../lib/useDebouncedEffect";
+import {
+    ActionIcon,
+    Button,
+    Center,
+    createStyles,
+    Divider,
+    Flex, Group,
+    Indicator,
+    Skeleton,
+    Text,
+    Textarea,
+    TextInput
+} from "@mantine/core";
+
+import {useDebouncedEffect} from "@src/lib/useDebouncedEffect";
+import {PopoutTextarea} from "@src/widget/PopoutTextarea";
 import {useEditorContext} from "../Editor.context";
-import {Chapter, Scene} from "../../../types";
+import {Chapter, Scene} from "@src/types";
 import {modals} from "@mantine/modals";
-import {clone, map} from "lodash";
+
+
 import {useQueryClient} from "@tanstack/react-query";
+import {IconWindowMaximize} from "@tabler/icons-react";
 
 
 interface SceneTextProps {
@@ -14,7 +30,7 @@ interface SceneTextProps {
 }
 
 const compile_scene2md = (scene: Scene) => {
-    if(scene){
+    if (scene) {
         let content = (scene.content != undefined) ? scene.content : "";
         return `## ${scene.title}\n\n${scene.content}`;
     } else {
@@ -38,20 +54,18 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
     } = useEditorContext();
 
 
-
     const [sceneMD, setSceneMD] = useState("");
     const queryClient = useQueryClient();
 
 
-    const form = useForm({
+    const form = useForm<Partial<Scene>>({
         initialValues: {
             content: compile_scene2md(scene),
             notes: scene ? scene.notes : 'STOP! failed to load...',
             summary: scene ? scene.summary : 'STOP! failed to load...',
-            location: scene? scene.location : "STOP! Failed to load..."
+            location: scene ? scene.location : "STOP! Failed to load..."
         }
     });
-
 
 
     const doSplit = async (response: any) => {
@@ -70,13 +84,13 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
         const activeChapId = activeChapter.id;
 
         activeScene.content = response['content'];
-        await api.update_scene( activeSceneId, activeScene);
+        await api.update_scene(activeSceneId, activeScene);
 
-        const newSceneAndChapter = await api.create_scene(activeChapId, response['split_title'], activeScene.order+1);
+        const newSceneAndChapter = await api.create_scene(activeChapId, response['split_title'], activeScene.order + 1);
 
-        await queryClient.invalidateQueries({queryKey:['book', activeBook.id, 'index']});
-        await queryClient.invalidateQueries({queryKey:['book', activeBook.id, 'chapter', activeChapId]});
-        await queryClient.invalidateQueries({queryKey:['book', activeBook.id, 'scene', activeSceneId]});
+        await queryClient.invalidateQueries({queryKey: ['book', activeBook.id, 'index']});
+        await queryClient.invalidateQueries({queryKey: ['book', activeBook.id, 'chapter', activeChapId]});
+        await queryClient.invalidateQueries({queryKey: ['book', activeBook.id, 'scene', activeSceneId]});
 
         setActiveScene(newSceneAndChapter[1], newSceneAndChapter[0]);
         console.groupEnd()
@@ -89,7 +103,8 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
         async function reprocessMDnSave() {
 
-            if(form.values['content'].trim().length == 0) {
+            // @ts-ignore
+            if (form.values['content'].trim().length == 0) {
                 modals.openConfirmModal({
                     modalId: "shouldDeleteScene",
                     title: "Scene body empty",
@@ -99,17 +114,18 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                         </Text>
                     ),
                     labels: {confirm: "Delete scene!", cancel: "Do not delete scene!"},
-                    onConfirm: () => { deleteScene(scene.chapterId, scene.id) },
+                    onConfirm: () => {
+                        deleteScene(scene.chapterId, scene.id)
+                    },
 
                 })
                 return;
             }
 
-            const response = await api.process_scene_markdown(scene.id, form.values['content']);
+            const response = await api.process_scene_markdown(scene.id, form.values['content'] as string);
 
             if (response.status == "error") {
                 form.setValues({content: sceneMD});
-
                 throw new Error(response.message);
             }
 
@@ -128,7 +144,9 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                         </Text>
                     ),
                     labels: {confirm: "Do split", cancel: "Undo/remove second title"},
-                    onConfirm: () => doSplit(response).then(()=>{form.resetDirty()}),
+                    onConfirm: () => doSplit(response).then(() => {
+                        form.resetDirty()
+                    }),
                     onCancel: () => console.log("Split cancelled!")
                 });
 
@@ -164,7 +182,7 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
 
     }, [form.values], {delay: 1000, runOnInitialize: false});
 
-    if(scene === undefined){
+    if (scene === undefined) {
         return (
             <Skeleton height={100} mt={6} width="100%" radius="xl"/>
         )
@@ -202,8 +220,8 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                     boxSizing: "border-box",
 
                 }}
+                autoFocus={activeScene?.id === scene.id}
                 autoCapitalize="sentences"
-
                 {...form.getInputProps("content")}
             />
             </Indicator>
@@ -211,61 +229,44 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
             <Divider orientation="vertical"/>
             <Flex
                 direction="column"
-                style={{height: "100%"}}
+                style={{height: "100%", position: "relative", minWidth: "8rem"}}
             >
-
-                <Indicator
-                    processing
-                    color="red"
-                    disabled={!form.isDirty("location")}
-                >
-                    <textarea
-                        label="Location"
-                        placeholder="Scene location"
-                        {...form.getInputProps("location")}
-                    />
-                </Indicator>
-
-                <label>Notes</label>
-                <Indicator
-                    processing
-                    color="red"
-                    disabled={!form.isDirty('notes')}
-                    style={{
-                            height: "40%",
-                            flexGrow: 1
-                        }}
-                >
-                    <textarea
-                        autoCapitalize="sentences"
-                        style={{
-                            height: "100%"
-                        }}
-                        {...form.getInputProps("notes")}
-                    />
-                </Indicator>
-
-                <label>Summary</label>
-                <Indicator
-                    color="red"
-                    processing
-                    disabled={!form.isDirty("summary")}
-                    style={{
-                            height: "40%",
-                            flexGrow: 1
-                        }}
+                <details open={true}>
+                    <summary>Location</summary>
+                    <Indicator processing color="red" disabled={!form.isDirty("location")}>
+                        <Textarea placeholder="Scene location" autosize
+                                  minRows={5} {...form.getInputProps("location")} />
+                    </Indicator>
+                </details>
+                <details open={true}>
+                    <summary>Notes</summary>
+                    <Indicator processing color="red"
+                        disabled={!form.isDirty('notes')}
                     >
-                    <textarea
-                        autoCapitalize="sentences"
-                        style={{
-                            height: "100%"
+                        <Textarea
+                            autosize minRows={5} autoCapitalize="sentences"
+                            {...form.getInputProps("notes")}
+                        />
+                    </Indicator>
+                </details>
 
-                        }}
+                <details open={true}>
+                    <summary>Summary</summary>
+
+                    <Indicator
+                        color="red" processing
+                        disabled={!form.isDirty("summary")}
+                    >
+                    <Textarea
+                        autosize minRows={5}
+                        autoCapitalize="sentences"
                         {...form.getInputProps("summary")}
                     />
-                </Indicator>
-                <Button
-                    onClick={() => deleteScene(scene.chapterId, scene.id)}
+                    </Indicator>
+                </details>
+
+                <Button style={{position: "absolute", bottom: "0px"}}
+                        onClick={() => deleteScene(scene.chapterId, scene.id)}
                 >Delete Scene</Button>
 
             </Flex>
