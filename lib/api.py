@@ -101,7 +101,7 @@ class BCAPI:
     def reorder_chapter(self, from_pos, to_pos):
         if self.app.has_active_book:
             with self.app.get_db() as session:
-                book = self.get_current_book()
+                book = self.app.get_book(session)
                 floating = book.chapters.pop(from_pos)
                 book.chapters.insert(to_pos, floating)
                 book.chapters.reorder()
