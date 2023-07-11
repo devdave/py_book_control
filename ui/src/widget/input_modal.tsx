@@ -1,35 +1,36 @@
-import { modals } from '@mantine/modals';
-import { Button, Group, TextInput } from '@mantine/core';
-import React from 'react';
-import { GenerateRandomString } from '../lib/utils';
+import { modals } from '@mantine/modals'
+import { Button, Group, TextInput } from '@mantine/core'
+import React from 'react'
+import { GenerateRandomString } from '../lib/utils'
 
-type Callback<Type> = (arg: Type) => void;
+type Callback<Type> = (arg: Type) => void
 
-export const PromptModal = (promptText:string):Promise<string> => new Promise<string>((resolve) => {
-        let textValue = '';
+export const PromptModal = (promptText: string): Promise<string> =>
+    new Promise<string>((resolve) => {
+        let textValue = ''
 
-        const modalId = GenerateRandomString(12);
+        const modalId = GenerateRandomString(12)
 
         const killModal = () => {
-            modals.close(modalId);
-            resolve(textValue);
+            modals.close(modalId)
+            resolve(textValue)
         }
 
         const sendInput = () => {
-            modals.close(modalId);
-            console.info(`Send ${textValue}`);
-            resolve(textValue);
+            modals.close(modalId)
+            console.info(`Send ${textValue}`)
+            resolve(textValue)
         }
 
         const handleClick = () => {
-            sendInput();
+            sendInput()
         }
 
         const detectEnter = (evt: React.KeyboardEvent<HTMLInputElement>) => {
             if (evt.key === 'Enter') {
-                console.info('Enter caught');
-                evt.preventDefault();
-                sendInput();
+                console.info('Enter caught')
+                evt.preventDefault()
+                sendInput()
             }
         }
 
@@ -39,49 +40,52 @@ export const PromptModal = (promptText:string):Promise<string> => new Promise<st
             withinPortal: false,
             centered: true,
             children: (
-                <Group position='center' onBlur={killModal}>
+                <Group
+                    position='center'
+                    onBlur={killModal}
+                >
                     <TextInput
                         placeholder={promptText}
                         data-autofocus
-                        onChange={(evt) => textValue = evt.currentTarget.value}
+                        onChange={(evt) => (textValue = evt.currentTarget.value)}
                         onKeyDown={detectEnter}
                     />
                     <Button onClick={handleClick}>Create</Button>
                     <Button onClick={killModal}>Cancel</Button>
                 </Group>
-            ),
-        });
+            )
+        })
     })
 
 class InputModal {
     modalId: string
 
     constructor() {
-        this.modalId = GenerateRandomString(12);
+        this.modalId = GenerateRandomString(12)
     }
 
     killModal() {
-        modals.close(this.modalId);
+        modals.close(this.modalId)
     }
 
     async arun(prompt: string) {
         return new Promise((resolve) => {
-            let textValue = '';
+            let textValue = ''
             const sendInput = () => {
-                modals.close(this.modalId);
-                console.info(`Send ${textValue}`);
-                resolve(textValue);
+                modals.close(this.modalId)
+                console.info(`Send ${textValue}`)
+                resolve(textValue)
             }
 
             const handleClick = () => {
-                sendInput();
+                sendInput()
             }
 
             const detectEnter = (evt: React.KeyboardEvent<HTMLInputElement>) => {
                 if (evt.key === 'Enter') {
-                    console.info('Enter caught');
-                    evt.preventDefault();
-                    sendInput();
+                    console.info('Enter caught')
+                    evt.preventDefault()
+                    sendInput()
                 }
             }
 
@@ -95,35 +99,35 @@ class InputModal {
                         <TextInput
                             placeholder={prompt}
                             data-autofocus
-                            onChange={(evt) => textValue = evt.currentTarget.value}
+                            onChange={(evt) => (textValue = evt.currentTarget.value)}
                             onKeyDown={detectEnter}
                         />
                         <Button onClick={handleClick}>Create</Button>
                         <Button onClick={this.killModal.bind(this)}>Cancel</Button>
                     </Group>
-                ),
-            });
-        });
+                )
+            })
+        })
     }
 
     run(callback: Callback<string>, prompt: string) {
-        let textValue = '';
+        let textValue = ''
 
         const sendInput = () => {
-            modals.close(this.modalId);
-            console.info(`Send ${textValue}`);
-            callback(textValue);
+            modals.close(this.modalId)
+            console.info(`Send ${textValue}`)
+            callback(textValue)
         }
 
         const handleClick = () => {
-            sendInput();
+            sendInput()
         }
 
         const detectEnter = (evt: React.KeyboardEvent<HTMLInputElement>) => {
             if (evt.key === 'Enter') {
-                console.info('Enter caught');
-                evt.preventDefault();
-                sendInput();
+                console.info('Enter caught')
+                evt.preventDefault()
+                sendInput()
             }
         }
 
@@ -137,15 +141,15 @@ class InputModal {
                     <TextInput
                         placeholder={prompt}
                         data-autofocus
-                        onChange={(evt) => textValue = evt.currentTarget.value}
+                        onChange={(evt) => (textValue = evt.currentTarget.value)}
                         onKeyDown={detectEnter}
                     />
                     <Button onClick={handleClick}>Create</Button>
                     <Button onClick={this.killModal.bind(this)}>Cancel</Button>
                 </Group>
-            ),
-        });
+            )
+        })
     }
 }
 
-export default InputModal;
+export default InputModal

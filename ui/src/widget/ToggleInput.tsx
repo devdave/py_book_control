@@ -1,50 +1,54 @@
-import { Indicator, Text, TextInput, Title } from '@mantine/core';
-import { useState } from 'react';
-import { useToggle } from '@mantine/hooks';
-import { useForm } from '@mantine/form';
-import { IconEdit } from '@tabler/icons-react';
-import { useDebouncedEffect } from '../lib/useDebouncedEffect';
+import { Indicator, Text, TextInput, Title } from '@mantine/core'
+import { useState } from 'react'
+import { useToggle } from '@mantine/hooks'
+import { useForm } from '@mantine/form'
+import { IconEdit } from '@tabler/icons-react'
+import { useDebouncedEffect } from '../lib/useDebouncedEffect'
 
 interface ToggleInputProps {
     value: string | undefined
-    onChange: (new_value:string) => void
+    onChange: (new_value: string) => void
     title: string | undefined
 }
 
-export const ToggleInput:React.FC<ToggleInputProps> = ({ value, onChange, title }) => {
-    const [lastTouched, setLastTouched] = useState<number>(10000);
-    const [state, toggle] = useToggle(['text', 'input']);
+export const ToggleInput: React.FC<ToggleInputProps> = ({ value, onChange, title }) => {
+    const [lastTouched, setLastTouched] = useState<number>(10000)
+    const [state, toggle] = useToggle(['text', 'input'])
 
     const form = useForm({
         initialValues: {
             value: value || 'Empty field'
         }
-    });
+    })
 
     const doUpdate = () => {
-        const newVal = form.values.value;
-        console.log('Would update to', newVal, 'from', value);
-        onChange(newVal);
-        form.resetDirty();
+        const newVal = form.values.value
+        console.log('Would update to', newVal, 'from', value)
+        onChange(newVal)
+        form.resetDirty()
     }
 
-    useDebouncedEffect(() => {
-        if (form.isDirty()) {
-            doUpdate();
-            if (state == 'input') {
-                toggle();
+    useDebouncedEffect(
+        () => {
+            if (form.isDirty()) {
+                doUpdate()
+                if (state == 'input') {
+                    toggle()
+                }
             }
-        }
-    }, [form.values], { delay: 900, runOnInitialize: false });
+        },
+        [form.values],
+        { delay: 900, runOnInitialize: false }
+    )
 
-    const handleKeyEnter = (evt:React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyEnter = (evt: React.KeyboardEvent<HTMLInputElement>) => {
         if (evt.key == 'Enter' || evt.key == 'enter') {
             if (form.isDirty()) {
-                doUpdate();
+                doUpdate()
             }
-            toggle();
+            toggle()
         } else if (evt.key == 'Escape') {
-            toggle();
+            toggle()
         }
     }
 
@@ -56,7 +60,13 @@ export const ToggleInput:React.FC<ToggleInputProps> = ({ value, onChange, title 
                 processing
                 onBlur={() => toggle()}
             >
-                <TextInput autoFocus required onKeyUp={handleKeyEnter} onBlur={() => toggle()} {...form.getInputProps('value')} />
+                <TextInput
+                    autoFocus
+                    required
+                    onKeyUp={handleKeyEnter}
+                    onBlur={() => toggle()}
+                    {...form.getInputProps('value')}
+                />
             </Indicator>
         )
     }
@@ -69,7 +79,9 @@ export const ToggleInput:React.FC<ToggleInputProps> = ({ value, onChange, title 
             style={{
                 cursor: 'text'
             }}
-        >{form.values.value}{<IconEdit />}
+        >
+            {form.values.value}
+            {<IconEdit />}
         </Title>
     )
 }

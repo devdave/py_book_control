@@ -43,7 +43,6 @@ export const MainSceneForm: FC<SceneFormProps> = ({ scene }) => {
 
     return (
         <>
-
             <TextInput
                 autoCapitalize='words'
                 label='Title'

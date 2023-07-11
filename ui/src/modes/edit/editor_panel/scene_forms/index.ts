@@ -1,4 +1,4 @@
-import { MainSceneForm } from './MainSceneForm';
-import TextSceneForm from './TextSceneForm';
+import { MainSceneForm } from './MainSceneForm'
+import TextSceneForm from './TextSceneForm'
 
-export { MainSceneForm, TextSceneForm };
+export { MainSceneForm, TextSceneForm }

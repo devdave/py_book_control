@@ -3,8 +3,8 @@ import { useForm, zodResolver } from '@mantine/form'
 import { type FC, useCallback } from 'react'
 import z from 'zod'
 
-import { iconSizes } from '@mantine/core/lib/Stepper/Step/Step.styles';
-import { IconPlus } from '@tabler/icons-react';
+import { iconSizes } from '@mantine/core/lib/Stepper/Step/Step.styles'
+import { IconPlus } from '@tabler/icons-react'
 import { useEditorContext } from '../Editor.context'
 import { type Chapter } from '../../../types'
 import { useDebouncedEffect } from '../../../lib/useDebouncedEffect'
@@ -65,13 +65,13 @@ export const ChapterForm: FC<ChapterFormProps> = ({ chapter }) => {
             </details>
             <details>
                 <summary>Chapter Summary</summary>
-                    <Textarea
-                        autoCapitalize='sentences'
-                        autosize
-                        minRows={4}
-                        spellCheck
-                        {...form.getInputProps('summary')}
-                    />
+                <Textarea
+                    autoCapitalize='sentences'
+                    autosize
+                    minRows={4}
+                    spellCheck
+                    {...form.getInputProps('summary')}
+                />
             </details>
         </>
     )

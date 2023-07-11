@@ -1,24 +1,22 @@
-import { Button, Center, Paper, TextInput, Text, Title, Group, Stack } from '@mantine/core';
-import { Ref, useEffect, useRef, useState } from 'react';
-import { useForm } from '@mantine/form';
-import { useQuery } from '@tanstack/react-query';
-import { useAppContext } from '@src/App.context';
-import { useEditorContext } from '../Editor.context';
-import { SceneText } from './scene_text';
-import { useDebouncedEffect } from '../../../lib/useDebouncedEffect';
-import { Chapter, type Scene } from '../../../types';
+import { Button, Center, Paper, TextInput, Text, Title, Group, Stack } from '@mantine/core'
+import { Ref, useEffect, useRef, useState } from 'react'
+import { useForm } from '@mantine/form'
+import { useQuery } from '@tanstack/react-query'
+import { useAppContext } from '@src/App.context'
+import { useEditorContext } from '../Editor.context'
+import { SceneText } from './scene_text'
+import { useDebouncedEffect } from '../../../lib/useDebouncedEffect'
+import { Chapter, type Scene } from '../../../types'
 
-interface ContinuousBodyProps {
+interface ContinuousBodyProps {}
 
-}
-
-export const ContinuousBody:React.FC<ContinuousBodyProps> = () => {
-    const { debounceTime } = useAppContext();
-    const { api, activeBook, activeChapter, activeScene, addScene, updateChapter } = useEditorContext();
-    const paperRefs = useRef<Record<string, HTMLDivElement>>({});
+export const ContinuousBody: React.FC<ContinuousBodyProps> = () => {
+    const { debounceTime } = useAppContext()
+    const { api, activeBook, activeChapter, activeScene, addScene, updateChapter } = useEditorContext()
+    const paperRefs = useRef<Record<string, HTMLDivElement>>({})
 
     if (activeChapter == undefined) {
-        throw Error('Data integrity issue, activechapter is not defined');
+        throw Error('Data integrity issue, activechapter is not defined')
     }
 
     // @ts-ignore
@@ -32,28 +30,35 @@ export const ContinuousBody:React.FC<ContinuousBodyProps> = () => {
             title: activeChapter?.title
         },
         validate: {
-            title: (value:string | undefined) => ((value != undefined && value.length) <= 2 ? "Chapter title's need to be at least 3 characters long" : undefined)
+            title: (value: string | undefined) =>
+                (value != undefined && value.length) <= 2
+                    ? "Chapter title's need to be at least 3 characters long"
+                    : undefined
         }
-    });
+    })
 
-    useDebouncedEffect(() => {
-        async function updateChapterTitle() {
-            if (activeChapter) {
-                // @ts-ignore
-                const new_chapter:Chapter = {
-                    ...activeChapter,
-                    title: form.values.title || 'Missing chapter'
-                };
-                updateChapter(new_chapter);
-            } else {
-                alert('Full stop! Data integrity issue.  activeChapter is not defined.');
+    useDebouncedEffect(
+        () => {
+            async function updateChapterTitle() {
+                if (activeChapter) {
+                    // @ts-ignore
+                    const new_chapter: Chapter = {
+                        ...activeChapter,
+                        title: form.values.title || 'Missing chapter'
+                    }
+                    updateChapter(new_chapter)
+                } else {
+                    alert('Full stop! Data integrity issue.  activeChapter is not defined.')
+                }
             }
-        }
 
-        if (form.isDirty()) {
-            updateChapterTitle().then();
-        }
-    }, [form.values], { delay: debounceTime, runOnInitialize: false });
+            if (form.isDirty()) {
+                updateChapterTitle().then()
+            }
+        },
+        [form.values],
+        { delay: debounceTime, runOnInitialize: false }
+    )
 
     useEffect(() => {
         if (activeScene && paperRefs.current[activeScene.id] !== undefined) {
@@ -63,14 +68,13 @@ export const ContinuousBody:React.FC<ContinuousBodyProps> = () => {
                 inline: 'nearest'
             })
         }
-    }, [activeScene?.id]);
+    }, [activeScene?.id])
 
     if (!activeChapter) {
         return (
             <>
                 <Title order={2}>Missing active chapter</Title>
             </>
-
         )
     }
 
@@ -88,7 +92,7 @@ export const ContinuousBody:React.FC<ContinuousBodyProps> = () => {
             {/*Chapter title*/}
             <TextInput {...form.getInputProps('title')} />
 
-            {chapter.scenes.map((scene:Scene) =>
+            {chapter.scenes.map((scene: Scene) => (
                 <Paper
                     key={scene.id}
                     shadow='xl'
@@ -96,22 +100,24 @@ export const ContinuousBody:React.FC<ContinuousBodyProps> = () => {
                     withBorder
                     style={{ height: '80vh', marginBottom: '2em' }}
                     ref={(ref: HTMLDivElement) => {
-                    if (ref) {
-                        paperRefs.current[scene.id] = ref;
-                    }
-                }}
+                        if (ref) {
+                            paperRefs.current[scene.id] = ref
+                        }
+                    }}
                 >
-                    {scene &&
-                        <SceneText key={`${scene.id} ${scene.order}`} scene={scene} />
-                    }
-
+                    {scene && (
+                        <SceneText
+                            key={`${scene.id} ${scene.order}`}
+                            scene={scene}
+                        />
+                    )}
                 </Paper>
-            )}
-            {activeChapter?.scenes.length == 0 &&
+            ))}
+            {activeChapter?.scenes.length == 0 && (
                 <Center>
                     <Button onClick={() => addScene(activeChapter.id)}>Create a scene</Button>
                 </Center>
-            }
+            )}
         </Stack>
-    );
+    )
 }

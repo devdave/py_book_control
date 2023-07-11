@@ -13,14 +13,14 @@ interface TextSceneFormProps {
     label: string
 }
 
-const TextSceneForm:React.FC<TextSceneFormProps> = ({ scene, field, label }) => {
-    const { updateScene } = useEditorContext();
+const TextSceneForm: React.FC<TextSceneFormProps> = ({ scene, field, label }) => {
+    const { updateScene } = useEditorContext()
 
     const form = useForm({
         initialValues: {
             [field]: scene[field]
         }
-    });
+    })
 
     useDebouncedEffect(
         () => {
@@ -35,7 +35,7 @@ const TextSceneForm:React.FC<TextSceneFormProps> = ({ scene, field, label }) => 
         {
             delay: 300
         }
-    );
+    )
 
     return (
         <Textarea
@@ -48,4 +48,4 @@ const TextSceneForm:React.FC<TextSceneFormProps> = ({ scene, field, label }) => 
     )
 }
 
-export default TextSceneForm;
+export default TextSceneForm

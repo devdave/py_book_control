@@ -1,27 +1,26 @@
 import { createContext, useContext } from 'react'
-import { AppModes, Book, Font } from '@src/types';
-import APIBridge from '@src/lib/remote';
+import { AppModes, Book, Font } from '@src/types'
+import APIBridge from '@src/lib/remote'
 
 export interface AppContextValue {
     api: APIBridge
 
     appMode: AppModes
-    setAppMode: (mode:AppModes)=>void
+    setAppMode: (mode: AppModes) => void
 
     activeBook: Book
-    setActiveBook: (val:Book)=>void
+    setActiveBook: (val: Book) => void
 
     fonts: Set<string>
-    setFonts: (val: Set<string>)=>void
+    setFonts: (val: Set<string>) => void
 
     activeFont: Font
-    setActiveFont: (font: Font)=>void
+    setActiveFont: (font: Font) => void
 
     debounceTime: number
-
 }
 
 // @ts-ignore
-export const AppContext = createContext<AppContextValue>(null);
+export const AppContext = createContext<AppContextValue>(null)
 
-export const useAppContext = () => useContext(AppContext);
+export const useAppContext = () => useContext(AppContext)
