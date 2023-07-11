@@ -228,8 +228,21 @@ export const Editor: React.FC<EditorProps> = () => {
                 _setActiveScene(sceneAndChapter[0]);
             }
 
+            queryClient.setQueryData(['book', activeBook.id, 'chapter', sceneAndChapter[1].id, 'scene', sceneAndChapter[0].id],
+                (prior)=> {
+                    return {
+                        ...prior,
+                        ...sceneAndChapter[0]
+                    };
+                });
+
             queryClient.invalidateQueries(['book', activeBook.id, 'chapter']);
+            queryClient.invalidateQueries(['book', activeBook.id, 'chapter', sceneAndChapter[1].id]);
+            queryClient.invalidateQueries(['book', activeBook.id, 'chapter', sceneAndChapter[1].id, 'scene', sceneAndChapter[0].id]);
             queryClient.invalidateQueries(['book', activeBook.id, 'index']);
+
+
+
 
         }
     })
@@ -237,6 +250,11 @@ export const Editor: React.FC<EditorProps> = () => {
     const updateScene = useCallback(
         async (scene: Scene) => {
             changeScene.mutate(scene);
+            if(scene.id === activeScene?.id){
+                _setActiveScene((prior)=>{
+                    return {...prior, ...scene};
+                });
+            }
         },
         []
     );
