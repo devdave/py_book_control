@@ -10,14 +10,14 @@ import {
     Text,
     Title,
     useMantineColorScheme
-} from "@mantine/core";
-import {useAppContext} from "@src/App.context";
-import {useQuery} from "@tanstack/react-query";
-import {AppModes, Book} from "@src/types";
-import {MouseEventHandler, useCallback, useState} from "react";
+} from '@mantine/core';
+import { useAppContext } from '@src/App.context';
+import { useQuery } from '@tanstack/react-query';
+import { AppModes, Book } from '@src/types';
+import { MouseEventHandler, useCallback, useState } from 'react';
 
-import "./manifest.css";
-import {IconMoonStars, IconSun} from "@tabler/icons-react";
+import './manifest.css';
+import { IconMoonStars, IconSun } from '@tabler/icons-react';
 
 const useStyles = createStyles((theme) => ({
     main: {
@@ -26,20 +26,19 @@ const useStyles = createStyles((theme) => ({
 }))
 
 export const Manifest = () => {
+    const { api, setActiveBook, setAppMode } = useAppContext();
 
-    const {api, setActiveBook, setAppMode} = useAppContext();
-
-    const {classes, theme} = useStyles()
-    const {colorScheme, toggleColorScheme} = useMantineColorScheme()
+    const { classes, theme } = useStyles()
+    const { colorScheme, toggleColorScheme } = useMantineColorScheme()
 
     const [highlightBookID, setHighLightBookID] = useState<string | undefined>();
 
     const onToggleColorScheme = useCallback(() => toggleColorScheme(), [toggleColorScheme])
 
-    const {data: books, isLoading: booksAreLoading} = useQuery({
+    const { data: books, isLoading: booksAreLoading } = useQuery({
         staleTime: 30000,
         queryFn: () => api.list_books(true),
-        queryKey: ["books", "index"]
+        queryKey: ['books', 'index']
     });
 
     const {
@@ -55,48 +54,45 @@ export const Manifest = () => {
 
     });
 
-
     if (booksAreLoading) {
         return (
             <>
-                <Skeleton/>
-                <Skeleton/>
-                <Skeleton/>
+                <Skeleton />
+                <Skeleton />
+                <Skeleton />
             </>
         )
     }
 
     const handleBookClick:MouseEventHandler<HTMLElement> = async (evt) => {
-        const bookId = evt.currentTarget.dataset.bookId;
-        if(bookId == undefined){
-            console.error("Got a bad bookId for ", evt);
+        const { bookId } = evt.currentTarget.dataset;
+        if (bookId == undefined) {
+            console.error('Got a bad bookId for ', evt);
             return;
         }
 
-        console.log("Clicked on", bookId);
+        console.log('Clicked on', bookId);
         const response = await api.set_current_book(bookId);
         const book = await api.fetch_book_simple(bookId);
         setActiveBook(book);
-        console.log("Set activeBook to ", book);
+        console.log('Set activeBook to ', book);
         setAppMode(AppModes.EDITOR);
-
     }
 
     const handleMouseEnter:MouseEventHandler<HTMLElement> = (evt) => {
-        evt.currentTarget.classList.add("highlight");
+        evt.currentTarget.classList.add('highlight');
         setHighLightBookID(evt.currentTarget.dataset.bookId);
     }
 
     const handleMouseLeave:React.MouseEventHandler<HTMLElement> = (evt) => {
-        evt.currentTarget.classList.remove("highlight");
+        evt.currentTarget.classList.remove('highlight');
         setHighLightBookID(undefined);
     }
 
-
-    return <Stack p={"md"}>
+    return <Stack p='md'>
 
         <Header height={60}>
-            <Group align={"center"} position={"apart"}>
+            <Group align='center' position='apart'>
                 <Title order={1}>Open or create a new book</Title>
                 <Switch
                     checked={colorScheme === 'dark'}
@@ -120,7 +116,6 @@ export const Manifest = () => {
             </Group>
         </Header>
 
-
         <fieldset>
             <legend>Books</legend>
             <Table>
@@ -135,9 +130,14 @@ export const Manifest = () => {
                 </thead>
                 <tbody>
                 {books.map((book: Book) =>
-                    <tr className="bookrow" data-book-id={book.id} key={book.id} onClick={handleBookClick}
+                    <tr
+                        className='bookrow'
+                        data-book-id={book.id}
+                        key={book.id}
+                        onClick={handleBookClick}
                         onMouseEnter={handleMouseEnter}
-                        onMouseLeave={handleMouseLeave}>
+                        onMouseLeave={handleMouseLeave}
+                    >
                         <td>{book.title}</td>
                         <td>{book.words}</td>
                         <td>{book.chapters && book.chapters.length}</td>
@@ -150,8 +150,8 @@ export const Manifest = () => {
         </fieldset>
         <Title order={5}>Chapter notes</Title>
         {/*{highlightBookID}, {JSON.stringify(highlightedBook)}, {highlightedIsLoading ? 'true' : 'false'}, {highlightStatus}, {highlightedIsFetched ? 'true' : 'false'}*/}
-        <Paper shadow="lg" p="md" withBorder>
-            {function () {
+        <Paper shadow='lg' p='md' withBorder>
+            {(function () {
                 if (highlightBookID == undefined) {
                     return <Text>Hover over a book to see its notes</Text>
                 }
@@ -170,8 +170,7 @@ export const Manifest = () => {
                 return (
                     <Text>Failed to fetch book notes.</Text>
                 )
-
-            }()}
+            }())}
         </Paper>
-    </Stack>
+           </Stack>
 }

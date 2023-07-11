@@ -1,11 +1,11 @@
-import {Anchor, Textarea, TextInput} from '@mantine/core'
-import {useForm, zodResolver} from '@mantine/form'
-import {type FC} from 'react'
+import { Anchor, Textarea, TextInput } from '@mantine/core'
+import { useForm, zodResolver } from '@mantine/form'
+import { type FC } from 'react'
 import z from 'zod'
 
-import {useEditorContext} from '../../Editor.context'
-import {type Scene} from '../../../../types'
-import {useDebouncedEffect} from '../../../../lib/useDebouncedEffect'
+import { useEditorContext } from '../../Editor.context'
+import { type Scene } from '../../../../types'
+import { useDebouncedEffect } from '../../../../lib/useDebouncedEffect'
 
 const formSchema = z.object({
     title: z.string().trim().nonempty('Cannot be empty').min(3, 'Must be at least 3 characters')
@@ -15,8 +15,8 @@ export interface SceneFormProps {
     scene: Scene
 }
 
-export const MainSceneForm: FC<SceneFormProps> = ({scene}) => {
-    const {updateScene} = useEditorContext()
+export const MainSceneForm: FC<SceneFormProps> = ({ scene }) => {
+    const { updateScene } = useEditorContext()
     const form = useForm<Partial<Scene>>({
         initialValues: {
             content: scene.content,
@@ -59,7 +59,7 @@ export const MainSceneForm: FC<SceneFormProps> = ({scene}) => {
                 spellCheck
                 {...form.getInputProps('content')}
             />
-            <br/>
+            <br />
         </>
     )
 }

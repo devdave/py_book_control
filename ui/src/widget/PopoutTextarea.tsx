@@ -1,9 +1,9 @@
-import {ActionIcon, Group, Textarea, Text, Indicator, Button} from "@mantine/core";
-import {UseFormReturnType} from "@mantine/form";
-import {IconWindowMaximize} from "@tabler/icons-react";
-import {modals} from "@mantine/modals";
+import { ActionIcon, Group, Textarea, Text, Indicator, Button } from '@mantine/core';
+import { UseFormReturnType } from '@mantine/form';
+import { IconWindowMaximize } from '@tabler/icons-react';
+import { modals } from '@mantine/modals';
 
-import {type Scene} from '@src/types';
+import { type Scene } from '@src/types';
 
 interface PopoutTextareaProps {
     form: UseFormReturnType<Scene>
@@ -22,24 +22,22 @@ export const PopoutTextarea: React.FC<PopoutTextareaProps> = ({
                                                                   defaultTextareaProps = {},
                                                                   modalTextAreaProps = {}
                                                               }) => {
-
-
     const popout = () => {
         modals.open({
             style: {
-                minWidth: "80vw",
-                minHeight: "80vh"
+                minWidth: '80vw',
+                minHeight: '80vh'
             },
-            modalId: "PopoutTextarea",
+            modalId: 'PopoutTextarea',
             children: (
                 <>
                     <Indicator
                         processing
-                        color="red"
+                        color='red'
                         disabled={!form.isDirty(field_name)}
                         style={{
-                            height: "100%",
-                            width: "100%",
+                            height: '100%',
+                            width: '100%',
                         }}
                     >
                         <Textarea
@@ -54,7 +52,7 @@ export const PopoutTextarea: React.FC<PopoutTextareaProps> = ({
 
                         />
                     </Indicator>
-                    <Button onClick={() => modals.close("PopoutTextarea")}>Close/Exit</Button>
+                    <Button onClick={() => modals.close('PopoutTextarea')}>Close/Exit</Button>
                 </>
             )
         })
@@ -63,7 +61,7 @@ export const PopoutTextarea: React.FC<PopoutTextareaProps> = ({
     return (
         <Indicator
             processing
-            color="red"
+            color='red'
             disabled={!form.isDirty(field_name)}
         >
             <Textarea
@@ -71,7 +69,7 @@ export const PopoutTextarea: React.FC<PopoutTextareaProps> = ({
                     <Group>
                         <Text>{label}</Text>
                         <ActionIcon onClick={popout}>
-                            <IconWindowMaximize/>
+                            <IconWindowMaximize />
                         </ActionIcon>
                     </Group>
                 }

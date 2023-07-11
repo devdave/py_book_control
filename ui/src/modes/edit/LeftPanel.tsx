@@ -12,20 +12,20 @@ import {
     Title, Tooltip,
     useMantineTheme
 } from '@mantine/core'
-import {IconArticle, IconBook, IconChevronRight, IconGripVertical, IconList, IconPlus} from '@tabler/icons-react'
-import {map} from 'lodash'
-import {type FC, useCallback} from 'react'
-import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
+import { IconArticle, IconBook, IconChevronRight, IconGripVertical, IconList, IconPlus } from '@tabler/icons-react'
+import { map } from 'lodash'
+import { type FC, useCallback } from 'react'
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 
-import {useEditorContext} from './Editor.context'
-import {Chapter, ChapterIndex, EditModes} from "../../types";
-import {useAppContext} from "@src/App.context";
+import { useAppContext } from '@src/App.context';
+import { useEditorContext } from './Editor.context'
+import { Chapter, ChapterIndex, EditModes } from '../../types';
 
 interface LeftPanelProps {
     index: ChapterIndex[]
 }
 
-export const LeftPanel: FC<LeftPanelProps> = ({index}) => {
+export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
     const theme = useMantineTheme()
     const {
         activeChapter,
@@ -40,16 +40,15 @@ export const LeftPanel: FC<LeftPanelProps> = ({index}) => {
     } =
         useEditorContext()
 
-    const {activeBook} = useAppContext();
+    const { activeBook } = useAppContext();
 
     const handleChapterChange = (chapter: Chapter) => {
-        console.log("Changing chapters!");
+        console.log('Changing chapters!');
         setActiveChapter(chapter);
     }
 
-
     return (
-        <Navbar width={{base: 300}}>
+        <Navbar width={{ base: 300 }}>
 
             {/*<Title order={3}>Chapters</Title>*/}
 
@@ -58,19 +57,19 @@ export const LeftPanel: FC<LeftPanelProps> = ({index}) => {
                 onChange={setEditMode}
                 data={[
                     {
-                        value: EditModes['LIST'],
+                        value: EditModes.LIST,
                         label: (
                             <Center>
-                                <IconList/>
+                                <IconList />
                                 <Box ml={10}>Detailed</Box>
                             </Center>
                         )
                     },
                     {
-                        value: EditModes['FLOW'],
+                        value: EditModes.FLOW,
                         label: (
                             <Center>
-                                <IconArticle/>
+                                <IconArticle />
                                 <Box ml={10}>Flow</Box>
                             </Center>
                         )
@@ -78,30 +77,31 @@ export const LeftPanel: FC<LeftPanelProps> = ({index}) => {
                 ]}
             />
 
-            <Divider color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]}/>
+            <Divider color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]} />
             <Button
-                size="xs"
+                size='xs'
                 color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]}
-                onClick={()=>addChapter()}
-            ><IconPlus/>Create new chapter</Button>
+                onClick={() => addChapter()}
+            ><IconPlus />Create new chapter
+            </Button>
 
-            <Divider color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]}/>
+            <Divider color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]} />
             <ScrollArea>
                 {/*Book link*/}
                 <NavLink
                     label={`Book: ${activeBook.title}`}
                     active={false}
-                    opened={true}
+                    opened
                     icon={
                         <Center>
-                            <IconBook/>
+                            <IconBook />
                         </Center>
                     }
                 >
 
                 <DragDropContext
                     onDragEnd={useCallback(
-                        ({destination, source}) => {
+                        ({ destination, source }) => {
                             if (destination && destination.index !== source.index) {
                                 reorderChapter(source.index, destination.index)
                             }
@@ -130,7 +130,7 @@ export const LeftPanel: FC<LeftPanelProps> = ({index}) => {
                                                     childrenOffset={0}
                                                     icon={
                                                         <Center {...draggable.dragHandleProps}>
-                                                            <IconGripVertical size='0.75rem'/>
+                                                            <IconGripVertical size='0.75rem' />
                                                         </Center>
                                                     }
                                                     label={
@@ -152,8 +152,8 @@ export const LeftPanel: FC<LeftPanelProps> = ({index}) => {
                                                     {...draggable.draggableProps}
                                                 >
                                                     {chapter.scenes
-                                                        .sort((a,b)=>a.order-b.order)
-                                                        .map((scene)=>{
+                                                        .sort((a, b) => a.order - b.order)
+                                                        .map((scene) => {
                                                             const isSceneActive = scene.id === activeScene?.id
 
                                                         return (

@@ -1,14 +1,12 @@
-import {modals} from "@mantine/modals";
-import {Button, Group, TextInput} from "@mantine/core";
-import React from "react";
-import {GenerateRandomString} from "../lib/utils";
+import { modals } from '@mantine/modals';
+import { Button, Group, TextInput } from '@mantine/core';
+import React from 'react';
+import { GenerateRandomString } from '../lib/utils';
 
 type Callback<Type> = (arg: Type) => void;
 
-export const PromptModal = (promptText:string):Promise<string> => {
-
-    return new Promise<string>((resolve) => {
-        let textValue = "";
+export const PromptModal = (promptText:string):Promise<string> => new Promise<string>((resolve) => {
+        let textValue = '';
 
         const modalId = GenerateRandomString(12);
 
@@ -28,20 +26,20 @@ export const PromptModal = (promptText:string):Promise<string> => {
         }
 
         const detectEnter = (evt: React.KeyboardEvent<HTMLInputElement>) => {
-            if (evt.key === "Enter") {
-                console.info("Enter caught");
+            if (evt.key === 'Enter') {
+                console.info('Enter caught');
                 evt.preventDefault();
                 sendInput();
             }
         }
 
         modals.open({
-            modalId: modalId,
+            modalId,
             title: promptText,
             withinPortal: false,
             centered: true,
             children: (
-                <Group position="center" onBlur={killModal}>
+                <Group position='center' onBlur={killModal}>
                     <TextInput
                         placeholder={promptText}
                         data-autofocus
@@ -53,12 +51,9 @@ export const PromptModal = (promptText:string):Promise<string> => {
                 </Group>
             ),
         });
-
-    });
-}
+    })
 
 class InputModal {
-
     modalId: string
 
     constructor() {
@@ -71,8 +66,7 @@ class InputModal {
 
     async arun(prompt: string) {
         return new Promise((resolve) => {
-
-            let textValue = "";
+            let textValue = '';
             const sendInput = () => {
                 modals.close(this.modalId);
                 console.info(`Send ${textValue}`);
@@ -84,8 +78,8 @@ class InputModal {
             }
 
             const detectEnter = (evt: React.KeyboardEvent<HTMLInputElement>) => {
-                if (evt.key === "Enter") {
-                    console.info("Enter caught");
+                if (evt.key === 'Enter') {
+                    console.info('Enter caught');
                     evt.preventDefault();
                     sendInput();
                 }
@@ -97,7 +91,7 @@ class InputModal {
                 withinPortal: false,
                 centered: true,
                 children: (
-                    <Group position="center">
+                    <Group position='center'>
                         <TextInput
                             placeholder={prompt}
                             data-autofocus
@@ -113,9 +107,7 @@ class InputModal {
     }
 
     run(callback: Callback<string>, prompt: string) {
-
-        let textValue = "";
-
+        let textValue = '';
 
         const sendInput = () => {
             modals.close(this.modalId);
@@ -128,8 +120,8 @@ class InputModal {
         }
 
         const detectEnter = (evt: React.KeyboardEvent<HTMLInputElement>) => {
-            if (evt.key === "Enter") {
-                console.info("Enter caught");
+            if (evt.key === 'Enter') {
+                console.info('Enter caught');
                 evt.preventDefault();
                 sendInput();
             }
@@ -141,7 +133,7 @@ class InputModal {
             withinPortal: false,
             centered: true,
             children: (
-                <Group position="center">
+                <Group position='center'>
                     <TextInput
                         placeholder={prompt}
                         data-autofocus
@@ -154,7 +146,6 @@ class InputModal {
             ),
         });
     }
-
 }
 
 export default InputModal;

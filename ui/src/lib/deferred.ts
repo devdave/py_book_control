@@ -1,8 +1,6 @@
-
 type callbackMethod = (...args: any[]) => void | any;
 type callbacks = callbackMethod[];
 export class Deferred {
-
   _callbacks: callbacks;
   _result: any;
   constructor() {
@@ -28,7 +26,7 @@ export class Deferred {
   }
 
   _executeCallbacks() {
-    for (let callback of this._callbacks) {
+    for (const callback of this._callbacks) {
       callback(this._result);
     }
     this._callbacks = [];

@@ -1,11 +1,11 @@
-import {Anchor, Textarea, TextInput} from '@mantine/core'
-import {useForm, zodResolver} from '@mantine/form'
-import {type FC} from 'react'
+import { Anchor, Textarea, TextInput } from '@mantine/core'
+import { useForm, zodResolver } from '@mantine/form'
+import { type FC } from 'react'
 import z from 'zod'
 
-import {useEditorContext} from '../../Editor.context'
-import {type Scene} from '../../../../types'
-import {useDebouncedEffect} from '../../../../lib/useDebouncedEffect'
+import { useEditorContext } from '../../Editor.context'
+import { type Scene } from '../../../../types'
+import { useDebouncedEffect } from '../../../../lib/useDebouncedEffect'
 
 interface TextSceneFormProps {
     scene: Scene
@@ -13,9 +13,8 @@ interface TextSceneFormProps {
     label: string
 }
 
-const TextSceneForm:React.FC<TextSceneFormProps> = ({scene, field, label}) => {
-    const {updateScene} = useEditorContext();
-
+const TextSceneForm:React.FC<TextSceneFormProps> = ({ scene, field, label }) => {
+    const { updateScene } = useEditorContext();
 
     const form = useForm({
         initialValues: {
@@ -43,13 +42,10 @@ const TextSceneForm:React.FC<TextSceneFormProps> = ({scene, field, label}) => {
             autosize
             minRows={5}
             label={label}
-            autoCapitalize="sentences"
+            autoCapitalize='sentences'
             {...form.getInputProps(field)}
         />
     )
-
-
-
 }
 
 export default TextSceneForm;

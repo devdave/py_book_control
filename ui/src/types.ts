@@ -1,4 +1,3 @@
-
 export interface Base {
   [key:string]: any
 
@@ -7,7 +6,7 @@ export interface Base {
   updated_on: string
 }
 
-export interface Book extends Base{
+export interface Book extends Base {
 
   title: string
   notes: string
@@ -50,17 +49,16 @@ export interface Chapter extends ChapterIndex {
 }
 
 export enum AppModes {
-  EDITOR = "editor",
-  OUTLINE = "outline",
-  STATS = "stats",
-  MANIFEST = "manifest",
+  EDITOR = 'editor',
+  OUTLINE = 'outline',
+  STATS = 'stats',
+  MANIFEST = 'manifest',
 }
 
 export enum EditModes {
-  LIST= 'list',
-  FLOW= 'flow',
+  LIST = 'list',
+  FLOW = 'flow',
 }
-
 
 export interface SplitResponse {
   content: string

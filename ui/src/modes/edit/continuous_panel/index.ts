@@ -1,3 +1,3 @@
-import {ContinuousBody} from "./ContinuousBody";
+import { ContinuousBody } from './ContinuousBody';
 
-export {ContinuousBody};
+export { ContinuousBody };

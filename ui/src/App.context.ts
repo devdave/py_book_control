@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
-import {AppModes, Book, Font} from "@src/types";
-import APIBridge from "@src/lib/remote";
+import { AppModes, Book, Font } from '@src/types';
+import APIBridge from '@src/lib/remote';
 
 export interface AppContextValue {
     api: APIBridge
@@ -25,5 +25,3 @@ export interface AppContextValue {
 export const AppContext = createContext<AppContextValue>(null);
 
 export const useAppContext = () => useContext(AppContext);
-
-

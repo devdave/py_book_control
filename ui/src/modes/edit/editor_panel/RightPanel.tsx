@@ -1,15 +1,14 @@
-import {Accordion, ActionIcon, Center, createStyles, Group, Stack, Text, Textarea, Title} from '@mantine/core'
-import {IconGripVertical, IconPlus} from '@tabler/icons-react'
-import {find, map} from 'lodash'
-import {type FC, useCallback, useRef} from 'react'
-import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd'
+import { Accordion, ActionIcon, Center, createStyles, Group, Stack, Text, Textarea, Title } from '@mantine/core'
+import { IconGripVertical, IconPlus } from '@tabler/icons-react'
+import { find, map } from 'lodash'
+import { type FC, useCallback, useRef } from 'react'
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 
-import {useEditorContext} from '../Editor.context'
-import {ChapterForm} from './ChapterForm'
+import { Chapter } from '@src/types';
+import { useEditorContext } from '../Editor.context'
+import { ChapterForm } from './ChapterForm'
 
-import SceneList from "./SceneList";
-import {Chapter} from "@src/types";
-
+import SceneList from './SceneList';
 
 const useStyles = createStyles((theme) => ({
     accordionContent: {
@@ -22,7 +21,7 @@ export interface RightPanelProps {
 }
 
 export const RightPanel: FC<RightPanelProps> = () => {
-    const {activeChapter, activeScene, addScene, reorderScene, setActiveScene} = useEditorContext()
+    const { activeChapter, activeScene, addScene, reorderScene, setActiveScene } = useEditorContext()
 
     //const {classes} = useStyles()
 
@@ -34,15 +33,14 @@ export const RightPanel: FC<RightPanelProps> = () => {
         );
     }
 
-
     return (
         <Stack spacing='xs'>
             <details>
                 <summary>Book notes</summary>
-                <Textarea></Textarea>
+                <Textarea />
             </details>
 
-            <ChapterForm chapter={activeChapter as Chapter}/>
+            <ChapterForm chapter={activeChapter as Chapter} />
             <Group
                 position='apart'
                 spacing='xs'
@@ -58,10 +56,10 @@ export const RightPanel: FC<RightPanelProps> = () => {
                     aria-label='Add scene'
                     variant='subtle'
                 >
-                    <IconPlus/>
+                    <IconPlus />
                 </ActionIcon>
             </Group>
-            <SceneList key={activeChapter?.updated_on}/>
+            <SceneList key={activeChapter?.updated_on} />
         </Stack>
     )
 }
