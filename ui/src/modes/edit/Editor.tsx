@@ -111,7 +111,7 @@ export const Editor: React.FC<EditorProps> = () => {
             _setActiveScene(newSceneAndChapter[0])
             _setActiveChapter(newSceneAndChapter[1])
 
-            queryClient.invalidateQueries(['book', activeBook.id, 'chapter'])
+            // queryClient.invalidateQueries(['book', activeBook.id, 'chapter'])
             queryClient.invalidateQueries(['book', activeBook.id, 'chapter', newSceneParts.chapterId])
             queryClient.invalidateQueries(['book', activeBook.id, 'index'])
         }
