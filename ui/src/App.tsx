@@ -6,7 +6,7 @@ import { Editor } from '@src/modes/edit/Editor'
 
 import { AppContext, AppContextValue } from '@src/App.context'
 
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState, FC } from 'react'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -30,8 +30,8 @@ interface AppWrapperProps {
     children: ReactNode
 }
 
-const AppWrapper: React.FC<AppWrapperProps> = ({ api, value, children }) => (
-    <ThemeProvider>
+const AppWrapper: FC<AppWrapperProps> = ({ api, value, children }) => (
+    <ThemeProvider api={api}>
         <QueryClientProvider client={queryClient}>
             <AppContext.Provider value={value}>{children}</AppContext.Provider>
             <ReactQueryDevtools initialIsOpen={false} />
@@ -102,12 +102,12 @@ export default function App() {
     }, [])
 
     useEffect(() => {
-        document.fonts.ready.then((fontFaceSet) => {
+        document.fonts.ready.then(() => {
             checkFonts()
         })
     }, [])
 
-    const AppContextValue = useMemo<AppContextValue>(
+    const appContextValue = useMemo<AppContextValue>(
         () => ({
             api,
             appMode,
@@ -126,7 +126,7 @@ export default function App() {
     return (
         <AppWrapper
             api={api}
-            value={AppContextValue}
+            value={appContextValue}
         >
             {useMemo(() => {
                 if (!isReady) {
