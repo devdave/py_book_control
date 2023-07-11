@@ -31,9 +31,7 @@ const useStyles = createStyles((theme) => ({
     }
 }))
 
-interface EditorProps {}
-
-export const Editor: React.FC<EditorProps> = () => {
+export const Editor: React.FC = () => {
     const { api, activeBook, setAppMode } = useAppContext()
 
     const { classes, theme } = useStyles()
@@ -45,8 +43,12 @@ export const Editor: React.FC<EditorProps> = () => {
     const [activeChapter, _setActiveChapter] = useState<ChapterIndex | Chapter | undefined>(undefined)
     const [activeScene, _setActiveScene] = useState<SceneIndex | Scene | undefined>(undefined)
 
-    const [editMode, setEditMode] = useState<EditModes>(EditModes.LIST)
+    const [editMode, _setEditMode] = useState<EditModes>(EditModes.LIST)
     const queryClient = useQueryClient()
+
+    const setEditMode = (val: EditModes) => {
+        _setEditMode(val)
+    }
 
     const {
         isLoading: indexIsloading,
@@ -59,8 +61,6 @@ export const Editor: React.FC<EditorProps> = () => {
 
     useEffect(() => {
         if (indexIsloading) {
-            _setActiveChapter(undefined)
-            _setActiveScene(undefined)
             return
         }
 
@@ -119,7 +119,6 @@ export const Editor: React.FC<EditorProps> = () => {
 
     const createScene = useCallback(
         async (chapterId: string, sceneTitle: string, position = -1, content = '') => {
-            // @ts-ignore I don't care that position is the "wrong" type
             _addScene.mutate({ chapterId, title: sceneTitle, position, content })
         },
         [index]
@@ -193,42 +192,35 @@ export const Editor: React.FC<EditorProps> = () => {
 
     const changeScene = useMutation({
         mutationFn: (alteredScene: Scene) => api.update_scene(alteredScene.id, alteredScene),
-        onSuccess: (sceneAndChapter: [Scene, Chapter]) => {
-            console.log('changed scene', sceneAndChapter)
-            if (activeChapter?.id === sceneAndChapter[1].id) {
+        onSuccess: ([scene, chapter]: [Scene, Chapter]) => {
+            console.log('changed scene', scene)
+            if (activeChapter?.id === chapter.id) {
                 console.log('Updated activeChapter')
-                _setActiveChapter(sceneAndChapter[1])
+                _setActiveChapter(chapter)
             }
-            if (activeScene?.id === sceneAndChapter[0].id) {
+            if (activeScene?.id === scene.id) {
                 console.log('Updated activeScene')
-                _setActiveScene(sceneAndChapter[0])
+                _setActiveScene(scene)
             }
 
             queryClient.setQueryData(
-                ['book', activeBook.id, 'chapter', sceneAndChapter[1].id, 'scene', sceneAndChapter[0].id],
+                ['book', activeBook.id, 'chapter', chapter.id, 'scene', scene.id],
                 (prior: Scene | undefined): Scene => {
                     if (prior === undefined) {
-                        return sceneAndChapter[0]
+                        return scene
                     }
-                    // @ts-ignore
+
                     return {
                         ...prior,
-                        ...sceneAndChapter[0]
+                        ...scene
                     }
                 }
             )
 
-            queryClient.invalidateQueries(['book', activeBook.id, 'chapter'])
-            queryClient.invalidateQueries(['book', activeBook.id, 'chapter', sceneAndChapter[1].id])
-            queryClient.invalidateQueries([
-                'book',
-                activeBook.id,
-                'chapter',
-                sceneAndChapter[1].id,
-                'scene',
-                sceneAndChapter[0].id
-            ])
-            queryClient.invalidateQueries(['book', activeBook.id, 'index'])
+            queryClient.invalidateQueries(['book', activeBook.id, 'chapter']).then()
+            queryClient.invalidateQueries(['book', activeBook.id, 'chapter', chapter.id]).then()
+            queryClient.invalidateQueries(['book', activeBook.id, 'chapter', chapter.id, 'scene', scene.id]).then()
+            queryClient.invalidateQueries(['book', activeBook.id, 'index']).then()
         }
     })
 
@@ -303,7 +295,7 @@ export const Editor: React.FC<EditorProps> = () => {
             updateScene,
             deleteScene,
             setEditMode,
-            _setChapters,
+            _setChapters, //TODO cut out the _set*'s
             _setActiveChapter,
             _setActiveScene
         }),
