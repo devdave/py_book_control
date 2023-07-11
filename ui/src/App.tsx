@@ -1,29 +1,27 @@
-import Boundary, {PYWEBVIEWREADY} from "@src/lib/boundary";
-import APIBridge from '@src/lib/remote';
-import {ThemeProvider} from '@src/ThemeProvider'
-import {Editor} from "@src/modes/edit/Editor";
+import Boundary, { PYWEBVIEWREADY } from '@src/lib/boundary'
+import APIBridge from '@src/lib/remote'
+import { font_set } from '@src/lib/font_set'
+import { ThemeProvider } from '@src/ThemeProvider'
+import { Editor } from '@src/modes/edit/Editor'
 
-import {AppContext, AppContextValue} from '@src/App.context'
+import { AppContext, AppContextValue } from '@src/App.context'
 
-import {ReactNode, useEffect, useMemo, useState} from "react";
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
-import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-import {LoadingOverlay, Text} from "@mantine/core";
-import {AppModes, Book, Font} from "@src/types";
-import {Manifest} from "@src/modes/manifest/Manifest";
+import { LoadingOverlay, Text } from '@mantine/core'
+import { AppModes, Book, Font } from '@src/types'
+import { Manifest } from '@src/modes/manifest/Manifest'
 //import APIBridge from "./lib/remote";
 
-
-const queryClient = new QueryClient();
-
+const queryClient = new QueryClient()
 
 declare global {
     interface window {
-        pywebview: any;
+        pywebview: any
     }
-
 }
 
 interface AppWrapperProps {
@@ -32,102 +30,82 @@ interface AppWrapperProps {
     children: ReactNode
 }
 
-const AppWrapper: React.FC<AppWrapperProps> = ({api, value, children}) => {
-
-    return (
-        <ThemeProvider>
-            <QueryClientProvider client={queryClient}>
-                <AppContext.Provider value={value}>
-                    {children}
-                </AppContext.Provider>
-                <ReactQueryDevtools initialIsOpen={false}/>
-            </QueryClientProvider>
-        </ThemeProvider>
-    )
-}
+const AppWrapper: React.FC<AppWrapperProps> = ({ api, value, children }) => (
+    <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+            <AppContext.Provider value={value}>{children}</AppContext.Provider>
+            <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+    </ThemeProvider>
+)
 
 export default function App() {
+    const [appMode, setAppMode] = useState(AppModes.MANIFEST)
 
-    const [appMode, setAppMode] = useState(AppModes['MANIFEST']);
-
-    const [isReady, setIsReady] = useState(false);
+    const [isReady, setIsReady] = useState(false)
     const [activeBook, setActiveBook] = useState<Book>({
         chapters: [],
-        created_on: "",
-        id: "",
-        notes: "",
-        title: "NotSet",
-        updated_on: "",
+        created_on: '',
+        id: '',
+        notes: '',
+        title: 'NotSet',
+        updated_on: '',
         words: 0
-    });
+    })
 
-    const [fonts, setFonts] = useState<Set<string>>(new Set());
+    const [fonts, setFonts] = useState<Set<string>>(new Set())
     const [activeFont, setActiveFont] = useState<Font>({
-        name: "Arial",
-        size: "12",
-        weight: "100"
-    });
-
+        name: 'Arial',
+        size: '12',
+        weight: '100'
+    })
 
     const boundary = new Boundary()
-    const api = new APIBridge(boundary);
-
+    const api = new APIBridge(boundary)
 
     const doReady = async () => {
+        const response = await api.get_current_book()
 
-        const response = await api.get_current_book();
+        console.log('Current book response:', response)
 
-        console.log("Current book response:", response);
-
-        if(response !== false){
-            if(response['id'] !== undefined){
-                setActiveBook(response as Book);
-                setAppMode(AppModes.EDITOR);
+        if (response !== false) {
+            if (response.id !== undefined) {
+                setActiveBook(response as Book)
+                setAppMode(AppModes.EDITOR)
             }
         }
 
-        setIsReady( () => true);
+        setIsReady(() => true)
     }
-
 
     const checkFonts = () => {
-        const fontCheck = new Set([
-            // Windows 10
-            'Arial', 'Arial Black', 'Bahnschrift', 'Calibri', 'Cambria', 'Cambria Math', 'Candara', 'Comic Sans MS', 'Consolas', 'Constantia', 'Corbel', 'Courier New', 'Ebrima', 'Franklin Gothic Medium', 'Gabriola', 'Gadugi', 'Georgia', 'HoloLens MDL2 Assets', 'Impact', 'Ink Free', 'Javanese Text', 'Leelawadee UI', 'Lucida Console', 'Lucida Sans Unicode', 'Malgun Gothic', 'Marlett', 'Microsoft Himalaya', 'Microsoft JhengHei', 'Microsoft New Tai Lue', 'Microsoft PhagsPa', 'Microsoft Sans Serif', 'Microsoft Tai Le', 'Microsoft YaHei', 'Microsoft Yi Baiti', 'MingLiU-ExtB', 'Mongolian Baiti', 'MS Gothic', 'MV Boli', 'Myanmar Text', 'Nirmala UI', 'Palatino Linotype', 'Segoe MDL2 Assets', 'Segoe Print', 'Segoe Script', 'Segoe UI', 'Segoe UI Historic', 'Segoe UI Emoji', 'Segoe UI Symbol', 'SimSun', 'Sitka', 'Sylfaen', 'Symbol', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana', 'Webdings', 'Wingdings', 'Yu Gothic',
-            // macOS
-            'American Typewriter', 'Andale Mono', 'Arial', 'Arial Black', 'Arial Narrow', 'Arial Rounded MT Bold', 'Arial Unicode MS', 'Avenir', 'Avenir Next', 'Avenir Next Condensed', 'Baskerville', 'Big Caslon', 'Bodoni 72', 'Bodoni 72 Oldstyle', 'Bodoni 72 Smallcaps', 'Bradley Hand', 'Brush Script MT', 'Chalkboard', 'Chalkboard SE', 'Chalkduster', 'Charter', 'Cochin', 'Comic Sans MS', 'Copperplate', 'Courier', 'Courier New', 'Didot', 'DIN Alternate', 'DIN Condensed', 'Futura', 'Geneva', 'Georgia', 'Gill Sans', 'Helvetica', 'Helvetica Neue', 'Herculanum', 'Hoefler Text', 'Impact', 'Lucida Grande', 'Luminari', 'Marker Felt', 'Menlo', 'Microsoft Sans Serif', 'Monaco', 'Noteworthy', 'Optima', 'Palatino', 'Papyrus', 'Phosphate', 'Rockwell', 'Savoye LET', 'SignPainter', 'Skia', 'Snell Roundhand', 'Tahoma', 'Times', 'Times New Roman', 'Trattatello', 'Trebuchet MS', 'Verdana', 'Zapfino',
-        ].sort());
+        const fontAvailable = new Set<string>()
 
-        const fontAvailable = new Set<string>();
-
-        for (const font of fontCheck.values()) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const font of font_set.values()) {
             if (document.fonts.check(`12px "${font}"`)) {
-                fontAvailable.add(font);
+                fontAvailable.add(font)
             }
         }
-        setFonts(fontAvailable);
+        setFonts(fontAvailable)
 
-        console.log('Available Fonts:', [...fontAvailable.values()]);
+        console.log('Available Fonts:', [...fontAvailable.values()])
     }
-
 
     useEffect(() => {
         //@ts-ignore Fuck the hell off with this window not defined shit
         if (window.pywebview !== undefined && window.pywebview.api !== undefined) {
-            doReady();
+            doReady()
         } else {
-            window.addEventListener(PYWEBVIEWREADY, doReady, {once: true});
+            window.addEventListener(PYWEBVIEWREADY, doReady, { once: true })
         }
-    }, []);
+    }, [])
 
     useEffect(() => {
-
         document.fonts.ready.then((fontFaceSet) => {
-            checkFonts();
+            checkFonts()
         })
-
-    }, []);
-
+    }, [])
 
     const AppContextValue = useMemo<AppContextValue>(
         () => ({
@@ -145,39 +123,29 @@ export default function App() {
         [api]
     )
 
-    if(!isReady){
-        return (
-            <LoadingOverlay visible={true}/>
-        )
-    }
-
     return (
-        <AppWrapper api={api} value={AppContextValue}>
-            {useMemo(()=>{
-
-                switch (appMode){
-                    case AppModes.OUTLINE:
-                        return (
-                            <Text>Outline mode</Text>
-                        );
-                    case AppModes.STATS:
-                        return (
-                            <Text>Stats mode</Text>
-                        );
-                    case AppModes.EDITOR:
-                        return (
-                            <Editor/>
-                        )
-                    case AppModes.MANIFEST:
-                        return (
-                            <Manifest/>
-                        )
-                    default:
-                        return (
-                            <Text>Application error: unexpected mode {appMode}</Text>
-                        )
+        <AppWrapper
+            api={api}
+            value={AppContextValue}
+        >
+            {useMemo(() => {
+                if (!isReady) {
+                    return <LoadingOverlay visible />
                 }
-            },[appMode, isReady, activeBook])}
+
+                switch (appMode) {
+                    case AppModes.OUTLINE:
+                        return <Text>Outline mode</Text>
+                    case AppModes.STATS:
+                        return <Text>Stats mode</Text>
+                    case AppModes.EDITOR:
+                        return <Editor />
+                    case AppModes.MANIFEST:
+                        return <Manifest />
+                    default:
+                        return <Text>Application error: unexpected mode {appMode}</Text>
+                }
+            }, [appMode, isReady, activeBook])}
         </AppWrapper>
     )
 }
