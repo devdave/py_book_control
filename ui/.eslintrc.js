@@ -5,7 +5,8 @@ module.exports = {
     },
     rules: {
         indent: ['error', 4],
-        eqeqeq: 2,
+        'react/jsx-indent-props': ['error', 4],
+        eqeqeq: ['error', 'smart'],
         '@typescript-eslint/semi': 'off',
         '@typescript-eslint/space-before-function-paren': 'off',
         'comma-dangle': 'off',
