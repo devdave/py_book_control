@@ -17,7 +17,7 @@ export interface SceneFormProps {
 
 export const MainSceneForm: FC<SceneFormProps> = ({scene}) => {
     const {updateScene} = useEditorContext()
-    const form = useForm({
+    const form = useForm<Partial<Scene>>({
         initialValues: {
             content: scene.content,
             title: scene.title
