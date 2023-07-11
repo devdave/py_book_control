@@ -10,7 +10,7 @@ import {ReactNode, useEffect, useMemo, useState} from "react";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 
-import {Text} from "@mantine/core";
+import {LoadingOverlay, Text} from "@mantine/core";
 import {AppModes, Book, Font} from "@src/types";
 import {Manifest} from "@src/modes/manifest/Manifest";
 //import APIBridge from "./lib/remote";
@@ -27,11 +27,12 @@ declare global {
 }
 
 interface AppWrapperProps {
+    api: APIBridge
     value: AppContextValue
     children: ReactNode
 }
 
-const AppWrapper: React.FC<AppWrapperProps> = ({value, children}) => {
+const AppWrapper: React.FC<AppWrapperProps> = ({api, value, children}) => {
 
     return (
         <ThemeProvider>
@@ -144,16 +145,16 @@ export default function App() {
         [api]
     )
 
-
+    if(!isReady){
+        return (
+            <LoadingOverlay visible={true}/>
+        )
+    }
 
     return (
-        <AppWrapper value={AppContextValue}>
+        <AppWrapper api={api} value={AppContextValue}>
             {useMemo(()=>{
-                if(!isReady){
-                    return (
-                        <Text>Not ready yet {isReady ? 'true' : 'false'}</Text>
-                    )
-                }
+
                 switch (appMode){
                     case AppModes.OUTLINE:
                         return (
