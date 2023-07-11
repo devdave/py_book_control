@@ -6,7 +6,7 @@ import { Editor } from '@src/modes/edit/Editor'
 
 import { AppContext, AppContextValue } from '@src/App.context'
 
-import { ReactNode, useEffect, useMemo, useState, FC } from 'react'
+import { FC, ReactNode, useEffect, useMemo, useState } from 'react'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
