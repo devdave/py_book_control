@@ -1,5 +1,12 @@
 module.exports = {
-    extends: ['mantine', 'plugin:react/recommended', 'plugin:react-hooks/recommended'],
+    extends: [
+        'mantine',
+        'plugin:react/recommended',
+        'plugin:react-hooks/recommended',
+        'plugin:@typescript-eslint/recommended'
+    ],
+    parser: '@typescript-eslint/parser',
+    plugins: ['@typescript-eslint'],
     parserOptions: {
         project: './tsconfig.json'
     },
