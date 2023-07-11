@@ -4,7 +4,7 @@ module.exports = {
         project: './tsconfig.json'
     },
     rules: {
-        indent: ['error', 4],
+        // indent: ['error', 4],
         'react/jsx-indent-props': ['error', 4],
         eqeqeq: ['error', 'smart'],
         '@typescript-eslint/semi': 'off',
