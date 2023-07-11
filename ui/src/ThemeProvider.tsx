@@ -1,13 +1,15 @@
-import {ColorSchemeProvider, ColorScheme, MantineProvider} from '@mantine/core'
-import {useHotkeys, useLocalStorage, useColorScheme} from '@mantine/hooks'
-import {ReactNode} from 'react'
-import {ModalsProvider} from "@mantine/modals";
+import { ColorSchemeProvider, ColorScheme, MantineProvider } from '@mantine/core'
+import { useHotkeys, useLocalStorage, useColorScheme } from '@mantine/hooks'
+import { ReactNode } from 'react'
+import { ModalsProvider } from '@mantine/modals'
+import APIBridge from '@src/lib/remote'
 
 interface ThemeProviderProps {
+    api: APIBridge
     children: ReactNode
 }
 
-export function ThemeProvider({children}: ThemeProviderProps) {
+export function ThemeProvider({ api, children }: ThemeProviderProps) {
     const preferredColorScheme = useColorScheme()
     const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
         key: 'mantine-color-scheme',
@@ -31,9 +33,7 @@ export function ThemeProvider({children}: ThemeProviderProps) {
                 withGlobalStyles
                 withNormalizeCSS
             >
-                <ModalsProvider>
-                    {children}
-                </ModalsProvider>
+                <ModalsProvider>{children}</ModalsProvider>
             </MantineProvider>
         </ColorSchemeProvider>
     )
