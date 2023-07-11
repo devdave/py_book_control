@@ -1,36 +1,20 @@
-import { Accordion, ActionIcon, Center, createStyles, Group, Stack, Text, Textarea, Title } from '@mantine/core'
-import { IconGripVertical, IconPlus } from '@tabler/icons-react'
-import { find, map } from 'lodash'
-import { type FC, useCallback, useRef } from 'react'
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
+import { ActionIcon, Group, Stack, Textarea, Title } from '@mantine/core'
+import { IconPlus } from '@tabler/icons-react'
+import { type FC, useCallback } from 'react'
 
-import { Chapter } from '@src/types';
+import { Chapter } from '@src/types'
 import { useEditorContext } from '../Editor.context'
 import { ChapterForm } from './ChapterForm'
 
-import SceneList from './SceneList';
+import SceneList from './SceneList'
 
-const useStyles = createStyles((theme) => ({
-    accordionContent: {
-        padding: theme.spacing.xs,
-        paddingTop: 0
-    }
-}))
-
-export interface RightPanelProps {
-}
-
-export const RightPanel: FC<RightPanelProps> = () => {
+export const RightPanel: FC = () => {
     const { activeChapter, activeScene, addScene, reorderScene, setActiveScene } = useEditorContext()
 
-    //const {classes} = useStyles()
+    const onClickAddScene = useCallback(() => activeChapter && addScene(activeChapter.id), [activeChapter, addScene])
 
     if (activeChapter === undefined) {
-        return (
-            <>
-                No active chapter
-            </>
-        );
+        return <>No active chapter</>
     }
 
     return (
@@ -50,7 +34,7 @@ export const RightPanel: FC<RightPanelProps> = () => {
                 <Title order={4}>Scenes</Title>
                 <ActionIcon
                     color='blue'
-                    onClick={useCallback(() => addScene(activeChapter.id), [activeChapter, addScene])}
+                    onClick={onClickAddScene}
                     size='xs'
                     title='Add scene'
                     aria-label='Add scene'
