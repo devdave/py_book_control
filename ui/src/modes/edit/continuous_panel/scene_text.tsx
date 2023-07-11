@@ -18,6 +18,8 @@ import {useDebouncedEffect} from "@src/lib/useDebouncedEffect";
 import {PopoutTextarea} from "@src/widget/PopoutTextarea";
 import {useEditorContext} from "../Editor.context";
 import {Chapter, Scene} from "@src/types";
+import {ResizeablePanels} from "@src/widget/ResizeablePanels";
+
 import {modals} from "@mantine/modals";
 
 
@@ -189,18 +191,8 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
     }
 
     return (
-        <Flex
-            // ref={ref}
-            mih={50}
-            gap="md"
-            justify="center"
-            align="stretch"
-            direction="row"
-            wrap="nowrap"
-            style={{
-                height: "100%"
-            }}
-        >
+
+        <ResizeablePanels>
             <Indicator
                 color="red"
                 position="top-start"
@@ -210,7 +202,6 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                     height: "100%",
                     width: "100%",
                     boxSizing: "border-box",
-
                 }}
             >
             <textarea
@@ -226,7 +217,6 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
             />
             </Indicator>
 
-            <Divider orientation="vertical"/>
             <Flex
                 direction="column"
                 style={{height: "100%", position: "relative", minWidth: "8rem"}}
@@ -238,14 +228,16 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                                   minRows={5} {...form.getInputProps("location")} />
                     </Indicator>
                 </details>
-                <details open={true}>
+                <details open={true} style={{}}>
                     <summary>Notes</summary>
                     <Indicator processing color="red"
                         disabled={!form.isDirty('notes')}
+                               style={{height:"100%", width:"100%", flex:"1"}}
                     >
                         <Textarea
                             autosize minRows={5} autoCapitalize="sentences"
                             {...form.getInputProps("notes")}
+                            style={{height:"100%", width:"100%", flex:"1" }}
                         />
                     </Indicator>
                 </details>
@@ -270,6 +262,6 @@ export const SceneText: React.FC<SceneTextProps> = ({scene}) => {
                 >Delete Scene</Button>
 
             </Flex>
-        </Flex>
+        </ResizeablePanels>
     )
 }
