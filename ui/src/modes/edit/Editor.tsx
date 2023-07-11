@@ -206,7 +206,10 @@ export const Editor: React.FC<EditorProps> = () => {
 
       queryClient.setQueryData(
         ['book', activeBook.id, 'chapter', sceneAndChapter[1].id, 'scene', sceneAndChapter[0].id],
-        (prior: Scene) => {
+        (prior: Scene | undefined): Scene => {
+          if (prior === undefined) {
+            return sceneAndChapter[0]
+          }
           // @ts-ignore
           return {
             ...prior,
