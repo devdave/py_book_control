@@ -329,16 +329,17 @@ export const Editor: React.FC<EditorProps> = () => {
         ]
     )
 
-    useEffect(() => {
-        const fetchChapters = async () => {
-            if (index.length > 0) {
-                _setActiveChapter(index[0].id)
-                if (index[0].scenes.length > 0) {
-                    _setActiveScene(index[0].scenes[0].id)
-                }
-            }
-        }
-    }, [index])
+    // is this dead code or what?
+    // useEffect(() => {
+    //     const fetchChapters = async () => {
+    //         if (index.length > 0) {
+    //             _setActiveChapter(index[0].id)
+    //             if (index[0].scenes.length > 0) {
+    //                 _setActiveScene(index[0].scenes[0].id)
+    //             }
+    //         }
+    //     }
+    // }, [index])
 
     if (indexIsloading) {
         return <LoadingOverlay visible />
