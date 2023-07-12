@@ -1,26 +1,17 @@
-import {
-    ActionIcon,
-    AppShell,
-    Box,
-    createStyles,
-    Group,
-    Header,
-    LoadingOverlay,
-    Switch,
-    useMantineColorScheme
-} from '@mantine/core'
-import { IconArrowBack, IconMoonStars, IconSun } from '@tabler/icons-react'
+import { AppShell, Box, createStyles, LoadingOverlay } from '@mantine/core'
+
 import { clone, find } from 'lodash'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { PromptModal } from '@src/widget/input_modal'
 
 import { Body } from '@src/modes/edit/Body'
+import { CompositeHeader } from '@src/modes/edit/CompositeHeader'
 
-import { AppModes, type Chapter, type ChapterIndex, EditModes, type Scene, type SceneIndex } from '@src/types'
+import { Book, type Chapter, type ChapterIndex, EditModes, type Scene, type SceneIndex } from '@src/types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ToggleInput } from '@src/widget/ToggleInput'
+
 import { useAppContext } from '@src/App.context'
 import { LeftPanel } from './LeftPanel'
 import { EditorContext, type EditorContextValue } from './Editor.context'
@@ -32,14 +23,13 @@ const useStyles = createStyles((theme) => ({
 }))
 
 export const Editor: React.FC = () => {
-    const { api, activeBook, setAppMode } = useAppContext()
+    const { api, activeBook } = useAppContext()
 
-    const { classes, theme } = useStyles()
-    const { colorScheme, toggleColorScheme } = useMantineColorScheme()
+    const { classes } = useStyles()
 
     const [chapters, _setChapters] = useState<ChapterIndex[]>([])
 
-    const [activeElement, _setActiveElement] = useState()
+    const [_setActiveElement] = useState()
     const [activeChapter, _setActiveChapter] = useState<ChapterIndex | Chapter | undefined>(undefined)
     const [activeScene, _setActiveScene] = useState<SceneIndex | Scene | undefined>(undefined)
 
@@ -77,12 +67,12 @@ export const Editor: React.FC = () => {
                 _setActiveScene(activeChapter.scenes[0])
             }
         }
-    }, [activeBook, index, indexUpdatedAt])
+    }, [activeBook, activeScene, activeChapter, index])
 
-    const changeBookTitle = useMutation({
+    const changeBookTitle = useMutation<Book, Error, string>({
         mutationFn: (new_title: string) => api.update_book_title(activeBook.id, new_title),
-        onSuccess: (response, new_title) => {
-            queryClient.invalidateQueries({ queryKey: ['book', activeBook.id, 'index'] })
+        onSuccess: (response: Book, new_title: string) => {
+            queryClient.invalidateQueries({ queryKey: ['book', activeBook.id, 'index'] }).then()
             activeBook.title = new_title
         }
     })
@@ -112,8 +102,8 @@ export const Editor: React.FC = () => {
             _setActiveChapter(newSceneAndChapter[1])
 
             // queryClient.invalidateQueries(['book', activeBook.id, 'chapter'])
-            queryClient.invalidateQueries(['book', activeBook.id, 'chapter', newSceneParts.chapterId])
-            queryClient.invalidateQueries(['book', activeBook.id, 'index'])
+            queryClient.invalidateQueries(['book', activeBook.id, 'chapter', newSceneParts.chapterId]).then()
+            queryClient.invalidateQueries(['book', activeBook.id, 'index']).then()
         }
     })
 
@@ -273,8 +263,6 @@ export const Editor: React.FC = () => {
         }
     }, [])
 
-    const onToggleColorScheme = useCallback(() => toggleColorScheme(), [toggleColorScheme])
-
     const editorContextValue = useMemo<EditorContextValue>(
         () => ({
             index,
@@ -297,7 +285,8 @@ export const Editor: React.FC = () => {
             setEditMode,
             _setChapters, //TODO cut out the _set*'s
             _setActiveChapter,
-            _setActiveScene
+            _setActiveScene,
+            changeBookTitle
         }),
         [
             index,
@@ -320,18 +309,6 @@ export const Editor: React.FC = () => {
             _setActiveScene
         ]
     )
-
-    // is this dead code or what?
-    // useEffect(() => {
-    //     const fetchChapters = async () => {
-    //         if (index.length > 0) {
-    //             _setActiveChapter(index[0].id)
-    //             if (index[0].scenes.length > 0) {
-    //                 _setActiveScene(index[0].scenes[0].id)
-    //             }
-    //         }
-    //     }
-    // }, [index])
 
     if (indexIsloading) {
         return <LoadingOverlay visible />
@@ -356,53 +333,7 @@ export const Editor: React.FC = () => {
                 }}
                 fixed
                 navbar={leftPanel}
-                header={
-                    <Header height={60}>
-                        <Group
-                            align='center'
-                            position='apart'
-                            h={60}
-                            px='xs'
-                        >
-                            <Group>
-                                <ActionIcon
-                                    title='Go back to book list'
-                                    onClick={() => {
-                                        setAppMode(AppModes.MANIFEST)
-                                    }}
-                                >
-                                    <IconArrowBack />
-                                </ActionIcon>
-                                <ToggleInput
-                                    title='Double click to edit'
-                                    value={activeBook.title}
-                                    onChange={(newVal) => changeBookTitle.mutate(newVal)}
-                                />
-                            </Group>
-
-                            {/*<Title order={1}>{bookTitle}</Title>*/}
-                            <Switch
-                                checked={colorScheme === 'dark'}
-                                onChange={onToggleColorScheme}
-                                size='lg'
-                                onLabel={
-                                    <IconMoonStars
-                                        color={theme.white}
-                                        size='1.25rem'
-                                        stroke={1.5}
-                                    />
-                                }
-                                offLabel={
-                                    <IconSun
-                                        color={theme.colors.gray[6]}
-                                        size='1.25rem'
-                                        stroke={1.5}
-                                    />
-                                }
-                            />
-                        </Group>
-                    </Header>
-                }
+                header={<CompositeHeader />}
                 padding={0}
             >
                 <Box

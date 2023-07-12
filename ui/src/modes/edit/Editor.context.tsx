@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react'
 
 import { type Book, type Chapter, type ChapterIndex, EditModes, type Scene, type SceneIndex } from '@src/types'
 import APIBridge from '@src/lib/remote'
+import { UseMutationResult } from '@tanstack/react-query'
 
 export interface EditorContextValue {
     index: Chapter[]
@@ -25,6 +26,7 @@ export interface EditorContextValue {
     _setChapters(chapters: Chapter[]): void
     _setActiveChapter(chapter: Chapter | ChapterIndex | undefined): void
     _setActiveScene(scene: Scene | SceneIndex | undefined): void
+    changeBookTitle: UseMutationResult<Book, Error, string, unknown>
 }
 
 // @ts-ignore

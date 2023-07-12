@@ -3,23 +3,20 @@ import { Ref, useEffect, useRef, useState } from 'react'
 import { useForm } from '@mantine/form'
 import { useQuery } from '@tanstack/react-query'
 import { useAppContext } from '@src/App.context'
+import { Chapter, type Scene } from '@src/types'
+import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 import { useEditorContext } from '../Editor.context'
 import { SceneText } from './scene_text'
-import { useDebouncedEffect } from '../../../lib/useDebouncedEffect'
-import { Chapter, type Scene } from '../../../types'
 
-interface ContinuousBodyProps {}
-
-export const ContinuousBody: React.FC<ContinuousBodyProps> = () => {
+export const ContinuousBody: React.FC = () => {
     const { debounceTime } = useAppContext()
     const { api, activeBook, activeChapter, activeScene, addScene, updateChapter } = useEditorContext()
     const paperRefs = useRef<Record<string, HTMLDivElement>>({})
 
-    if (activeChapter == undefined) {
+    if (activeChapter === undefined) {
         throw Error('Data integrity issue, activechapter is not defined')
     }
 
-    // @ts-ignore
     const { data: chapter, isLoading: chapterIsLoading } = useQuery({
         queryFn: () => api.fetch_chapter(activeChapter.id),
         queryKey: ['book', activeBook.id, 'chapter', activeChapter?.id]
@@ -31,7 +28,7 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = () => {
         },
         validate: {
             title: (value: string | undefined) =>
-                (value != undefined && value.length) <= 2
+                value !== undefined && value.length <= 2
                     ? "Chapter title's need to be at least 3 characters long"
                     : undefined
         }
@@ -41,9 +38,8 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = () => {
         () => {
             async function updateChapterTitle() {
                 if (activeChapter) {
-                    // @ts-ignore
                     const new_chapter: Chapter = {
-                        ...activeChapter,
+                        ...(activeChapter as Chapter),
                         title: form.values.title || 'Missing chapter'
                     }
                     updateChapter(new_chapter)
@@ -86,7 +82,6 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = () => {
         )
     }
 
-    // @ts-ignore
     return (
         <Stack>
             {/*Chapter title*/}
@@ -113,7 +108,7 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = () => {
                     )}
                 </Paper>
             ))}
-            {activeChapter?.scenes.length == 0 && (
+            {activeChapter?.scenes.length === 0 && (
                 <Center>
                     <Button onClick={() => addScene(activeChapter.id)}>Create a scene</Button>
                 </Center>

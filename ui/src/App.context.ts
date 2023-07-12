@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react'
 import { AppModes, Book, Font } from '@src/types'
 import APIBridge from '@src/lib/remote'
+import { Updater } from 'use-immer'
 
 export interface AppContextValue {
     api: APIBridge
@@ -15,7 +16,7 @@ export interface AppContextValue {
     setFonts: (val: Set<string>) => void
 
     activeFont: Font
-    setActiveFont: (font: Font) => void
+    setActiveFont: Updater<Font>
 
     debounceTime: number
 }

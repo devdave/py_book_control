@@ -65,6 +65,6 @@ export interface SplitResponse {
 
 export interface Font {
     name: string
-    size: string
+    size: number
     weight: string
 }
