@@ -32,8 +32,8 @@ interface SceneTextProps {
 
 const compile_scene2md = (scene: Scene) => {
     if (scene) {
-        const content = scene.content != undefined ? scene.content : ''
-        return `## ${scene.title}\n\n${scene.content}`
+        const content = scene.content !== undefined ? scene.content : ''
+        return `## ${scene.title}\n\n${content}`
     }
     return 'Loading...'
 }
@@ -58,7 +58,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
 
         form.reset()
 
-        if (activeScene == undefined || activeChapter == undefined) {
+        if (activeScene === undefined || activeChapter === undefined) {
             //These are both undefined
             console.error('Cannot split scenes when there is no active scene or chapter.')
             throw new Error('Cannot split scenes when there is no active scene or chapter.')
@@ -82,31 +82,32 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
 
     useDebouncedEffect(
         () => {
-            async function reprocessMDnSave() {
-                // @ts-ignore
-                if (form.values.content.trim().length == 0) {
+            async function reprocessMDnSave(): Promise<null | undefined> {
+                if (form.values.content && form.values.content.trim().length === 0) {
                     modals.openConfirmModal({
                         modalId: 'shouldDeleteScene',
                         title: 'Scene body empty',
                         children: (
-                            <Text size='sm'>The scene's content body is empty, do you want to delete this scene?</Text>
+                            <Text size='sm'>
+                                The scene@apos;s content body is empty, do you want to delete this scene?
+                            </Text>
                         ),
                         labels: { confirm: 'Delete scene!', cancel: 'Do not delete scene!' },
                         onConfirm: () => {
                             deleteScene(scene.chapterId, scene.id)
                         }
                     })
-                    return
+                    return null
                 }
 
                 const response = await api.process_scene_markdown(scene.id, form.values.content as string)
 
-                if (response.status == 'error') {
+                if (response.status === 'error') {
                     form.setValues({ content: sceneMD })
                     throw new Error(response.message)
                 }
 
-                if (response.status == 'split') {
+                if (response.status === 'split') {
                     console.log('Split!')
                     console.log(response)
 
@@ -127,25 +128,25 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                         onCancel: () => console.log('Split cancelled!')
                     })
 
-                    return
+                    return null
                 }
 
                 //Else we're doing some simple update logic
 
-                const new_scene = {
+                const new_scene: Partial<Scene> = {
                     id: scene.id,
                     chapterId: scene.chapterId,
                     title: response.title,
                     content: response.content,
-                    notes: form.values.notes,
-                    summary: form.values.summary,
-                    location: form.values.location
+                    notes: form.values.notes ? form.values.notes : '',
+                    summary: form.values.summary ? form.values.summary : '',
+                    location: form.values.location ? form.values.location : ''
                 }
 
-                updateScene(new_scene)
+                updateScene(new_scene as Scene)
                 setSceneMD((prev) => response.markdown)
                 form.resetDirty()
-                return response.markdown
+                return null
             }
 
             if (form.isDirty()) {
@@ -182,12 +183,25 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                     boxSizing: 'border-box'
                 }}
             >
-                <textarea
-                    style={{
-                        height: '100%',
-                        width: '100%',
-                        boxSizing: 'border-box'
-                    }}
+                <Textarea
+                    required
+                    styles={() => ({
+                        root: {
+                            height: '100%',
+                            width: '100%',
+                            boxSizing: 'border-box'
+                        },
+                        wrapper: {
+                            height: '100%',
+                            width: '100%',
+                            boxSizing: 'border-box'
+                        },
+                        input: {
+                            height: '100%',
+                            width: '100%',
+                            boxSizing: 'border-box'
+                        }
+                    })}
                     autoFocus={activeScene?.id === scene.id}
                     autoCapitalize='sentences'
                     {...form.getInputProps('content')}

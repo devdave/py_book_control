@@ -33,43 +33,14 @@ interface AppWrapperProps {
 }
 
 const AppWrapper: FC<AppWrapperProps> = ({ api, value, activeFont, children }) => (
-    <ThemeProvider api={api}>
-        <QueryClientProvider client={queryClient}>
-            <AppContext.Provider value={value}>
-                <MantineProvider
-                    theme={{
-                        globalStyles: () => ({
-                            textarea: {
-                                fontFamily: `"${activeFont.name}"`,
-                                fontSize: `${activeFont.size}px`
-                            }
-                        }),
-                        components: {
-                            Textarea: {
-                                styles: () => ({
-                                    input: {
-                                        fontFamily: `"${activeFont.name}"`,
-                                        fontSize: `${activeFont.size}px`
-                                    }
-                                })
-                            },
-                            TextInput: {
-                                styles: () => ({
-                                    input: {
-                                        fontFamily: `"${activeFont.name}"`,
-                                        fontSize: `${activeFont.size}px`
-                                    }
-                                })
-                            }
-                        }
-                    }}
-                >
-                    {children}
-                </MantineProvider>
-            </AppContext.Provider>
-            <ReactQueryDevtools initialIsOpen={false} />
-        </QueryClientProvider>
-    </ThemeProvider>
+    <AppContext.Provider value={value}>
+        <ThemeProvider api={api}>
+            <QueryClientProvider client={queryClient}>
+                <MantineProvider theme={{}}>{children}</MantineProvider>
+                <ReactQueryDevtools initialIsOpen={false} />
+            </QueryClientProvider>
+        </ThemeProvider>
+    </AppContext.Provider>
 )
 
 export default function App() {

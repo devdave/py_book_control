@@ -252,7 +252,9 @@ export const Editor: React.FC = () => {
         const target: Scene | SceneIndex | undefined | any = find(chapter.scenes, { scene: sceneId })
 
         // eslint-disable-next-line consistent-return
-        const newActiveScene: Scene | SceneIndex | undefined | any = find(chapter.scenes, { order: target.order - 1 })
+        const newActiveScene: Scene | SceneIndex | undefined = target
+            ? find(chapter.scenes, { order: target.order - 1 })
+            : undefined
 
         _deleteScene.mutate({ chapterId, sceneId })
 

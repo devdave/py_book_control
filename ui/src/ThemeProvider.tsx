@@ -3,6 +3,7 @@ import { useHotkeys, useLocalStorage, useColorScheme } from '@mantine/hooks'
 import { ReactNode } from 'react'
 import { ModalsProvider } from '@mantine/modals'
 import APIBridge from '@src/lib/remote'
+import { useAppContext } from '@src/App.context'
 
 interface ThemeProviderProps {
     api: APIBridge
@@ -10,6 +11,7 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ api, children }: ThemeProviderProps) {
+    const { activeFont } = useAppContext()
     const preferredColorScheme = useColorScheme()
     const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
         key: 'mantine-color-scheme',
@@ -21,6 +23,8 @@ export function ThemeProvider({ api, children }: ThemeProviderProps) {
 
     useHotkeys([['mod+J', () => toggleColorScheme()]])
 
+    console.log(colorScheme)
+
     return (
         <ColorSchemeProvider
             colorScheme={colorScheme}
@@ -29,7 +33,34 @@ export function ThemeProvider({ api, children }: ThemeProviderProps) {
             <MantineProvider
                 theme={{
                     colorScheme
+                    // globalStyles: () => ({
+                    //     textarea: {
+                    //         fontFamily: `"${activeFont.name}"`,
+                    //         fontSize: `${activeFont.size}px`
+                    //     }
+                    // }),
+                    // components: {
+                    //     Textarea: {
+                    //         styles: () => ({
+                    //             input: {
+                    //                 fontFamily: `"${activeFont.name}"`,
+                    //                 fontSize: `${activeFont.size}px`
+                    //             }
+                    //         })
+                    //     },
+                    //     TextInput: {
+                    //         styles: () => ({
+                    //             input: {
+                    //                 fontFamily: `"${activeFont.name}"`,
+                    //                 fontSize: `${activeFont.size}px`
+                    //             }
+                    //         })
+                    //     }
+                    // }
                 }}
+                // {
+                //     colorScheme
+                // }}
                 withGlobalStyles
                 withNormalizeCSS
             >
