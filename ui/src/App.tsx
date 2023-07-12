@@ -11,9 +11,10 @@ import { FC, ReactNode, useEffect, useMemo, useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-import { LoadingOverlay, Text } from '@mantine/core'
+import { LoadingOverlay, MantineProvider, Text } from '@mantine/core'
 import { AppModes, Book, Font } from '@src/types'
 import { Manifest } from '@src/modes/manifest/Manifest'
+import { useImmer } from 'use-immer'
 //import APIBridge from "./lib/remote";
 
 const queryClient = new QueryClient()
@@ -27,13 +28,45 @@ declare global {
 interface AppWrapperProps {
     api: APIBridge
     value: AppContextValue
+    activeFont: Font
     children: ReactNode
 }
 
-const AppWrapper: FC<AppWrapperProps> = ({ api, value, children }) => (
+const AppWrapper: FC<AppWrapperProps> = ({ api, value, activeFont, children }) => (
     <ThemeProvider api={api}>
         <QueryClientProvider client={queryClient}>
-            <AppContext.Provider value={value}>{children}</AppContext.Provider>
+            <AppContext.Provider value={value}>
+                <MantineProvider
+                    theme={{
+                        globalStyles: () => ({
+                            textarea: {
+                                fontFamily: `"${activeFont.name}"`,
+                                fontSize: `${activeFont.size}px`
+                            }
+                        }),
+                        components: {
+                            Textarea: {
+                                styles: () => ({
+                                    input: {
+                                        fontFamily: `"${activeFont.name}"`,
+                                        fontSize: `${activeFont.size}px`
+                                    }
+                                })
+                            },
+                            TextInput: {
+                                styles: () => ({
+                                    input: {
+                                        fontFamily: `"${activeFont.name}"`,
+                                        fontSize: `${activeFont.size}px`
+                                    }
+                                })
+                            }
+                        }
+                    }}
+                >
+                    {children}
+                </MantineProvider>
+            </AppContext.Provider>
             <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
     </ThemeProvider>
@@ -54,9 +87,9 @@ export default function App() {
     })
 
     const [fonts, setFonts] = useState<Set<string>>(new Set())
-    const [activeFont, setActiveFont] = useState<Font>({
-        name: 'Arial',
-        size: '12',
+    const [activeFont, setActiveFont] = useImmer<Font>({
+        name: 'Calibri',
+        size: 16,
         weight: '100'
     })
 
@@ -88,14 +121,11 @@ export default function App() {
             }
         }
         setFonts(fontAvailable)
-
-        console.log('Available Fonts:', [...fontAvailable.values()])
     }
 
     useEffect(() => {
-        //@ts-ignore Fuck the hell off with this window not defined shit
         if (window.pywebview !== undefined && window.pywebview.api !== undefined) {
-            doReady()
+            doReady().then()
         } else {
             window.addEventListener(PYWEBVIEWREADY, doReady, { once: true })
         }
@@ -127,6 +157,7 @@ export default function App() {
         <AppWrapper
             api={api}
             value={appContextValue}
+            activeFont={activeFont}
         >
             {useMemo(() => {
                 if (!isReady) {
