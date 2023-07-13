@@ -105,17 +105,23 @@ export default function App() {
         })
     }, [])
 
-    const _changeBook = useMutation<Book, Error, Book>({
-        mutationFn: (book: Book) => api.update_book(book.id, book),
-        mutationKey: ['mutate', 'book', activeBook.id, 'index'],
-        onSuccess: (updated: Book, change: Book) => {
-            queryClient.invalidateQueries(['book', updated.id, 'index']).then()
-            setActiveBook((draft) => {
-                draft.title = updated.title
-                draft.notes = updated.notes
-            })
+    const _changeBook = useMutation<Book, Error, Book>(
+        (book) => api.update_book(book),
+        {
+            onSuccess: (updated: Book) => {
+                queryClient
+                    .invalidateQueries(['book', updated.id, 'index'])
+                    .then()
+                if (updated.id === activeBook.id) {
+                    setActiveBook((draft) => {
+                        draft.title = updated.title
+                        draft.notes = updated.notes
+                        draft.updated_on = updated.updated_on
+                    })
+                }
+            }
         }
-    })
+    )
 
     const updateBook = useCallback(
         (book: Partial<Book>) => {

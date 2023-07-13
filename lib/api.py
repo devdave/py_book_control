@@ -10,7 +10,6 @@ from .log_helper import getLogger
 class BCAPI:
     FILE_TYPES: T.Tuple[str] = ("Database file (*.sqlite;*.sqlite3)",)
 
-
     app: BCApplication
     data_store: T.Dict[str, str]
     log: logging.Logger
@@ -47,10 +46,10 @@ class BCAPI:
             self.app.book_id = book.id
             return book.asdict()
 
-    def update_book(self, book_uid, changed:dict[str, str]):
+    def update_book(self, changed_book:dict[str, str]):
         with self.app.get_db() as session:
-            book = models.Book.Fetch_by_UID(book_uid)
-            updated = book.update(changed)
+            book = models.Book.Fetch_by_UID(changed_book['id'])
+            updated = book.update(changed_book)
             session.commit()
             return updated.asdict(True)
 
