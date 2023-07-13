@@ -44,9 +44,6 @@ class ChapterImporter:
     def add_scene(self, scene:Scene):
         self.scenes.append(scene)
 
-
-
-
     def __len__(self):
         return len(self.scenes)
 
