@@ -21,7 +21,10 @@ import { IconMoonStars, IconSun } from '@tabler/icons-react'
 
 const useStyles = createStyles((theme) => ({
     main: {
-        backgroundColor: theme.colorScheme === 'light' ? theme.colors.gray[0] : theme.colors.dark[6]
+        backgroundColor:
+            theme.colorScheme === 'light'
+                ? theme.colors.gray[0]
+                : theme.colors.dark[6]
     }
 }))
 
@@ -33,7 +36,10 @@ export const Manifest = () => {
 
     const [highlightBookID, setHighLightBookID] = useState<string | undefined>()
 
-    const onToggleColorScheme = useCallback(() => toggleColorScheme(), [toggleColorScheme])
+    const onToggleColorScheme = useCallback(
+        () => toggleColorScheme(),
+        [toggleColorScheme]
+    )
 
     const { data: books, isLoading: booksAreLoading } = useQuery({
         staleTime: 30000,
