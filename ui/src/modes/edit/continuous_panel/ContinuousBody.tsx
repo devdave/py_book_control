@@ -9,8 +9,8 @@ import { useEditorContext } from '../Editor.context'
 import { SceneText } from './scene_text'
 
 export const ContinuousBody: React.FC = () => {
-    const { debounceTime } = useAppContext()
-    const { api, activeBook, activeChapter, activeScene, addScene, updateChapter } = useEditorContext()
+    const { api, activeBook, debounceTime } = useAppContext()
+    const { activeChapter, activeScene, addScene, updateChapter } = useEditorContext()
     const paperRefs = useRef<Record<string, HTMLDivElement>>({})
 
     if (activeChapter === undefined) {
