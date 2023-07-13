@@ -6,9 +6,9 @@ import { Editor } from '@src/modes/edit/Editor'
 
 import { AppContext, AppContextValue } from '@src/App.context'
 
-import { FC, ReactNode, useEffect, useMemo, useState } from 'react'
+import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, useMutation } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { LoadingOverlay, MantineProvider, Text } from '@mantine/core'
@@ -47,7 +47,7 @@ export default function App() {
     const [appMode, setAppMode] = useState(AppModes.MANIFEST)
 
     const [isReady, setIsReady] = useState(false)
-    const [activeBook, setActiveBook] = useState<Book>({
+    const [activeBook, setActiveBook] = useImmer<Book>({
         chapters: [],
         created_on: '',
         id: '',
@@ -108,6 +108,25 @@ export default function App() {
         })
     }, [])
 
+    const _changeBook = useMutation<Book, Error, Book>({
+        mutationFn: (book: Book) => api.update_book(book.id, book),
+        mutationKey: ['mutate', 'book', activeBook.id, 'index'],
+        onSuccess: (updated: Book, change: Book) => {
+            queryClient.invalidateQueries(['book', updated.id, 'index'])
+            setActiveBook((draft) => {
+                draft.title = updated.title
+                draft.notes = updated.notes
+            })
+        }
+    })
+
+    const updateBook = useCallback(
+        (book: Book) => {
+            _changeBook.mutate(book)
+        },
+        [_changeBook]
+    )
+
     const appContextValue = useMemo<AppContextValue>(
         () => ({
             api,
@@ -115,6 +134,7 @@ export default function App() {
             setAppMode,
             activeBook,
             setActiveBook,
+            updateBook,
             fonts,
             setFonts,
             activeFont,
