@@ -68,3 +68,10 @@ export interface Font {
     size: number
     weight: string
 }
+
+export interface ActiveElement {
+    type: 'book' | 'chapter' | undefined
+    detail: string | undefined
+    subtype: 'scene' | undefined
+    subdetail: string | undefined
+}

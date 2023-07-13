@@ -185,11 +185,12 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
             >
                 <Textarea
                     required
-                    styles={() => ({
+                    styles={(theme) => ({
                         root: {
                             height: '100%',
                             width: '100%',
-                            boxSizing: 'border-box'
+                            boxSizing: 'border-box',
+                            backgroundColor: theme.colorScheme === 'light' ? 'white' : 'black'
                         },
                         wrapper: {
                             height: '100%',

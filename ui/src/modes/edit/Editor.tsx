@@ -9,10 +9,19 @@ import { PromptModal } from '@src/widget/input_modal'
 import { Body } from '@src/modes/edit/Body'
 import { CompositeHeader } from '@src/modes/edit/CompositeHeader'
 
-import { Book, type Chapter, type ChapterIndex, EditModes, type Scene, type SceneIndex } from '@src/types'
+import {
+    type ActiveElement,
+    type Book,
+    type Chapter,
+    type ChapterIndex,
+    EditModes,
+    type Scene,
+    type SceneIndex
+} from '@src/types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useAppContext } from '@src/App.context'
+import { useImmer } from 'use-immer'
 import { LeftPanel } from './LeftPanel'
 import { EditorContext, type EditorContextValue } from './Editor.context'
 
@@ -29,7 +38,12 @@ export const Editor: React.FC = () => {
 
     const [chapters, _setChapters] = useState<ChapterIndex[]>([])
 
-    const [_setActiveElement] = useState()
+    const [activeElement, setActiveElement] = useImmer<ActiveElement>({
+        type: undefined,
+        detail: undefined,
+        subtype: undefined,
+        subdetail: undefined
+    })
     const [activeChapter, _setActiveChapter] = useState<ChapterIndex | Chapter | undefined>(undefined)
     const [activeScene, _setActiveScene] = useState<SceneIndex | Scene | undefined>(undefined)
 
@@ -146,8 +160,16 @@ export const Editor: React.FC = () => {
     const setActiveChapter = useCallback(async (chapter: Chapter) => {
         if (activeChapter && activeChapter.id !== chapter.id) {
             if (chapter.scenes.length > 0) {
+                setActiveElement((draft) => {
+                    draft.subtype = 'scene'
+                    draft.subdetail = chapter.scenes[0].id
+                })
                 _setActiveScene(chapter.scenes[0])
             } else {
+                setActiveElement((draft) => {
+                    draft.subtype = undefined
+                    draft.subdetail = undefined
+                })
                 _setActiveScene(undefined)
             }
         }
@@ -288,7 +310,9 @@ export const Editor: React.FC = () => {
             _setChapters, //TODO cut out the _set*'s
             _setActiveChapter,
             _setActiveScene,
-            changeBookTitle
+            changeBookTitle,
+            activeElement,
+            setActiveElement
         }),
         [
             index,
@@ -330,9 +354,6 @@ export const Editor: React.FC = () => {
     return (
         <EditorContext.Provider value={editorContextValue}>
             <AppShell
-                classNames={{
-                    main: classes.main
-                }}
                 fixed
                 navbar={leftPanel}
                 header={<CompositeHeader />}

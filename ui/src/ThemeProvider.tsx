@@ -23,8 +23,6 @@ export function ThemeProvider({ api, children }: ThemeProviderProps) {
 
     useHotkeys([['mod+J', () => toggleColorScheme()]])
 
-    console.log(colorScheme)
-
     return (
         <ColorSchemeProvider
             colorScheme={colorScheme}
@@ -32,35 +30,37 @@ export function ThemeProvider({ api, children }: ThemeProviderProps) {
         >
             <MantineProvider
                 theme={{
-                    colorScheme
-                    // globalStyles: () => ({
-                    //     textarea: {
-                    //         fontFamily: `"${activeFont.name}"`,
-                    //         fontSize: `${activeFont.size}px`
-                    //     }
-                    // }),
-                    // components: {
-                    //     Textarea: {
-                    //         styles: () => ({
-                    //             input: {
-                    //                 fontFamily: `"${activeFont.name}"`,
-                    //                 fontSize: `${activeFont.size}px`
-                    //             }
-                    //         })
-                    //     },
-                    //     TextInput: {
-                    //         styles: () => ({
-                    //             input: {
-                    //                 fontFamily: `"${activeFont.name}"`,
-                    //                 fontSize: `${activeFont.size}px`
-                    //             }
-                    //         })
-                    //     }
-                    // }
+                    colorScheme,
+                    globalStyles: (theme) => ({
+                        textarea: {
+                            fontFamily: `"${activeFont.name}"`,
+                            fontSize: `${activeFont.size}px`
+                        },
+                        colorScheme: theme.colorScheme,
+                        backgroundColor: theme.colorScheme === 'light' ? 'white' : 'black'
+                    }),
+                    components: {
+                        Textarea: {
+                            styles: (theme) => ({
+                                root: {
+                                    colorScheme: theme.colorScheme
+                                },
+                                input: {
+                                    fontFamily: `"${activeFont.name}"`,
+                                    fontSize: `${activeFont.size}px`
+                                }
+                            })
+                        },
+                        TextInput: {
+                            styles: () => ({
+                                input: {
+                                    fontFamily: `"${activeFont.name}"`,
+                                    fontSize: `${activeFont.size}px`
+                                }
+                            })
+                        }
+                    }
                 }}
-                // {
-                //     colorScheme
-                // }}
                 withGlobalStyles
                 withNormalizeCSS
             >

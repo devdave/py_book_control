@@ -4,7 +4,7 @@ import {
     Drawer,
     Group,
     Header,
-    Menu,
+    NativeSelect,
     NumberInput,
     Select,
     Stack,
@@ -23,51 +23,25 @@ import React, { useCallback } from 'react'
 import { find, map } from 'lodash'
 import { useDisclosure, useHotkeys } from '@mantine/hooks'
 
-const useStyles = createStyles((theme) => ({
-    main: {
-        backgroundColor: theme.colorScheme === 'light' ? theme.colors.gray[0] : theme.colors.dark[6]
-    },
-    aboveall: {
-        zIndex: 500
+const useStyles = createStyles((styles_theme) => ({
+    header_main: {
+        colorScheme: styles_theme.colorScheme,
+        backgroundColor: styles_theme.colorScheme === 'light' ? 'white' : 'black'
     }
 }))
 
 export const CompositeHeader: React.FC = () => {
     const { activeBook, setAppMode, activeFont, setActiveFont, fonts } = useAppContext()
     const { activeChapter, setActiveScene, activeScene, changeBookTitle } = useEditorContext()
+
     const { theme } = useStyles()
     const { colorScheme, toggleColorScheme } = useMantineColorScheme()
+
     const onToggleColorScheme = useCallback(() => toggleColorScheme(), [toggleColorScheme])
 
     const select_fonts = map([...fonts], (fontName: string) => ({ value: fontName, label: fontName }))
 
     const [opened, { open, close }] = useDisclosure(false)
-
-    const nextScene = useCallback(() => {
-        if (activeChapter && activeScene) {
-            if (activeChapter.scenes.length > activeScene.order) {
-                const next_scene = find(activeChapter.scenes, { order: activeScene.order + 1 })
-                setActiveScene(activeChapter, next_scene)
-            }
-        }
-    }, [])
-
-    const prevScene = useCallback(() => {
-        if (activeChapter && activeScene) {
-            if (activeChapter.scenes.length > 1 && activeScene.order > 0) {
-                const prior_scene = find(activeChapter.scenes, { order: activeScene.order - 1 })
-                setActiveScene(activeChapter, prior_scene)
-            }
-        }
-    }, [])
-
-    useHotkeys([
-        ['ctrl+s', () => open()],
-        ['ctrl+ArrowUp', () => prevScene()],
-        ['ctrl+PageUp', () => prevScene()],
-        ['ctrl+ArrowDown', () => nextScene()],
-        ['ctrl+PageDown', () => nextScene()]
-    ])
 
     const example_ipsum =
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et' +
@@ -93,7 +67,6 @@ export const CompositeHeader: React.FC = () => {
                 <Select
                     label='Font name'
                     searchable
-                    nothingFound='Font not available'
                     zIndex={1000}
                     data={select_fonts}
                     value={activeFont.name}

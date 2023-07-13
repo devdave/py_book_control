@@ -36,7 +36,7 @@ const AppWrapper: FC<AppWrapperProps> = ({ api, value, activeFont, children }) =
     <AppContext.Provider value={value}>
         <ThemeProvider api={api}>
             <QueryClientProvider client={queryClient}>
-                <MantineProvider theme={{}}>{children}</MantineProvider>
+                {children}
                 <ReactQueryDevtools initialIsOpen={false} />
             </QueryClientProvider>
         </ThemeProvider>
