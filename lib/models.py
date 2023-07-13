@@ -18,6 +18,7 @@ from sqlalchemy.orm import (
     declared_attr,
 )
 
+GEN_LEN = 18
 
 def generate_id(length):
     alphanum = string.ascii_letters + string.digits
@@ -52,7 +53,7 @@ class Base(DeclarativeBase):
 
 
 class Book(Base):
-    uid: Mapped[str] = mapped_column(default=lambda: generate_id(12))
+    uid: Mapped[str] = mapped_column(default=lambda: generate_id(GEN_LEN))
     title: Mapped[str]
     notes: Mapped[str] = mapped_column(default="")
 
@@ -122,7 +123,7 @@ class Book(Base):
 
 
 class Chapter(Base):
-    uid: Mapped[str]
+    uid: Mapped[str] = mapped_column(default=lambda: generate_id(GEN_LEN))
     title: Mapped[str]
     order: Mapped[int]
 
@@ -275,3 +276,16 @@ def connect():
     Session = scoped_session(session_factory)
 
     return engine, Session
+
+
+# class Character(Base):
+#
+#     uid: Mapped[str] = mapped_column(default=lambda: generate_id(GEN_LEN))
+#     name: Mapped[str]
+#     notes: Mapped[str]
+#
+#     @classmethod
+#     def Search(cls, session: Session, query: str) -> "[Character]":
+#         stmt = select(cls.name.like(f"%query%"))
+#         return session.execute(stmt).all()
+
