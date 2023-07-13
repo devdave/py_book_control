@@ -12,7 +12,7 @@ export interface AppContextValue {
     activeBook: Book
     setActiveBook: (val: Book) => void
 
-    updateBook: (val: Book) => void
+    updateBook: (val: Partial<Book>) => void
 
     fonts: Set<string>
     setFonts: (val: Set<string>) => void

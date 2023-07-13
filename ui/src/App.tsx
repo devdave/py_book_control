@@ -8,7 +8,7 @@ import { AppContext, AppContextValue } from '@src/App.context'
 
 import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 
-import { QueryClient, QueryClientProvider, useMutation } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { LoadingOverlay, MantineProvider, Text } from '@mantine/core'
@@ -16,8 +16,6 @@ import { AppModes, Book, Font } from '@src/types'
 import { Manifest } from '@src/modes/manifest/Manifest'
 import { useImmer } from 'use-immer'
 //import APIBridge from "./lib/remote";
-
-const queryClient = new QueryClient()
 
 declare global {
     interface window {
@@ -35,15 +33,14 @@ interface AppWrapperProps {
 const AppWrapper: FC<AppWrapperProps> = ({ api, value, activeFont, children }) => (
     <AppContext.Provider value={value}>
         <ThemeProvider api={api}>
-            <QueryClientProvider client={queryClient}>
-                {children}
-                <ReactQueryDevtools initialIsOpen={false} />
-            </QueryClientProvider>
+            {children}
+            <ReactQueryDevtools initialIsOpen={false} />
         </ThemeProvider>
     </AppContext.Provider>
 )
 
 export default function App() {
+    const queryClient = useQueryClient()
     const [appMode, setAppMode] = useState(AppModes.MANIFEST)
 
     const [isReady, setIsReady] = useState(false)
@@ -112,7 +109,7 @@ export default function App() {
         mutationFn: (book: Book) => api.update_book(book.id, book),
         mutationKey: ['mutate', 'book', activeBook.id, 'index'],
         onSuccess: (updated: Book, change: Book) => {
-            queryClient.invalidateQueries(['book', updated.id, 'index'])
+            queryClient.invalidateQueries(['book', updated.id, 'index']).then()
             setActiveBook((draft) => {
                 draft.title = updated.title
                 draft.notes = updated.notes
@@ -121,8 +118,8 @@ export default function App() {
     })
 
     const updateBook = useCallback(
-        (book: Book) => {
-            _changeBook.mutate(book)
+        (book: Partial<Book>) => {
+            _changeBook.mutate(book as Book)
         },
         [_changeBook]
     )
