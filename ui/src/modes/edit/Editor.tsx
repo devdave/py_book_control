@@ -112,10 +112,10 @@ export const Editor: React.FC = () => {
 
     const _addScene = useMutation({
         mutationFn: (newScene: { [key: string]: string }) => api.create_scene(newScene.chapterId, newScene.title),
-        onSuccess: (newSceneAndChapter: [Scene, Chapter], newSceneParts: Partial<Scene>) => {
-            console.log('Added a new scene: ', newSceneAndChapter)
-            _setActiveScene(newSceneAndChapter[0])
-            _setActiveChapter(newSceneAndChapter[1])
+        onSuccess: ([scene, chapter]: [Scene, Chapter], newSceneParts: Partial<Scene>) => {
+            console.log('Added a new scene: ', scene, chapter)
+            _setActiveScene(scene)
+            _setActiveChapter(chapter)
 
             // queryClient.invalidateQueries(['book', activeBook.id, 'chapter'])
             queryClient.invalidateQueries(['book', activeBook.id, 'chapter', newSceneParts.chapterId]).then()
@@ -130,6 +130,22 @@ export const Editor: React.FC = () => {
             },
             [index]
         )
+
+    const addScene = useCallback(async (chapterId: string | undefined): Promise<void | Scene> => {
+        if (chapterId === undefined) {
+            console.log("Tried to add a scene when there isn't an activeChapter")
+            await api.alert('There was a problem creating a new scene!')
+            return
+        }
+        console.log('addScene chapter.id=', chapterId)
+
+        const sceneTitle: string = await PromptModal('New scene title')
+        if (sceneTitle.trim().length <= 2) {
+            alert('A scene must have a title longer than 2 characters.')
+        }
+
+        _addScene.mutate({ chapterId, title: sceneTitle })
+    }, [])
 
     const getChapter: (chapterId: string) => Promise<Chapter> = async (chapterId: string) =>
         api.fetch_chapter(chapterId)
@@ -254,7 +270,7 @@ export const Editor: React.FC = () => {
         console.log('Deleting scene: ', chapterId, sceneId)
         const chapter: Chapter = await getChapter(chapterId)
 
-        const target: Scene | SceneIndex | undefined | any = find(chapter.scenes, { scene: sceneId })
+        const target: Scene | SceneIndex | undefined | any = find(chapter.scenes, { id: sceneId })
 
         // eslint-disable-next-line consistent-return
         const newActiveScene: Scene | SceneIndex | undefined = target
@@ -285,6 +301,7 @@ export const Editor: React.FC = () => {
             reorderScene,
             setActiveChapter,
             setActiveScene,
+            addScene,
             createScene,
             updateScene,
             deleteScene,
@@ -304,6 +321,7 @@ export const Editor: React.FC = () => {
             reorderScene,
             setActiveChapter,
             setActiveScene,
+            addScene,
             createScene,
             updateScene,
             deleteScene,

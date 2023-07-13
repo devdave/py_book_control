@@ -21,6 +21,7 @@ export interface EditorContextValue {
     editMode: EditModes
     api: APIBridge
     addChapter(): void
+    addScene(chapterId: string): Promise<Scene | void>
     createScene(chapterId: string, sceneTitle: string, order?: number, content?: string): Promise<void>
     reorderChapter(from: number, to: number): void
     reorderScene(chapterId: string, from: number, to: number): void
@@ -30,7 +31,7 @@ export interface EditorContextValue {
     updateScene(scene: Partial<Scene>): void
     deleteScene(chapterId: string, sceneId: string): void
     setEditMode(mode: EditModes): void
-    changeBookTitle: UseMutationResult<Book, Error, string, unknown>
+    changeBookTitle: UseMutationResult<Book, Error, string>
     activeElement: ActiveElementHelper
 }
 
