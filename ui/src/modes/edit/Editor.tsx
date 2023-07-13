@@ -22,28 +22,24 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useAppContext } from '@src/App.context'
 import { useImmer } from 'use-immer'
+import { ActiveElementHelper } from '@src/lib/ActiveElementHelper'
 import { LeftPanel } from './LeftPanel'
 import { EditorContext, type EditorContextValue } from './Editor.context'
-
-const useStyles = createStyles((theme) => ({
-    main: {
-        backgroundColor: theme.colorScheme === 'light' ? theme.colors.gray[0] : theme.colors.dark[6]
-    }
-}))
 
 export const Editor: React.FC = () => {
     const { api, activeBook } = useAppContext()
 
-    const { classes } = useStyles()
-
     const [chapters, _setChapters] = useState<ChapterIndex[]>([])
 
-    const [activeElement, setActiveElement] = useImmer<ActiveElement>({
+    const [_activeElement, _setActiveElement] = useImmer<ActiveElement>({
         type: undefined,
         detail: undefined,
         subtype: undefined,
         subdetail: undefined
     })
+
+    const activeElement = new ActiveElementHelper(_activeElement, _setActiveElement)
+
     const [activeChapter, _setActiveChapter] = useState<ChapterIndex | Chapter | undefined>(undefined)
     const [activeScene, _setActiveScene] = useState<SceneIndex | Scene | undefined>(undefined)
 
