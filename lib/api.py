@@ -47,6 +47,13 @@ class BCAPI:
             self.app.book_id = book.id
             return book.asdict()
 
+    def update_book(self, book_uid, changed:dict[str, str]):
+        with self.app.get_db() as session:
+            book = models.Book.Fetch_by_UID(book_uid)
+            updated = book.update(changed)
+            session.commit()
+            return updated.asdict(True)
+
     def update_book_title(self, book_uid: str, new_title: str):
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, book_uid)
