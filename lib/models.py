@@ -63,6 +63,14 @@ class Book(Base):
         collection_class=ordering_list("order"),
     )
 
+    def update(self, book_uid, change: T.Dict[str, str]):
+
+        SAFE_KEYS = ['title', 'notes']
+        for safe in SAFE_KEYS:
+            if safe in change:
+                setattr(self, safe, change[str])
+
+
     @classmethod
     def Update(cls, session: Session, changeset: T.Dict[str, str]):
         if "id" not in changeset:
