@@ -29,7 +29,7 @@ import { EditorContext, type EditorContextValue } from './Editor.context'
 export const Editor: React.FC = () => {
     const { api, activeBook } = useAppContext()
 
-    const [chapters, _setChapters] = useState<ChapterIndex[]>([])
+    // const [chapters, _setChapters] = useState<ChapterIndex[]>([])
 
     const [_activeElement, _setActiveElement] = useImmer<ActiveElement>({
         type: undefined,
@@ -38,7 +38,10 @@ export const Editor: React.FC = () => {
         subdetail: undefined
     })
 
-    const activeElement = new ActiveElementHelper(_activeElement, _setActiveElement)
+    const activeElement = useMemo<ActiveElementHelper>(
+        () => new ActiveElementHelper(_activeElement, _setActiveElement),
+        [_activeElement, _setActiveElement]
+    )
 
     const [activeChapter, _setActiveChapter] = useState<ChapterIndex | Chapter | undefined>(undefined)
     const [activeScene, _setActiveScene] = useState<SceneIndex | Scene | undefined>(undefined)
@@ -272,19 +275,17 @@ export const Editor: React.FC = () => {
     const editorContextValue = useMemo<EditorContextValue>(
         () => ({
             index,
-            activeBook,
             activeChapter,
             activeScene,
             addChapter,
-            createScene,
-            chapters,
+            updateChapter,
             editMode,
             api,
             reorderChapter,
             reorderScene,
             setActiveChapter,
             setActiveScene,
-            updateChapter,
+            createScene,
             updateScene,
             deleteScene,
             setEditMode,
@@ -293,19 +294,21 @@ export const Editor: React.FC = () => {
         }),
         [
             index,
-            activeBook.id,
             activeChapter,
             activeScene,
             addChapter,
-            chapters,
+            updateChapter,
+            editMode,
+            api,
             reorderChapter,
             reorderScene,
             setActiveChapter,
             setActiveScene,
-            updateChapter,
+            createScene,
             updateScene,
             deleteScene,
-            setEditMode
+            changeBookTitle,
+            activeElement
         ]
     )
 

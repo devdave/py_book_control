@@ -16,10 +16,8 @@ import { ActiveElementHelper } from '@src/lib/ActiveElementHelper'
 
 export interface EditorContextValue {
     index: Chapter[]
-    activeBook: Book
     activeChapter: Chapter | ChapterIndex | undefined
     activeScene: Scene | SceneIndex | undefined
-    chapters: Chapter[] | ChapterIndex[] | undefined
     editMode: EditModes
     api: APIBridge
     addChapter(): void
