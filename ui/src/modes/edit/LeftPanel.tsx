@@ -20,7 +20,7 @@ import { type FC, useCallback } from 'react'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 
 import { useAppContext } from '@src/App.context'
-import { useEditorContext } from './Editor.context'
+import { EditorContextValue, useEditorContext } from './Editor.context'
 import { Chapter, ChapterIndex, EditModes } from '../../types'
 
 interface LeftPanelProps {
@@ -38,15 +38,18 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
         setActiveChapter,
         setActiveScene,
         setEditMode,
-        editMode
+        editMode,
+        activeElement
     } = useEditorContext()
 
     const { activeBook } = useAppContext()
 
-    const handleChapterChange = (chapter: Chapter) => {
+    const onChapterClick = (chapter: ChapterIndex) => {
         console.log('Changing chapters!')
         setActiveChapter(chapter)
     }
+
+    const isThisBookActive = activeElement.isThisBook(activeBook)
 
     return (
         <Navbar width={{ base: 300 }}>
@@ -91,8 +94,10 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
             <ScrollArea>
                 {/*Book link*/}
                 <NavLink
+                    childrenOffset={0}
                     label={`Book: ${activeBook.title}`}
-                    active={false}
+                    active={isThisBookActive}
+                    onChange={() => activeElement.setBook(activeBook)}
                     opened
                     icon={
                         <Center>
@@ -117,7 +122,8 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                     ref={droppable.innerRef}
                                 >
                                     {map(index, (chapter, chapterIdx) => {
-                                        const isChapterActive = chapter.id === activeChapter?.id
+                                        const isChapterActive = activeElement.isThisChapter(chapter)
+                                        // const isChapterActive = chapter.id === activeChapter?.id
 
                                         return (
                                             <Draggable
@@ -128,7 +134,7 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                                 {(draggable) => (
                                                     <NavLink
                                                         active={isChapterActive}
-                                                        childrenOffset={0}
+                                                        childrenOffset={1}
                                                         icon={
                                                             <Center {...draggable.dragHandleProps}>
                                                                 <IconGripVertical size='0.75rem' />
@@ -140,7 +146,7 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                                                 <Text>{chapter.title}</Text>
                                                             </Group>
                                                         }
-                                                        onChange={() => setActiveChapter(chapter)}
+                                                        onClick={() => onChapterClick(chapter)}
                                                         opened={isChapterActive}
                                                         ref={draggable.innerRef}
                                                         rightSection={
@@ -155,7 +161,8 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                                         {chapter.scenes
                                                             .sort((a, b) => a.order - b.order)
                                                             .map((scene) => {
-                                                                const isSceneActive = scene.id === activeScene?.id
+                                                                const isSceneActive = activeElement.isThisScene(scene)
+                                                                // const isSceneActive = scene.id === activeScene?.id
 
                                                                 return (
                                                                     <NavLink
