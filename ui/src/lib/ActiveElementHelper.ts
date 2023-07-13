@@ -3,10 +3,10 @@ import { ActiveElement, Book, Chapter, ChapterIndex, Scene, SceneIndex } from '@
 
 export class ActiveElementHelper {
     state: ActiveElement
-    elementUpdater: Updater<ActiveElement>
+    updater: Updater<ActiveElement>
     constructor(state: ActiveElement, elementUpdater: Updater<ActiveElement>) {
         this.state = state
-        this.elementUpdater = elementUpdater
+        this.updater = elementUpdater
     }
 
     setTypeAndSubtype(
@@ -15,7 +15,7 @@ export class ActiveElementHelper {
         subtype_name: 'scene' | undefined,
         sub_detail: string | undefined
     ) {
-        this.elementUpdater((draft) => {
+        this.updater((draft) => {
             draft.type = type_name
             draft.detail = type_detail
             draft.subtype = subtype_name
@@ -24,14 +24,14 @@ export class ActiveElementHelper {
     }
 
     assignType(type_name: 'chapter' | 'book' | undefined, type_detail: string) {
-        this.elementUpdater((draft) => {
+        this.updater((draft) => {
             draft.type = type_name
             draft.detail = type_detail
         })
     }
 
     assignSubType(subtype_name: 'scene' | undefined, subtype_detail: string) {
-        this.elementUpdater((draft) => {
+        this.updater((draft) => {
             draft.subtype = subtype_name
             draft.subdetail = subtype_detail
         })
@@ -126,21 +126,21 @@ export class ActiveElementHelper {
     }
 
     clearSubType() {
-        this.elementUpdater((draft) => {
+        this.updater((draft) => {
             draft.subtype = undefined
             draft.subdetail = undefined
         })
     }
 
     clearType() {
-        this.elementUpdater((draft) => {
+        this.updater((draft) => {
             draft.type = undefined
             draft.detail = undefined
         })
     }
 
     clear() {
-        this.elementUpdater((draft) => {
+        this.updater((draft) => {
             draft.type = undefined
             draft.detail = undefined
             draft.subtype = undefined
