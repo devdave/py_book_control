@@ -81,7 +81,7 @@ export const ToggleInput: React.FC<ToggleInputProps> = ({ value, onChange, title
             }}
         >
             {form.values.value}
-            {<IconEdit />}
+            <IconEdit />
         </Title>
     )
 }
