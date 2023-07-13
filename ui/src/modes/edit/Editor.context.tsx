@@ -12,6 +12,7 @@ import {
 import APIBridge from '@src/lib/remote'
 import { UseMutationResult } from '@tanstack/react-query'
 import { Updater } from 'use-immer'
+import { ActiveElementHelper } from '@src/lib/ActiveElementHelper'
 
 export interface EditorContextValue {
     index: Chapter[]
@@ -32,14 +33,10 @@ export interface EditorContextValue {
     updateScene(scene: Partial<Scene>): void
     deleteScene(chapterId: string, sceneId: string): void
     setEditMode(mode: EditModes): void
-    _setChapters(chapters: Chapter[]): void
-    _setActiveChapter(chapter: Chapter | ChapterIndex | undefined): void
-    _setActiveScene(scene: Scene | SceneIndex | undefined): void
     changeBookTitle: UseMutationResult<Book, Error, string, unknown>
-    activeElement: ActiveElement
-    setActiveElement: Updater<ActiveElement>
+    activeElement: ActiveElementHelper
 }
 
 export const EditorContext = createContext<EditorContextValue | null>(null)
 
-export const useEditorContext = () => useContext(EditorContext)
+export const useEditorContext = (): EditorContextValue => useContext(EditorContext) as EditorContextValue
