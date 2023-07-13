@@ -11,6 +11,7 @@ module.exports = {
         project: './tsconfig.json'
     },
     rules: {
+        'no-param-reassign': [2, { props: true, ignorePropertyModificationsFor: ['draft'] }],
         'react/prop-types': 0,
         // indent: ['error', 4],
         'react/jsx-indent-props': ['error', 4],
