@@ -56,6 +56,7 @@ export const Editor: React.FC = () => {
 
     const {
         isLoading: indexIsloading,
+        isSuccess: indexIsSuccess,
         data: index,
         dataUpdatedAt: indexUpdatedAt
     } = useQuery({
@@ -68,11 +69,13 @@ export const Editor: React.FC = () => {
             return
         }
 
-        if (!indexIsloading) {
+        if (!indexIsloading && indexIsSuccess) {
             if (activeChapter === undefined) {
                 if (index.length > 0) {
+                    activeElement.setChapter(index[0])
                     _setActiveChapter(index[0])
                     if (index[0].scenes.length > 0) {
+                        activeElement.assignScene(index[0].scenes[0])
                         _setActiveScene(index[0].scenes[0])
                     }
                 }
@@ -81,7 +84,7 @@ export const Editor: React.FC = () => {
                 _setActiveScene(activeChapter.scenes[0])
             }
         }
-    }, [activeBook, activeScene, activeChapter, index])
+    }, [activeBook, activeScene, activeChapter, index, indexIsloading, indexIsSuccess])
 
     const changeBookTitle = useMutation<Book, Error, string>({
         mutationFn: (new_title: string) => api.update_book_title(activeBook.id, new_title),
