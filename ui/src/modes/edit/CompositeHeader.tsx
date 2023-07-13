@@ -32,7 +32,7 @@ const useStyles = createStyles((styles_theme) => ({
 
 export const CompositeHeader: React.FC = () => {
     const { activeBook, setAppMode, activeFont, setActiveFont, fonts } = useAppContext()
-    const { activeChapter, setActiveScene, activeScene, changeBookTitle } = useEditorContext()
+    const { changeBookTitle } = useEditorContext()
 
     const { theme } = useStyles()
     const { colorScheme, toggleColorScheme } = useMantineColorScheme()
@@ -57,6 +57,7 @@ export const CompositeHeader: React.FC = () => {
                 opened={opened}
                 onClose={close}
                 position='right'
+                title='Settings'
             >
                 <Text>Example text</Text>
                 <Textarea
