@@ -1,5 +1,6 @@
 import {
     ActionIcon,
+    Checkbox,
     createStyles,
     Drawer,
     Group,
@@ -11,6 +12,7 @@ import {
     Text,
     Textarea,
     TextInput,
+    Title,
     useMantineColorScheme
 } from '@mantine/core'
 import { useAppContext } from '@src/App.context'
@@ -57,6 +59,7 @@ export const CompositeHeader: React.FC = () => {
                 position='right'
                 title='Settings'
             >
+                <Title order={1}>General settings</Title>
                 <Text>Example text</Text>
                 <Textarea
                     readOnly
@@ -103,6 +106,9 @@ export const CompositeHeader: React.FC = () => {
                     label='AI API Key (disabled)'
                     disabled
                 />
+                <Title order={1}>Flow settings</Title>
+                <Checkbox label={"Don't ask when splitting a scene"} />
+                <Checkbox label={"Don't ask to delete, just delete the scene, when it is empty."} />
             </Drawer>
             <Stack spacing='xs'>
                 <Group

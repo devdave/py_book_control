@@ -43,8 +43,12 @@ export const Editor: React.FC = () => {
         [_activeElement, _setActiveElement]
     )
 
-    const [activeChapter, _setActiveChapter] = useState<ChapterIndex | Chapter | undefined>(undefined)
-    const [activeScene, _setActiveScene] = useState<SceneIndex | Scene | undefined>(undefined)
+    const [activeChapter, _setActiveChapter] = useState<
+        ChapterIndex | Chapter | undefined
+    >(undefined)
+    const [activeScene, _setActiveScene] = useState<
+        SceneIndex | Scene | undefined
+    >(undefined)
 
     const [editMode, _setEditMode] = useState<EditModes>(EditModes.LIST)
     const queryClient = useQueryClient()
@@ -79,16 +83,32 @@ export const Editor: React.FC = () => {
                     }
                 }
             }
-            if (activeScene === undefined && activeChapter && activeChapter.scenes.length > 0) {
+            if (
+                activeScene === undefined &&
+                activeChapter &&
+                activeChapter.scenes.length > 0
+            ) {
                 _setActiveScene(activeChapter.scenes[0])
             }
         }
-    }, [activeBook, activeScene, activeChapter, index, indexIsLoading, indexIsSuccess])
+    }, [
+        activeBook,
+        activeScene,
+        activeChapter,
+        index,
+        indexIsLoading,
+        indexIsSuccess
+    ])
 
     const changeBookTitle = useMutation<Book, Error, string>({
-        mutationFn: (new_title: string) => api.update_book_title(activeBook.id, new_title),
+        mutationFn: (new_title: string) =>
+            api.update_book_title(activeBook.id, new_title),
         onSuccess: (response: Book, new_title: string) => {
-            queryClient.invalidateQueries({ queryKey: ['book', activeBook.id, 'index'] }).then()
+            queryClient
+                .invalidateQueries({
+                    queryKey: ['book', activeBook.id, 'index']
+                })
+                .then()
             activeBook.title = new_title
         }
     })
@@ -111,54 +131,96 @@ export const Editor: React.FC = () => {
     }, [])
 
     const _addScene = useMutation({
-        mutationFn: (newScene: { [key: string]: string }) => api.create_scene(newScene.chapterId, newScene.title),
-        onSuccess: ([scene, chapter]: [Scene, Chapter], newSceneParts: Partial<Scene>) => {
+        mutationFn: (newScene: { [key: string]: string }) =>
+            api.create_scene(newScene.chapterId, newScene.title),
+        onSuccess: (
+            [scene, chapter]: [Scene, Chapter],
+            newSceneParts: Partial<Scene>
+        ) => {
             console.log('Added a new scene: ', scene, chapter)
             _setActiveScene(scene)
             _setActiveChapter(chapter)
 
             // queryClient.invalidateQueries(['book', activeBook.id, 'chapter'])
-            queryClient.invalidateQueries(['book', activeBook.id, 'chapter', newSceneParts.chapterId]).then()
-            queryClient.invalidateQueries(['book', activeBook.id, 'index']).then()
+            queryClient
+                .invalidateQueries([
+                    'book',
+                    activeBook.id,
+                    'chapter',
+                    newSceneParts.chapterId
+                ])
+                .then()
+            queryClient
+                .invalidateQueries(['book', activeBook.id, 'index'])
+                .then()
         }
     })
 
-    const createScene: (chapterId: string, sceneTitle: string, position: number, content: string) => Promise<void> =
-        useCallback(
-            async (chapterId: string, sceneTitle: string, position = -1, content = '') => {
-                _addScene.mutate({ chapterId, title: sceneTitle, position, content })
-            },
-            [index]
-        )
+    const createScene: (
+        chapterId: string,
+        sceneTitle: string,
+        position: number,
+        content: string
+    ) => Promise<void> = useCallback(
+        async (
+            chapterId: string,
+            sceneTitle: string,
+            position = -1,
+            content = ''
+        ) => {
+            _addScene.mutate({
+                chapterId,
+                title: sceneTitle,
+                position,
+                content
+            })
+        },
+        [index]
+    )
 
-    const addScene = useCallback(async (chapterId: string | undefined): Promise<void | Scene> => {
-        if (chapterId === undefined) {
-            console.log("Tried to add a scene when there isn't an activeChapter")
-            await api.alert('There was a problem creating a new scene!')
-            return
-        }
-        console.log('addScene chapter.id=', chapterId)
+    const addScene = useCallback(
+        async (chapterId: string | undefined): Promise<void | Scene> => {
+            if (chapterId === undefined) {
+                console.log(
+                    "Tried to add a scene when there isn't an activeChapter"
+                )
+                await api.alert('There was a problem creating a new scene!')
+                return
+            }
+            console.log('addScene chapter.id=', chapterId)
 
-        const sceneTitle: string = await PromptModal('New scene title')
-        if (sceneTitle.trim().length <= 2) {
-            alert('A scene must have a title longer than 2 characters.')
-        }
+            const sceneTitle: string = await PromptModal('New scene title')
+            if (sceneTitle.trim().length <= 2) {
+                alert('A scene must have a title longer than 2 characters.')
+            }
 
-        _addScene.mutate({ chapterId, title: sceneTitle })
-    }, [])
+            _addScene.mutate({ chapterId, title: sceneTitle })
+        },
+        []
+    )
 
-    const getChapter: (chapterId: string) => Promise<Chapter> = async (chapterId: string) =>
-        api.fetch_chapter(chapterId)
+    const getChapter: (chapterId: string) => Promise<Chapter> = async (
+        chapterId: string
+    ) => api.fetch_chapter(chapterId)
 
     const reorderChapter = useCallback(async (from: number, to: number) => {
         await api.reorder_chapter(from, to)
-        await queryClient.invalidateQueries({ queryKey: ['book', activeBook.id, 'index'] })
+        await queryClient.invalidateQueries({
+            queryKey: ['book', activeBook.id, 'index']
+        })
     }, [])
 
-    const reorderScene = useCallback(async (chapterId: string, from: number, to: number) => {
-        await api.reorder_scene(chapterId, from, to)
-        await queryClient.invalidateQueries(['book', activeBook.id, 'chapter'])
-    }, [])
+    const reorderScene = useCallback(
+        async (chapterId: string, from: number, to: number) => {
+            await api.reorder_scene(chapterId, from, to)
+            await queryClient.invalidateQueries([
+                'book',
+                activeBook.id,
+                'chapter'
+            ])
+        },
+        []
+    )
 
     const setActiveChapter = useCallback(async (chapter: Chapter) => {
         if (activeChapter && activeChapter.id !== chapter.id) {
@@ -182,12 +244,17 @@ export const Editor: React.FC = () => {
     }, [])
 
     const changeChapter = useMutation<Chapter, Error, Chapter>({
-        mutationFn: (alterChapter: Chapter) => api.update_chapter(alterChapter.id, alterChapter),
+        mutationFn: (alterChapter: Chapter) =>
+            api.update_chapter(alterChapter.id, alterChapter),
         mutationKey: ['book', activeBook.id, 'chapter'],
         onSuccess: (chapter) => {
-            queryClient.invalidateQueries({ queryKey: ['book', activeBook.id, 'index'] })
+            queryClient.invalidateQueries({
+                queryKey: ['book', activeBook.id, 'index']
+            })
             if (chapter) {
-                queryClient.invalidateQueries({ queryKey: ['book', activeBook.id, 'chapter', chapter.id] })
+                queryClient.invalidateQueries({
+                    queryKey: ['book', activeBook.id, 'chapter', chapter.id]
+                })
             }
         }
     })
@@ -200,7 +267,8 @@ export const Editor: React.FC = () => {
     )
 
     const changeScene = useMutation({
-        mutationFn: (alteredScene: Scene) => api.update_scene(alteredScene.id, alteredScene),
+        mutationFn: (alteredScene: Scene) =>
+            api.update_scene(alteredScene.id, alteredScene),
         onSuccess: ([scene, chapter]: [Scene, Chapter]) => {
             console.log('changed scene', scene)
             if (activeChapter?.id === chapter.id) {
@@ -215,7 +283,14 @@ export const Editor: React.FC = () => {
             }
 
             queryClient.setQueryData(
-                ['book', activeBook.id, 'chapter', chapter.id, 'scene', scene.id],
+                [
+                    'book',
+                    activeBook.id,
+                    'chapter',
+                    chapter.id,
+                    'scene',
+                    scene.id
+                ],
                 (prior: Scene | undefined): Scene => {
                     if (prior === undefined) {
                         return scene
@@ -228,9 +303,27 @@ export const Editor: React.FC = () => {
                 }
             )
 
-            queryClient.invalidateQueries(['book', activeBook.id, 'chapter', chapter.id]).then()
-            queryClient.invalidateQueries(['book', activeBook.id, 'chapter', chapter.id, 'scene', scene.id]).then()
-            queryClient.invalidateQueries(['book', activeBook.id, 'index']).then()
+            queryClient
+                .invalidateQueries([
+                    'book',
+                    activeBook.id,
+                    'chapter',
+                    chapter.id
+                ])
+                .then()
+            queryClient
+                .invalidateQueries([
+                    'book',
+                    activeBook.id,
+                    'chapter',
+                    chapter.id,
+                    'scene',
+                    scene.id
+                ])
+                .then()
+            queryClient
+                .invalidateQueries(['book', activeBook.id, 'index'])
+                .then()
         }
     })
 
@@ -243,21 +336,41 @@ export const Editor: React.FC = () => {
     }, [])
 
     const _deleteScene = useMutation({
-        mutationFn: ({ chapterId, sceneId }: { chapterId: string; sceneId: string }) =>
-            api.delete_scene(chapterId, sceneId),
+        mutationFn: ({
+            chapterId,
+            sceneId
+        }: {
+            chapterId: string
+            sceneId: string
+        }) => api.delete_scene(chapterId, sceneId),
         onSuccess: async (data, { chapterId, sceneId }, context) => {
             console.log('Deleted scene', data, chapterId, sceneId, context)
-            await queryClient.invalidateQueries(['book', activeBook.id, 'chapter', chapterId])
-            await queryClient.invalidateQueries(['book', activeBook.id, 'index'])
+            await queryClient.invalidateQueries([
+                'book',
+                activeBook.id,
+                'chapter',
+                chapterId
+            ])
+            await queryClient.invalidateQueries([
+                'book',
+                activeBook.id,
+                'index'
+            ])
 
             _setActiveChapter((prior): Chapter | ChapterIndex | undefined => {
                 if (prior === undefined) {
-                    console.log('Error: somehow the user deleted a scene without there being an active chapter')
-                    Error('Integrity issue: Deleted a scene without an active scene')
+                    console.log(
+                        'Error: somehow the user deleted a scene without there being an active chapter'
+                    )
+                    Error(
+                        'Integrity issue: Deleted a scene without an active scene'
+                    )
                     return
                 }
                 const updated: ChapterIndex | Chapter = clone(prior)
-                updated.scenes = prior.scenes.filter((scene) => scene.id !== sceneId)
+                updated.scenes = prior.scenes.filter(
+                    (scene) => scene.id !== sceneId
+                )
                 updated.updated_on = new Date(Date.now()).toUTCString()
 
                 // eslint-disable-next-line consistent-return
@@ -266,27 +379,33 @@ export const Editor: React.FC = () => {
         }
     })
 
-    const deleteScene = useCallback(async (chapterId: string, sceneId: string) => {
-        console.log('Deleting scene: ', chapterId, sceneId)
-        const chapter: Chapter = await getChapter(chapterId)
+    const deleteScene = useCallback(
+        async (chapterId: string, sceneId: string) => {
+            console.log('Deleting scene: ', chapterId, sceneId)
+            const chapter: Chapter = await getChapter(chapterId)
 
-        const target: Scene | SceneIndex | undefined | any = find(chapter.scenes, { id: sceneId })
+            const target: Scene | SceneIndex | undefined | any = find(
+                chapter.scenes,
+                { id: sceneId }
+            )
 
-        // eslint-disable-next-line consistent-return
-        const newActiveScene: Scene | SceneIndex | undefined = target
-            ? find(chapter.scenes, { order: target.order - 1 })
-            : undefined
+            // eslint-disable-next-line consistent-return
+            const newActiveScene: Scene | SceneIndex | undefined = target
+                ? find(chapter.scenes, { order: target.order - 1 })
+                : undefined
 
-        _deleteScene.mutate({ chapterId, sceneId })
+            _deleteScene.mutate({ chapterId, sceneId })
 
-        if (newActiveScene) {
-            activeElement.setScene(chapter, newActiveScene as Scene)
-            _setActiveScene(newActiveScene)
-        } else {
-            activeElement.clearSubType()
-            _setActiveScene(undefined)
-        }
-    }, [])
+            if (newActiveScene) {
+                activeElement.setScene(chapter, newActiveScene as Scene)
+                _setActiveScene(newActiveScene)
+            } else {
+                activeElement.clearSubType()
+                _setActiveScene(undefined)
+            }
+        },
+        []
+    )
 
     const editorContextValue = useMemo<EditorContextValue>(
         () => ({
@@ -334,7 +453,9 @@ export const Editor: React.FC = () => {
         return <LoadingOverlay visible />
     }
 
-    const sceneKeys = activeChapter ? activeChapter.scenes.map((scene) => scene.id) : []
+    const sceneKeys = activeChapter
+        ? activeChapter.scenes.map((scene) => scene.id)
+        : []
 
     const superKey = sceneKeys.join()
 

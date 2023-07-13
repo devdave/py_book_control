@@ -1,13 +1,13 @@
-import { Center, createStyles, Skeleton, Tabs } from '@mantine/core'
-import { type FC, useEffect, useState } from 'react'
+import { createStyles, Skeleton, Tabs, Text } from '@mantine/core'
+import { type FC } from 'react'
 import { IconId, IconMapPin, IconNote, IconUsers, IconVocabulary } from '@tabler/icons-react'
 import { type Scene } from '@src/types'
 import { useQuery } from '@tanstack/react-query'
+import { useAppContext } from '@src/App.context'
+
 import TextSceneForm from './scene_forms/TextSceneForm'
 
 import { MainSceneForm } from './scene_forms/MainSceneForm'
-
-import { useEditorContext } from '../Editor.context'
 
 const useStyles = createStyles((theme) => ({
     tabPanel: {
@@ -20,12 +20,15 @@ export interface ScenePanelProps {
 }
 
 export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
-    const { api, activeBook } = useEditorContext()
+    const { api, activeBook } = useAppContext()
     const { classes } = useStyles()
-    const [sceneLoaded, setSceneLoaded] = useState(false)
-    const [freshScene, setFreshScene] = useState<Scene | undefined>(undefined)
 
-    const { data: scene, isLoading: sceneIsLoading } = useQuery({
+    const {
+        data: scene,
+        isLoading: sceneIsLoading,
+        status: sceneLoadStatus,
+        error: sceneLoadError
+    } = useQuery({
         queryFn: () => api.fetch_scene(indexedScene.id),
         queryKey: ['book', activeBook.id, 'chapter', indexedScene.chapterId, 'scene', indexedScene.id]
     })
@@ -37,6 +40,17 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
                 <Skeleton />
                 <Skeleton />
                 <Skeleton />
+            </>
+        )
+    }
+    if (sceneLoadStatus === 'error') {
+        const errorMessage = sceneLoadError instanceof Error ? sceneLoadError.message : (sceneLoadError as string)
+        console.error('Failed to load: indexedScene', indexedScene, errorMessage)
+
+        return (
+            <>
+                <h2>There was a problem loading the scene</h2>
+                <Text>{errorMessage}</Text>
             </>
         )
     }

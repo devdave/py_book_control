@@ -8,7 +8,12 @@ import { AppContext, AppContextValue } from '@src/App.context'
 
 import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 
-import { QueryClient, QueryClientProvider, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+    QueryClient,
+    QueryClientProvider,
+    useMutation,
+    useQueryClient
+} from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { LoadingOverlay, MantineProvider, Text } from '@mantine/core'
@@ -30,7 +35,12 @@ interface AppWrapperProps {
     children: ReactNode
 }
 
-const AppWrapper: FC<AppWrapperProps> = ({ api, value, activeFont, children }) => (
+const AppWrapper: FC<AppWrapperProps> = ({
+    api,
+    value,
+    activeFont,
+    children
+}) => (
     <AppContext.Provider value={value}>
         <ThemeProvider api={api}>
             {children}
@@ -92,7 +102,10 @@ export default function App() {
     }
 
     useEffect(() => {
-        if (window.pywebview !== undefined && window.pywebview.api !== undefined) {
+        if (
+            window.pywebview !== undefined &&
+            window.pywebview.api !== undefined
+        ) {
             doReady().then()
         } else {
             window.addEventListener(PYWEBVIEWREADY, doReady, { once: true })
@@ -125,7 +138,9 @@ export default function App() {
 
     const updateBook = useCallback(
         (book: Partial<Book>) => {
-            _changeBook.mutate(book as Book)
+            if (book.id) {
+                _changeBook.mutate(book as Book)
+            }
         },
         [_changeBook]
     )
@@ -168,7 +183,11 @@ export default function App() {
                     case AppModes.MANIFEST:
                         return <Manifest />
                     default:
-                        return <Text>Application error: unexpected mode {appMode}</Text>
+                        return (
+                            <Text>
+                                Application error: unexpected mode {appMode}
+                            </Text>
+                        )
                 }
             }, [appMode, isReady, activeBook])}
         </AppWrapper>

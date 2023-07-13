@@ -44,9 +44,9 @@ class APIBridge {
     }
     
     
-    async update_book(book_uid:any, changed:any) {
+    async update_book(changed_book:any) {
         
-        return await this.boundary.remote("update_book", book_uid, changed);
+        return await this.boundary.remote("update_book", changed_book);
     }
     
     

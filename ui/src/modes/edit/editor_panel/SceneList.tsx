@@ -53,8 +53,11 @@ const SceneList = () => {
         [activeChapter?.id, reorderScene]
     )
 
-    // @ts-ignore I don't care that activeChapter might be undefined
-    const addNewScene = useCallback(() => addScene(activeChapter.id), [activeChapter, addScene])
+    const addNewScene = useCallback(() => {
+        if (activeChapter) {
+            addScene(activeChapter.id), [activeChapter, addScene]
+        }
+    }, [activeChapter])
 
     if (activeChapter === undefined) {
         return (

@@ -1,9 +1,10 @@
 import { Indicator, Text, Textarea, TextInput, Title } from '@mantine/core'
 import { useAppContext } from '@src/App.context'
 import { useForm } from '@mantine/form'
+import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 
 export const BookPanel: React.FC = () => {
-    const { activeBook } = useAppContext()
+    const { activeBook, updateBook, debounceTime } = useAppContext()
 
     const form = useForm({
         initialValues: {
@@ -11,6 +12,21 @@ export const BookPanel: React.FC = () => {
             notes: activeBook.notes
         }
     })
+
+    useDebouncedEffect(
+        () => {
+            if (form.isDirty()) {
+                const book_changes = {
+                    id: activeBook.id,
+                    notes: form.values.notes,
+                    title: form.values.title
+                }
+                updateBook(book_changes)
+            }
+        },
+        [form],
+        { delay: debounceTime }
+    )
 
     return (
         <>
