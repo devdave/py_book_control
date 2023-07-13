@@ -3,11 +3,16 @@ import { RightPanel } from '@src/modes/edit/editor_panel/RightPanel'
 import { ContinuousBody } from '@src/modes/edit/continuous_panel'
 import { useEditorContext } from '@src/modes/edit/Editor.context'
 import { Text } from '@mantine/core'
+import { useAppContext } from '@src/App.context'
+import { BookPanel } from '@src/modes/edit/book_panel/BookPanel'
 
 export const Body = () => {
-    const { editMode, activeChapter, activeScene } = useEditorContext()
+    const { editMode, activeChapter, activeScene, activeElement } = useEditorContext()
+    const { activeBook } = useAppContext()
 
-    console.log('Body ', editMode, activeChapter, activeScene)
+    if (activeElement.isThisBook(activeBook)) {
+        return <BookPanel />
+    }
 
     switch (editMode) {
         case EditModes.LIST:
