@@ -4,7 +4,6 @@ import {
     Drawer,
     Group,
     Header,
-    NativeSelect,
     NumberInput,
     Select,
     Stack,
@@ -15,13 +14,13 @@ import {
     useMantineColorScheme
 } from '@mantine/core'
 import { useAppContext } from '@src/App.context'
-import { AppModes, Font } from '@src/types'
+import { AppModes } from '@src/types'
 import { IconArrowBack, IconMoonStars, IconSettings, IconSun } from '@tabler/icons-react'
 import { ToggleInput } from '@src/widget/ToggleInput'
-import { useEditorContext } from '@src/modes/edit/Editor.context'
+
 import React, { useCallback } from 'react'
-import { find, map } from 'lodash'
-import { useDisclosure, useHotkeys } from '@mantine/hooks'
+import { map } from 'lodash'
+import { useDisclosure } from '@mantine/hooks'
 
 const useStyles = createStyles((styles_theme) => ({
     header_main: {
@@ -31,8 +30,7 @@ const useStyles = createStyles((styles_theme) => ({
 }))
 
 export const CompositeHeader: React.FC = () => {
-    const { activeBook, setAppMode, activeFont, setActiveFont, fonts } = useAppContext()
-    const { changeBookTitle } = useEditorContext()
+    const { activeBook, updateBook, setAppMode, activeFont, setActiveFont, fonts } = useAppContext()
 
     const { theme } = useStyles()
     const { colorScheme, toggleColorScheme } = useMantineColorScheme()
@@ -125,7 +123,7 @@ export const CompositeHeader: React.FC = () => {
                         <ToggleInput
                             title='Double click to edit'
                             value={activeBook.title}
-                            onChange={(newVal) => changeBookTitle.mutate(newVal)}
+                            onChange={(newTitle) => updateBook({ id: activeBook.id, title: newTitle })}
                         />
                     </Group>
 
