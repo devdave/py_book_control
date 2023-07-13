@@ -159,24 +159,20 @@ export const Editor: React.FC = () => {
     const setActiveChapter = useCallback(async (chapter: Chapter) => {
         if (activeChapter && activeChapter.id !== chapter.id) {
             if (chapter.scenes.length > 0) {
-                setActiveElement((draft) => {
-                    draft.subtype = 'scene'
-                    draft.subdetail = chapter.scenes[0].id
-                })
+                activeElement.setActiveScene(chapter, chapter.scenes[0])
                 _setActiveScene(chapter.scenes[0])
             } else {
-                setActiveElement((draft) => {
-                    draft.subtype = undefined
-                    draft.subdetail = undefined
-                })
+                activeElement.setChapter(chapter)
                 _setActiveScene(undefined)
             }
         }
 
+        activeElement.assignChapter(chapter)
         _setActiveChapter(chapter)
     }, [])
 
     const setActiveScene = useCallback((chapter: Chapter, scene: Scene) => {
+        activeElement.setActiveScene(chapter, scene)
         _setActiveChapter(chapter)
         _setActiveScene(scene)
     }, [])
@@ -185,7 +181,6 @@ export const Editor: React.FC = () => {
         mutationFn: (alterChapter: Chapter) => api.update_chapter(alterChapter.id, alterChapter),
         mutationKey: ['book', activeBook.id, 'chapter'],
         onSuccess: (chapter) => {
-            queryClient.invalidateQueries({ queryKey: ['book', activeBook.id] })
             queryClient.invalidateQueries({ queryKey: ['book', activeBook.id, 'index'] })
             if (chapter) {
                 queryClient.invalidateQueries({ queryKey: ['book', activeBook.id, 'chapter', chapter.id] })
@@ -207,10 +202,12 @@ export const Editor: React.FC = () => {
             console.log('changed scene', scene)
             if (activeChapter?.id === chapter.id) {
                 console.log('Updated activeChapter')
+                activeElement.setChapter(chapter)
                 _setActiveChapter(chapter)
             }
             if (activeScene?.id === scene.id) {
                 console.log('Updated activeScene')
+                activeElement.setScene(chapter, scene)
                 _setActiveScene(scene)
             }
 
@@ -228,7 +225,6 @@ export const Editor: React.FC = () => {
                 }
             )
 
-            queryClient.invalidateQueries(['book', activeBook.id, 'chapter']).then()
             queryClient.invalidateQueries(['book', activeBook.id, 'chapter', chapter.id]).then()
             queryClient.invalidateQueries(['book', activeBook.id, 'chapter', chapter.id, 'scene', scene.id]).then()
             queryClient.invalidateQueries(['book', activeBook.id, 'index']).then()
@@ -238,6 +234,7 @@ export const Editor: React.FC = () => {
     const updateScene = useCallback(async (scene: Scene) => {
         changeScene.mutate(scene)
         if (scene.id === activeScene?.id) {
+            activeElement.setSceneById(scene.chapterId, scene.id)
             _setActiveScene((prior) => ({ ...prior, ...scene }))
         }
     }, [])
@@ -280,8 +277,10 @@ export const Editor: React.FC = () => {
         _deleteScene.mutate({ chapterId, sceneId })
 
         if (newActiveScene) {
+            activeElement.setScene(chapter, newActiveScene as Scene)
             _setActiveScene(newActiveScene)
         } else {
+            activeElement.clearSubType()
             _setActiveScene(undefined)
         }
     }, [])
@@ -306,12 +305,8 @@ export const Editor: React.FC = () => {
             updateScene,
             deleteScene,
             setEditMode,
-            _setChapters, //TODO cut out the _set*'s
-            _setActiveChapter,
-            _setActiveScene,
             changeBookTitle,
-            activeElement,
-            setActiveElement
+            activeElement
         }),
         [
             index,
@@ -328,10 +323,7 @@ export const Editor: React.FC = () => {
             updateChapter,
             updateScene,
             deleteScene,
-            setEditMode,
-            _setChapters,
-            _setActiveChapter,
-            _setActiveScene
+            setEditMode
         ]
     )
 
