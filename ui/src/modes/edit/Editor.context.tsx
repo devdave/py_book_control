@@ -23,7 +23,6 @@ export interface EditorContextValue {
     editMode: EditModes
     api: APIBridge
     addChapter(): void
-    addScene(chapterId: string): Promise<Scene | void>
     createScene(chapterId: string, sceneTitle: string, order?: number, content?: string): Promise<void>
     reorderChapter(from: number, to: number): void
     reorderScene(chapterId: string, from: number, to: number): void

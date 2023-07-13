@@ -1,4 +1,4 @@
-import { AppShell, Box, createStyles, LoadingOverlay } from '@mantine/core'
+import { AppShell, Box, LoadingOverlay } from '@mantine/core'
 
 import { clone, find } from 'lodash'
 
@@ -51,7 +51,7 @@ export const Editor: React.FC = () => {
     }
 
     const {
-        isLoading: indexIsloading,
+        isLoading: indexIsLoading,
         isSuccess: indexIsSuccess,
         data: index,
         dataUpdatedAt: indexUpdatedAt
@@ -61,11 +61,11 @@ export const Editor: React.FC = () => {
     })
 
     useEffect(() => {
-        if (indexIsloading) {
+        if (indexIsLoading) {
             return
         }
 
-        if (!indexIsloading && indexIsSuccess) {
+        if (!indexIsLoading && indexIsSuccess) {
             if (activeChapter === undefined) {
                 if (index.length > 0) {
                     activeElement.setChapter(index[0])
@@ -80,7 +80,7 @@ export const Editor: React.FC = () => {
                 _setActiveScene(activeChapter.scenes[0])
             }
         }
-    }, [activeBook, activeScene, activeChapter, index, indexIsloading, indexIsSuccess])
+    }, [activeBook, activeScene, activeChapter, index, indexIsLoading, indexIsSuccess])
 
     const changeBookTitle = useMutation<Book, Error, string>({
         mutationFn: (new_title: string) => api.update_book_title(activeBook.id, new_title),
@@ -98,7 +98,7 @@ export const Editor: React.FC = () => {
         }
     })
 
-    const addChapter = useCallback(async () => {
+    const addChapter: () => Promise<void> = useCallback(async () => {
         const chapterTitle: string = await PromptModal('New chapter title')
         if (chapterTitle.trim().length <= 2) {
             alert("Chapter's must have a title longer than 2 characters.")
@@ -120,31 +120,16 @@ export const Editor: React.FC = () => {
         }
     })
 
-    const createScene = useCallback(
-        async (chapterId: string, sceneTitle: string, position = -1, content = '') => {
-            _addScene.mutate({ chapterId, title: sceneTitle, position, content })
-        },
-        [index]
-    )
+    const createScene: (chapterId: string, sceneTitle: string, position: number, content: string) => Promise<void> =
+        useCallback(
+            async (chapterId: string, sceneTitle: string, position = -1, content = '') => {
+                _addScene.mutate({ chapterId, title: sceneTitle, position, content })
+            },
+            [index]
+        )
 
-    const addScene = useCallback(async (chapterId: string | undefined): Promise<void | Scene> => {
-        if (chapterId === undefined) {
-            console.log("Tried to add a scene when there isn't an activeChapter")
-            await api.alert('There was a problem creating a new scene!')
-            return
-        }
-
-        console.log('addScene chapter.id=', chapterId)
-
-        const sceneTitle: string = await PromptModal('New scene title')
-        if (sceneTitle.trim().length <= 2) {
-            alert('A scene must have a title longer than 2 characters.')
-        }
-
-        // return createScene(chapterId, sceneTitle)
-    }, [])
-
-    const getChapter = async (chapterId: string) => api.fetch_chapter(chapterId)
+    const getChapter: (chapterId: string) => Promise<Chapter> = async (chapterId: string) =>
+        api.fetch_chapter(chapterId)
 
     const reorderChapter = useCallback(async (from: number, to: number) => {
         await api.reorder_chapter(from, to)
@@ -177,7 +162,7 @@ export const Editor: React.FC = () => {
         _setActiveScene(scene)
     }, [])
 
-    const changeChapter = useMutation({
+    const changeChapter = useMutation<Chapter, Error, Chapter>({
         mutationFn: (alterChapter: Chapter) => api.update_chapter(alterChapter.id, alterChapter),
         mutationKey: ['book', activeBook.id, 'chapter'],
         onSuccess: (chapter) => {
@@ -188,12 +173,11 @@ export const Editor: React.FC = () => {
         }
     })
 
-    const updateChapter = useCallback(
+    const updateChapter = useCallback<(chapter: Chapter) => Promise<void>>(
         async (chapter: Chapter) => {
-            changeChapter.mutate(chapter)
+            await changeChapter.mutate(chapter)
         },
-
-        []
+        [changeChapter]
     )
 
     const changeScene = useMutation({
@@ -292,7 +276,6 @@ export const Editor: React.FC = () => {
             activeChapter,
             activeScene,
             addChapter,
-            addScene,
             createScene,
             chapters,
             editMode,
@@ -314,7 +297,6 @@ export const Editor: React.FC = () => {
             activeChapter,
             activeScene,
             addChapter,
-            addScene,
             chapters,
             reorderChapter,
             reorderScene,
@@ -327,7 +309,7 @@ export const Editor: React.FC = () => {
         ]
     )
 
-    if (indexIsloading) {
+    if (indexIsLoading) {
         return <LoadingOverlay visible />
     }
 
