@@ -304,7 +304,7 @@ class Character(Base):
     name: Mapped[str]
     notes: Mapped[str]
 
-    scenes: Mapped[list[str]] = relationship(secondary=Scenes2Characters, back_populates="characters")
+    scenes: Mapped[list[Scene]] = relationship(secondary=Scenes2Characters, back_populates="characters")
 
     @classmethod
     def Search(cls, session: Session, query: str) -> "[Character]":
