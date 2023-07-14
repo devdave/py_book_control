@@ -4,10 +4,9 @@ import random
 import contextlib
 import typing as T
 import datetime as DT
-from sqlalchemy import select, update, ForeignKey, create_engine, DateTime, func, Table, Column, event
+from typing import Tuple, Any, Sequence
 
-
-
+from sqlalchemy import select, update, ForeignKey, create_engine, DateTime, func, Table, Column, event, Row
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -75,11 +74,13 @@ class Book(Base):
         collection_class=ordering_list("order"),
     )
 
-    def update(self, book_uid, change: T.Dict[str, str]):
+    characters: Mapped[T.List['Character']] = relationship(back_populates='book')
+
+    def update(self, change: T.Dict[str, str]):
         SAFE_KEYS = ["title", "notes"]
         for safe in SAFE_KEYS:
             if safe in change:
-                setattr(self, safe, change[str])
+                setattr(self, safe, change[safe])
 
     @classmethod
     def Update(cls, session: Session, changeset: T.Dict[str, str]):
@@ -183,8 +184,8 @@ class Chapter(Base):
     @classmethod
     def Reorder(cls, session: Session, chapters: T.List[T.Dict[str, str]]):
         for chapterData in chapters:
-            record = cls.Fetch_by_uid(chapterData["id"])
-            record.order = chapterData["order"]
+            record = cls.Fetch_by_uid(session, chapterData["id"])
+            record.order = int(chapterData["order"])
 
         session.commit()
 
@@ -269,9 +270,14 @@ class Scene(Base):
         return data
 
     @classmethod
-    def Fetch_by_uid(cls, session, scene_uid):
+    def Fetch_by_uid(cls, session:Session, scene_uid:str) -> 'Scene':
         stmt = select(cls).where(cls.uid == scene_uid)
         return session.scalars(stmt).one()
+
+    @classmethod
+    def List_all_characters_by_Uid(cls, session:Session, scene_uid:str) -> T.List[dict[str,str]]:
+        scene = cls.Fetch_by_uid(session, scene_uid)
+        return [toon.asdict() for toon in scene.characters]
 
 
 @contextlib.contextmanager
@@ -301,14 +307,41 @@ def connect():
 
 class Character(Base):
     uid: Mapped[str] = mapped_column(default=lambda: generate_id(GEN_LEN))
-    name: Mapped[str]
-    notes: Mapped[str]
+    name: Mapped[str] = mapped_column(unique=True)
+    notes: Mapped[str] = mapped_column(default='')
+
+    book_id: Mapped[int] = mapped_column(ForeignKey('Book.id', name="FK_Book2Scenes"))
+    book: Mapped[Book] = relationship(back_populates='characters')
 
     scenes: Mapped[list[Scene]] = relationship(secondary=Scenes2Characters, back_populates="characters")
 
     @classmethod
-    def Search(cls, session: Session, query: str) -> "[Character]":
-        stmt = select(cls.name.like(f"%query%"))
+    def Get_All(cls, session):
+        stmt = select(cls)
         return session.execute(stmt).all()
+
+    @classmethod
+    def Search(cls, session: Session, query: str) -> Sequence[Row['Character']]:
+        stmt = select(cls).where(cls.name.ilike(f"{query}%"))
+        return session.execute(stmt).all()
+
+    def asdict(self):
+        return dict(
+            id=self.uid,
+            name=self.name,
+            notes=self.notes,
+            book_id=self.book_id
+        )
+
+    @classmethod
+    def Fetch_by_name_or_create(cls, session:Session, book_id:int, new_name:str):
+        try:
+            stmt = select(cls).where(cls.name.ilike(new_name))
+            return session.execute(stmt).one()
+        except NoResultFound:
+            return cls(name=new_name, book_id=book_id)
+
+
+
 
 
