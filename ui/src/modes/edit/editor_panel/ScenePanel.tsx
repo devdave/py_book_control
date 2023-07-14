@@ -1,10 +1,17 @@
 import { createStyles, Skeleton, Tabs, Text } from '@mantine/core'
 import { type FC } from 'react'
-import { IconId, IconMapPin, IconNote, IconUsers, IconVocabulary } from '@tabler/icons-react'
+import {
+    IconId,
+    IconMapPin,
+    IconNote,
+    IconUsers,
+    IconVocabulary
+} from '@tabler/icons-react'
 import { type Scene } from '@src/types'
 import { useQuery } from '@tanstack/react-query'
 import { useAppContext } from '@src/App.context'
 
+import { CharactersSceneForm } from '@src/modes/edit/editor_panel/scene_forms/CharactersSceneForm'
 import TextSceneForm from './scene_forms/TextSceneForm'
 
 import { MainSceneForm } from './scene_forms/MainSceneForm'
@@ -30,7 +37,14 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
         error: sceneLoadError
     } = useQuery({
         queryFn: () => api.fetch_scene(indexedScene.id),
-        queryKey: ['book', activeBook.id, 'chapter', indexedScene.chapterId, 'scene', indexedScene.id]
+        queryKey: [
+            'book',
+            activeBook.id,
+            'chapter',
+            indexedScene.chapterId,
+            'scene',
+            indexedScene.id
+        ]
     })
 
     if (sceneIsLoading) {
@@ -44,7 +58,10 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
         )
     }
     if (sceneLoadStatus === 'error') {
-        const errorMessage = sceneLoadError instanceof Error ? sceneLoadError.message : (sceneLoadError as string)
+        const errorMessage =
+            sceneLoadError instanceof Error
+                ? sceneLoadError.message
+                : (sceneLoadError as string)
         console.error('Failed to load: indexedScene', indexedScene, errorMessage)
 
         return (
@@ -117,11 +134,7 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
                 />
             </Tabs.Panel>
             <Tabs.Panel value='characters'>
-                <TextSceneForm
-                    scene={scene}
-                    field='characters'
-                    label='Characters'
-                />
+                <CharactersSceneForm scene={scene} />
             </Tabs.Panel>
         </Tabs>
     )
