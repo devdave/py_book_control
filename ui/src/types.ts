@@ -25,7 +25,7 @@ export interface Scene extends SceneIndex {
     content: string
     notes: string
     location: string
-    characters: string
+    characters: Character[]
 }
 
 export interface ChapterIndex extends Base {
@@ -42,6 +42,11 @@ export interface Chapter extends ChapterIndex {
     scenes: Scene[]
     order: number
     words: number
+}
+
+export interface Character extends Base {
+    name: string
+    book: Book
 }
 
 export enum AppModes {
@@ -69,8 +74,14 @@ export interface Font {
     weight: string
 }
 
+export enum ActiveElementTypes {
+    BOOK = 'book',
+    CHAPTER = 'chapter',
+    CHARACTERS = 'characters'
+}
+
 export interface ActiveElement {
-    type: 'book' | 'chapter' | undefined
+    type: ActiveElementTypes | undefined
     detail: string | undefined
     subtype: 'scene' | undefined
     subdetail: string | undefined
