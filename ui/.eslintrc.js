@@ -23,7 +23,7 @@ module.exports = {
         '@typescript-eslint/space-before-function-paren': 'off',
         'comma-dangle': 'off',
         'jsx-quotes': ['error', 'prefer-single'],
-        'max-len': ['warn', 80],
+        'max-len': ['warn', 90],
         'no-console': 'off',
         'react-hooks/exhaustive-deps': 'warn',
         'react/react-in-jsx-scope': 'off',
