@@ -1,5 +1,13 @@
 import { Updater } from 'use-immer'
-import { ActiveElement, Book, Chapter, ChapterIndex, Scene, SceneIndex } from '@src/types'
+import {
+    ActiveElement,
+    ActiveElementTypes,
+    Book,
+    Chapter,
+    ChapterIndex,
+    Scene,
+    SceneIndex
+} from '@src/types'
 
 export class ActiveElementHelper {
     state: ActiveElement
@@ -10,7 +18,7 @@ export class ActiveElementHelper {
     }
 
     setTypeAndSubtype(
-        type_name: 'book' | 'chapter' | undefined,
+        type_name: ActiveElementTypes | undefined,
         type_detail: string | undefined,
         subtype_name: 'scene' | undefined,
         sub_detail: string | undefined
@@ -23,7 +31,7 @@ export class ActiveElementHelper {
         })
     }
 
-    assignType(type_name: 'chapter' | 'book' | undefined, type_detail: string) {
+    assignType(type_name: ActiveElementTypes | undefined, type_detail: string) {
         this.updater((draft) => {
             draft.type = type_name
             draft.detail = type_detail
@@ -42,7 +50,7 @@ export class ActiveElementHelper {
     }
 
     public setActiveSceneById(chapter_id: string, scene_id: string) {
-        this.setTypeAndSubtype('chapter', chapter_id, 'scene', scene_id)
+        this.setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, 'scene', scene_id)
     }
 
     public isThisScene(scene: Scene | SceneIndex): boolean {
@@ -66,7 +74,7 @@ export class ActiveElementHelper {
     }
 
     public setSceneById(chapter_id: string, scene_id: string) {
-        this.setTypeAndSubtype('chapter', chapter_id, 'scene', scene_id)
+        this.setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, 'scene', scene_id)
     }
 
     public assignScene(scene: SceneIndex) {
@@ -82,7 +90,12 @@ export class ActiveElementHelper {
     }
 
     public setChapterById(chapter_id: string) {
-        this.setTypeAndSubtype('chapter', chapter_id, undefined, undefined)
+        this.setTypeAndSubtype(
+            ActiveElementTypes.CHAPTER,
+            chapter_id,
+            undefined,
+            undefined
+        )
     }
 
     public assignChapter(chapter: Chapter) {
@@ -90,7 +103,7 @@ export class ActiveElementHelper {
     }
 
     public assignChapterById(chapter_id: string) {
-        this.assignType('chapter', chapter_id)
+        this.assignType(ActiveElementTypes.CHAPTER, chapter_id)
     }
 
     public isThisBook(book: Book): boolean {
@@ -106,7 +119,7 @@ export class ActiveElementHelper {
     }
 
     public setBookById(book_id: string) {
-        this.setTypeAndSubtype('book', book_id, undefined, undefined)
+        this.setTypeAndSubtype(ActiveElementTypes.BOOK, book_id, undefined, undefined)
     }
 
     public get type() {
