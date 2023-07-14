@@ -188,7 +188,7 @@ class SceneProcessor:
     def consume(self, raw_scene: str):
         ast = Document(raw_scene.strip())
 
-        response = dict()
+        response = dict() # type: dict[str, str]
         if len(ast.children) < 1:
             return dict(status="error", msg="Scene is missing a title")
 
