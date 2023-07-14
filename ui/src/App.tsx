@@ -35,12 +35,7 @@ interface AppWrapperProps {
     children: ReactNode
 }
 
-const AppWrapper: FC<AppWrapperProps> = ({
-    api,
-    value,
-    activeFont,
-    children
-}) => (
+const AppWrapper: FC<AppWrapperProps> = ({ api, value, activeFont, children }) => (
     <AppContext.Provider value={value}>
         <ThemeProvider api={api}>
             {children}
@@ -79,7 +74,7 @@ export default function App() {
 
         console.log('Current book response:', response)
 
-        if (response !== false) {
+        if (response) {
             if (response.id !== undefined) {
                 setActiveBook(response as Book)
                 setAppMode(AppModes.EDITOR)
@@ -102,10 +97,7 @@ export default function App() {
     }
 
     useEffect(() => {
-        if (
-            window.pywebview !== undefined &&
-            window.pywebview.api !== undefined
-        ) {
+        if (window.pywebview !== undefined && window.pywebview.api !== undefined) {
             doReady().then()
         } else {
             window.addEventListener(PYWEBVIEWREADY, doReady, { once: true })
@@ -118,23 +110,18 @@ export default function App() {
         })
     }, [])
 
-    const _changeBook = useMutation<Book, Error, Book>(
-        (book) => api.update_book(book),
-        {
-            onSuccess: (updated: Book) => {
-                queryClient
-                    .invalidateQueries(['book', updated.id, 'index'])
-                    .then()
-                if (updated.id === activeBook.id) {
-                    setActiveBook((draft) => {
-                        draft.title = updated.title
-                        draft.notes = updated.notes
-                        draft.updated_on = updated.updated_on
-                    })
-                }
+    const _changeBook = useMutation<Book, Error, Book>((book) => api.update_book(book), {
+        onSuccess: (updated: Book) => {
+            queryClient.invalidateQueries(['book', updated.id, 'index']).then()
+            if (updated.id === activeBook.id) {
+                setActiveBook((draft) => {
+                    draft.title = updated.title
+                    draft.notes = updated.notes
+                    draft.updated_on = updated.updated_on
+                })
             }
         }
-    )
+    })
 
     const updateBook = useCallback(
         (book: Partial<Book>) => {
@@ -183,11 +170,7 @@ export default function App() {
                     case AppModes.MANIFEST:
                         return <Manifest />
                     default:
-                        return (
-                            <Text>
-                                Application error: unexpected mode {appMode}
-                            </Text>
-                        )
+                        return <Text>Application error: unexpected mode {appMode}</Text>
                 }
             }, [appMode, isReady, activeBook])}
         </AppWrapper>
