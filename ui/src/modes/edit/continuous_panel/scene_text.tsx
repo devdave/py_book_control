@@ -1,5 +1,5 @@
-import { useForm } from '@mantine/form'
-import { Ref, useEffect, useRef, useState } from 'react'
+import { useForm, UseFormReturnType } from '@mantine/form'
+import React, { Ref, useEffect, useRef, useState } from 'react'
 import {
     ActionIcon,
     Button,
@@ -24,6 +24,7 @@ import { modals } from '@mantine/modals'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { IconWindowMaximize } from '@tabler/icons-react'
+import { useAppContext } from '@src/App.context'
 import { useEditorContext } from '../Editor.context'
 
 interface SceneTextProps {
@@ -38,8 +39,44 @@ const compile_scene2md = (scene: Scene) => {
     return 'Loading...'
 }
 
+interface IndicatedTextAreaProps {
+    form: UseFormReturnType<Partial<Scene>>
+    formField: string
+    indicatorStyle?: object
+    textStyle?: object
+}
+
+const IndicatedTextarea: React.FC<IndicatedTextAreaProps> = ({
+    form,
+    formField,
+    indicatorStyle,
+    textStyle
+}) => (
+    <Indicator
+        processing
+        color='red'
+        disabled={!form.isDirty(formField)}
+        style={indicatorStyle}
+    >
+        <Textarea
+            autosize
+            minRows={5}
+            {...form.getInputProps(formField)}
+            style={textStyle}
+        />
+    </Indicator>
+)
+
 export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
-    const { api, activeBook, activeScene, activeChapter, setActiveScene, updateScene, deleteScene } = useEditorContext()
+    const { api, activeBook } = useAppContext()
+
+    const {
+        activeScene,
+        activeChapter,
+        setActiveScene,
+        updateScene,
+        deleteScene
+    } = useEditorContext()
 
     const [sceneMD, setSceneMD] = useState('')
     const queryClient = useQueryClient()
@@ -60,8 +97,12 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
 
         if (activeScene === undefined || activeChapter === undefined) {
             //These are both undefined
-            console.error('Cannot split scenes when there is no active scene or chapter.')
-            throw new Error('Cannot split scenes when there is no active scene or chapter.')
+            console.error(
+                'Cannot split scenes when there is no active scene or chapter.'
+            )
+            throw new Error(
+                'Cannot split scenes when there is no active scene or chapter.'
+            )
         }
 
         const activeSceneId = activeScene.id
@@ -70,11 +111,21 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
         activeScene.content = response.content
         await api.update_scene(activeSceneId, activeScene)
 
-        const newSceneAndChapter = await api.create_scene(activeChapId, response.split_title, activeScene.order + 1)
+        const newSceneAndChapter = await api.create_scene(
+            activeChapId,
+            response.split_title,
+            activeScene.order + 1
+        )
 
-        await queryClient.invalidateQueries({ queryKey: ['book', activeBook.id, 'index'] })
-        await queryClient.invalidateQueries({ queryKey: ['book', activeBook.id, 'chapter', activeChapId] })
-        await queryClient.invalidateQueries({ queryKey: ['book', activeBook.id, 'scene', activeSceneId] })
+        await queryClient.invalidateQueries({
+            queryKey: ['book', activeBook.id, 'index']
+        })
+        await queryClient.invalidateQueries({
+            queryKey: ['book', activeBook.id, 'chapter', activeChapId]
+        })
+        await queryClient.invalidateQueries({
+            queryKey: ['book', activeBook.id, 'scene', activeSceneId]
+        })
 
         setActiveScene(newSceneAndChapter[1], newSceneAndChapter[0])
         console.groupEnd()
@@ -83,16 +134,23 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
     useDebouncedEffect(
         () => {
             async function reprocessMDnSave(): Promise<null | undefined> {
-                if (form.values.content && form.values.content.trim().length === 0) {
+                if (
+                    form.values.content &&
+                    form.values.content.trim().length === 0
+                ) {
                     modals.openConfirmModal({
                         modalId: 'shouldDeleteScene',
                         title: 'Scene body empty',
                         children: (
                             <Text size='sm'>
-                                The scene@apos;s content body is empty, do you want to delete this scene?
+                                The scene@apos;s content body is empty, do you
+                                want to delete this scene?
                             </Text>
                         ),
-                        labels: { confirm: 'Delete scene!', cancel: 'Do not delete scene!' },
+                        labels: {
+                            confirm: 'Delete scene!',
+                            cancel: 'Do not delete scene!'
+                        },
                         onConfirm: () => {
                             deleteScene(scene.chapterId, scene.id)
                         }
@@ -100,7 +158,10 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                     return null
                 }
 
-                const response = await api.process_scene_markdown(scene.id, form.values.content as string)
+                const response = await api.process_scene_markdown(
+                    scene.id,
+                    form.values.content as string
+                )
 
                 if (response.status === 'error') {
                     form.setValues({ content: sceneMD })
@@ -116,11 +177,16 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                         title: 'Split/add new scene?',
                         children: (
                             <Text size='sm'>
-                                You have added a second title to the current scene. Was this a mistake or do you want to
-                                create and insert a new after the current scene with the new title?
+                                You have added a second title to the current
+                                scene. Was this a mistake or do you want to
+                                create and insert a new after the current scene
+                                with the new title?
                             </Text>
                         ),
-                        labels: { confirm: 'Do split', cancel: 'Undo/remove second title' },
+                        labels: {
+                            confirm: 'Do split',
+                            cancel: 'Undo/remove second title'
+                        },
                         onConfirm: () =>
                             doSplit(response).then(() => {
                                 form.resetDirty()
@@ -190,7 +256,10 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                             height: '100%',
                             width: '100%',
                             boxSizing: 'border-box',
-                            backgroundColor: theme.colorScheme === 'light' ? 'white' : 'black'
+                            backgroundColor:
+                                theme.colorScheme === 'light'
+                                    ? 'white'
+                                    : 'black'
                         },
                         wrapper: {
                             height: '100%',
@@ -211,59 +280,42 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
 
             <Flex
                 direction='column'
-                style={{ height: '100%', position: 'relative', minWidth: '8rem' }}
+                style={{
+                    height: '100%',
+                    position: 'relative',
+                    minWidth: '8rem'
+                }}
             >
                 <details open>
                     <summary>Location</summary>
-                    <Indicator
-                        processing
-                        color='red'
-                        disabled={!form.isDirty('location')}
-                    >
-                        <Textarea
-                            placeholder='Scene location'
-                            autosize
-                            minRows={5}
-                            {...form.getInputProps('location')}
-                        />
-                    </Indicator>
+                    <IndicatedTextarea
+                        form={form}
+                        formField='location'
+                    />
                 </details>
                 <details
                     open
                     style={{}}
                 >
                     <summary>Notes</summary>
-                    <Indicator
-                        processing
-                        color='red'
-                        disabled={!form.isDirty('notes')}
-                        style={{ height: '100%', width: '100%', flex: '1' }}
-                    >
-                        <Textarea
-                            autosize
-                            minRows={5}
-                            autoCapitalize='sentences'
-                            {...form.getInputProps('notes')}
-                            style={{ height: '100%', width: '100%', flex: '1' }}
-                        />
-                    </Indicator>
+                    <IndicatedTextarea
+                        form={form}
+                        formField='notes'
+                        indicatorStyle={{
+                            height: '100%',
+                            width: '100%',
+                            flex: '1'
+                        }}
+                        textStyle={{ height: '100%', width: '100%', flex: '1' }}
+                    />
                 </details>
 
                 <details open>
                     <summary>Summary</summary>
-
-                    <Indicator
-                        color='red'
-                        processing
-                        disabled={!form.isDirty('summary')}
-                    >
-                        <Textarea
-                            autosize
-                            minRows={5}
-                            autoCapitalize='sentences'
-                            {...form.getInputProps('summary')}
-                        />
-                    </Indicator>
+                    <IndicatedTextarea
+                        form={form}
+                        formField='summary'
+                    />
                 </details>
 
                 <Button
