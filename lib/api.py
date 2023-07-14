@@ -7,6 +7,7 @@ from .application import BCApplication
 from . import models
 from .log_helper import getLogger
 
+
 class BCAPI:
     FILE_TYPES: T.Tuple[str] = ("Database file (*.sqlite;*.sqlite3)",)
 
@@ -32,13 +33,13 @@ class BCAPI:
                 for book in models.Book.Fetch_All(session)
             ]
 
-    def get_current_book(self, stripped: bool = True):
+    def get_current_book(self, stripped: bool = True) -> T.Optional[models.Book]:
         if self.app.has_active_book:
             with self.app.get_db() as session:
-                return self.app.get_book(session).asdict(stripped=stripped)
+                book = self.app.get_book(session)
+                return book.asdict(stripped=stripped) if book is not None else None
 
-        return False
-
+        return None
 
     def set_current_book(self, book_uid: str):
         with self.app.get_db() as session:
@@ -46,9 +47,9 @@ class BCAPI:
             self.app.book_id = book.id
             return book.asdict()
 
-    def update_book(self, changed_book:dict[str, str]):
+    def update_book(self, changed_book: dict[str, str]):
         with self.app.get_db() as session:
-            book = models.Book.Fetch_by_UID(session, changed_book['id'])
+            book = models.Book.Fetch_by_UID(session, changed_book["id"])
             updated = book.update(changed_book)
             session.commit()
             return updated.asdict(True)
@@ -84,7 +85,9 @@ class BCAPI:
     def fetch_chapters(self):
         if self.app.has_active_book:
             with self.app.get_db() as session:
-                return [chapter.asdict() for chapter in self.app.fetch_chapters(session)]
+                return [
+                    chapter.asdict() for chapter in self.app.fetch_chapters(session)
+                ]
 
         return []
 
@@ -95,7 +98,6 @@ class BCAPI:
     def fetch_chapter_index(self, chapter_id: str):
         with self.app.get_db() as session:
             return models.Chapter.Fetch_by_uid(session, chapter_id).asdict(True)
-
 
     def update_chapter(self, chapter_id: str, chapter_data: dict[str, str]):
         with self.app.get_db() as session:
@@ -125,15 +127,17 @@ class BCAPI:
         return []
 
     def create_chapter(self, new_chapter: dict):
-        chapter = models.Chapter(title=new_chapter['title'], uid=models.generate_id(12))
+        chapter = models.Chapter(title=new_chapter["title"], uid=models.generate_id(12))
 
         with self.app.get_db() as session:
             book = self.app.get_book(session)
-            book.chapters.append(chapter)
-            session.add(chapter)
-            session.commit()
-
-            return chapter.asdict()
+            if book is not None:
+                book.chapters.append(chapter)
+                session.add(chapter)
+                session.commit()
+                return chapter.asdict()
+            else:
+                return None
 
     def save_reordered_chapters(self, chapters: T.List[T.Dict[str, str]]):
         with self.app.get_db() as session:
@@ -151,23 +155,19 @@ class BCAPI:
             processor = SceneProcessor()
             return processor.compile(scene.title, scene.content)
 
-
-
-    def process_scene_markdown(self, scene_uid: str, raw_text:str):
+    def process_scene_markdown(self, scene_uid: str, raw_text: str):
         self.log.debug("`{}`, `{}`", scene_uid, raw_text)
 
         processor = SceneProcessor()
         try:
             response = processor.walk(raw_text)
-            if 'markdown' not in response:
-                response['markdown'] = raw_text
+            if "markdown" not in response:
+                response["markdown"] = raw_text
         except ValueError as exc:
             self.log.error("Handling walk failure: {}", exc)
-            response = dict(status = 'error', message = str(exc.args))
-
+            response = dict(status="error", message=str(exc.args))
 
         return response
-
 
     def update_scene(self, scene_uid: str, new_data: T.Dict[str, str]):
         with self.app.get_db() as session:
@@ -175,10 +175,12 @@ class BCAPI:
             scene.update(new_data)
             session.commit()
 
-            return (scene.asdict(), scene.chapter.asdict(),)
+            return (
+                scene.asdict(),
+                scene.chapter.asdict(),
+            )
 
-    def create_scene(self, chapterId, title, position = -1):
-
+    def create_scene(self, chapterId, title, position=-1):
         with self.app.get_db() as session:
             chapter = models.Chapter.Fetch_by_uid(session, chapterId)
             scene = models.Scene(title=title)
@@ -191,10 +193,10 @@ class BCAPI:
             session.add(scene)
             session.commit()
 
-            return (scene.asdict(), chapter.asdict(),)
-
-
-
+            return (
+                scene.asdict(),
+                chapter.asdict(),
+            )
 
     def delete_scene(self, chapter_uid: str, scene_uid: str):
         try:
@@ -208,25 +210,24 @@ class BCAPI:
                 session.commit()
                 return True
         except models.NoResultFound:
-            raise ValueError("Scene was already deleted");
+            raise ValueError("Scene was already deleted")
 
-    def  reorder_scene(self, chapterId: str, from_pos, to_pos):
+    def reorder_scene(self, chapterId: str, from_pos, to_pos):
         with self.app.get_db() as session:
             chapter = models.Chapter.Fetch_by_uid(session, chapterId)
             floating = chapter.scenes.pop(from_pos)
             chapter.scenes.insert(to_pos, floating)
             session.commit()
 
-    def reorder_scenes(self, new_order:[models.Scene]):
-
+    def reorder_scenes(self, new_order: T.List[models.Scene]):
         with self.app.get_db() as session:
             self.log.info("Reordering scenes: {}", new_order)
 
             for authority in new_order:
                 self.log.info("Scene authority is {}", authority)
 
-                record = models.Scene.Fetch_by_uid(session, authority['id'])
-                record.order = int(authority['order'])
+                record = models.Scene.Fetch_by_uid(session, authority["id"])
+                record.order = int(authority["order"])
                 chapterId = record.chapter.id
 
             models.Chapter.Touch(session, chapterId)
@@ -234,7 +235,34 @@ class BCAPI:
 
             data = models.Chapter.Fetch_by_Id(session, chapterId).asdict()
 
+        return data["scenes"]
 
-        return data['scenes']
+    def list_all_characters(self):
+        with self.app.get_db() as session:
+            toons = models.Character.Get_All(session)
+            return [toon.asdict for toon in toons]
 
+        return []
 
+    def list_characters_by_scene(self, scene_id):
+        with self.app.get_db() as session:
+            toons = models.Scene.List_all_characters_by_Uid(session, scene_id)
+            if toons is not None:
+                return [toon.asdict() for toon in toons]
+            else:
+                return []
+
+    def search_characters(self, query):
+        with self.app.get_db() as session:
+            result = models.Character.Search(query)
+            if result is not None:
+                return [toon.asdict for toon in result]
+
+        return []
+
+    def add_and_or_create_new_character_to_scene(self, book_id, scene_uid, new_name):
+        with self.app.get_db() as session:
+            scene = models.Scene.Fetch_by_uid(session, scene_uid)
+            toon = models.Character.Fetch_by_name_or_create(session, new_name, book_id)
+            scene.characters.append(toon)
+            session.commit()
