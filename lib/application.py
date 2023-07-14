@@ -19,11 +19,11 @@ class BCApplication:
     def has_active_book(self):
         return self.book_id is not None
 
-    def get_book(self, session: models.Session) -> models.Book:
+    def get_book(self, session: models.Session) -> models.Book | None:
         if self.has_active_book:
             return models.Book.Fetch_by_Id(session, self.book_id)
 
-        return False
+        return None
 
     def set_window(self, main_window):
         self.main_window = main_window
