@@ -4,7 +4,9 @@ import random
 import contextlib
 import typing as T
 import datetime as DT
-from sqlalchemy import select, update, ForeignKey, create_engine, DateTime, func
+from sqlalchemy import select, update, ForeignKey, create_engine, DateTime, func, Table, Column, event
+
+
 
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -16,9 +18,19 @@ from sqlalchemy.orm import (
     mapped_column,
     relationship,
     declared_attr,
+    scoped_session,
+    sessionmaker,
+    attribute_keyed_dict,
+    attributes
 )
 
+from .log_helper import getLogger
+
+log = getLogger(__name__)
+
+
 GEN_LEN = 18
+
 
 def generate_id(length):
     alphanum = string.ascii_letters + string.digits
@@ -40,7 +52,6 @@ class Base(DeclarativeBase):
 
     def touch(self):
         self.updated_on = DT.datetime.now()
-
 
     @classmethod
     def Fetch_by_Id(cls, session: Session, fetch_id: int):
@@ -65,12 +76,10 @@ class Book(Base):
     )
 
     def update(self, book_uid, change: T.Dict[str, str]):
-
-        SAFE_KEYS = ['title', 'notes']
+        SAFE_KEYS = ["title", "notes"]
         for safe in SAFE_KEYS:
             if safe in change:
                 setattr(self, safe, change[str])
-
 
     @classmethod
     def Update(cls, session: Session, changeset: T.Dict[str, str]):
@@ -107,7 +116,7 @@ class Book(Base):
             updated_on=str(self.updated_on),
             created_on=str(self.created_on),
             words=str(self.words),
-            notes=self.notes
+            notes=self.notes,
         )
         if stripped is False:
             data["chapters"] = [chapter.asdict() for chapter in self.chapters]
@@ -187,6 +196,13 @@ class Chapter(Base):
                 setattr(self, key, value)
 
 
+Scenes2Characters = Table(
+    "scenes2characters",
+    Base.metadata,
+    Column("scene_id", ForeignKey("Scene.id", name="FK_Scene2Character"), primary_key=True),
+    Column("character_id", ForeignKey("Character.id", name="FK_Character2Scene"), primary_key=True),
+)
+
 class Scene(Base):
     uid: Mapped[str] = mapped_column(default=lambda: generate_id(12))
     title: Mapped[str]
@@ -196,7 +212,13 @@ class Scene(Base):
     content: Mapped[str] = mapped_column(default="")
     notes: Mapped[str] = mapped_column(default="")
     location: Mapped[str] = mapped_column(default="")
-    characters: Mapped[str] = mapped_column(default="")
+
+    characters: Mapped[list["Character"]] = relationship(
+        secondary=Scenes2Characters,
+        back_populates="scenes",
+    )
+
+    # cascade="all, delete-orphan"
 
     chapter_id: Mapped[int] = mapped_column(ForeignKey("Chapter.id"))
     chapter: Mapped["Chapter"] = relationship(back_populates="scenes")
@@ -264,10 +286,6 @@ def db_with():
         yield session
 
 
-from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm import sessionmaker
-
-
 def connect():
     engine = create_engine("sqlite:///test.sqlite3", echo=False)
     Base.metadata.create_all(engine, checkfirst=True)
@@ -278,14 +296,19 @@ def connect():
     return engine, Session
 
 
-# class Character(Base):
-#
-#     uid: Mapped[str] = mapped_column(default=lambda: generate_id(GEN_LEN))
-#     name: Mapped[str]
-#     notes: Mapped[str]
-#
-#     @classmethod
-#     def Search(cls, session: Session, query: str) -> "[Character]":
-#         stmt = select(cls.name.like(f"%query%"))
-#         return session.execute(stmt).all()
+
+
+
+class Character(Base):
+    uid: Mapped[str] = mapped_column(default=lambda: generate_id(GEN_LEN))
+    name: Mapped[str]
+    notes: Mapped[str]
+
+    scenes: Mapped[list[str]] = relationship(secondary=Scenes2Characters, back_populates="characters")
+
+    @classmethod
+    def Search(cls, session: Session, query: str) -> "[Character]":
+        stmt = select(cls.name.like(f"%query%"))
+        return session.execute(stmt).all()
+
 
