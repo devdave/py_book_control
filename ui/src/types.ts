@@ -47,6 +47,7 @@ export interface Chapter extends ChapterIndex {
 export interface Character extends Base {
     name: string
     book: Book
+    scene_count?: number
 }
 
 export enum AppModes {
