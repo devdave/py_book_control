@@ -1,4 +1,12 @@
-import { Accordion, Button, Center, createStyles, Group, Text, Title } from '@mantine/core'
+import {
+    Accordion,
+    Button,
+    Center,
+    createStyles,
+    Group,
+    Text,
+    Title
+} from '@mantine/core'
 import { useCallback, useEffect, useRef } from 'react'
 import { IconGripVertical } from '@tabler/icons-react'
 import { find, map } from 'lodash'
@@ -15,7 +23,8 @@ const useStyles = createStyles((theme) => ({
 }))
 
 const SceneList = () => {
-    const { activeChapter, activeScene, addScene, reorderScene, setActiveScene } = useEditorContext()
+    const { activeChapter, activeScene, addScene, reorderScene, setActiveScene } =
+        useEditorContext()
     const { classes } = useStyles()
     const accordionRefs = useRef<Record<string, HTMLDivElement>>({})
 
@@ -104,7 +113,8 @@ const SceneList = () => {
                                                 ref={(ref) => {
                                                     draggable.innerRef(ref)
                                                     if (ref) {
-                                                        accordionRefs.current[scene.id] = ref
+                                                        accordionRefs.current[scene.id] =
+                                                            ref
                                                     }
                                                 }}
                                                 value={scene.id}
@@ -112,15 +122,22 @@ const SceneList = () => {
                                             >
                                                 <Accordion.Control
                                                     icon={
-                                                        <Center {...draggable.dragHandleProps}>
+                                                        <Center
+                                                            {...draggable.dragHandleProps}
+                                                        >
                                                             <IconGripVertical size='0.75rem' />
                                                         </Center>
                                                     }
                                                 >
-                                                    <Text weight='bold'>Scene #{scene.order + 1}</Text>
+                                                    <Text weight='bold'>
+                                                        Scene #{scene.order + 1}
+                                                    </Text>
                                                 </Accordion.Control>
                                                 <Accordion.Panel>
-                                                    <ScenePanel indexedScene={scene} />
+                                                    <ScenePanel
+                                                        key={scene.updated_on}
+                                                        indexedScene={scene}
+                                                    />
                                                 </Accordion.Panel>
                                             </Accordion.Item>
                                         )}
