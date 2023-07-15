@@ -237,10 +237,10 @@ class BCAPI:
 
         return data["scenes"]
 
-    def list_all_characters(self):
+    def list_all_characters(self, book_uid:str)->list[dict[str, str]]:
         with self.app.get_db() as session:
-            toons = models.Character.Get_All(session)
-            return [toon.asdict for toon in toons]
+            book = models.Book.Fetch_by_UID(session, book_uid)
+            return [toon.asdict() for toon in book.characters]
 
         return []
 
