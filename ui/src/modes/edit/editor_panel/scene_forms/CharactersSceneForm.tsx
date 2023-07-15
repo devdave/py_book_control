@@ -1,17 +1,17 @@
-import React, { useCallback, useState } from 'react'
-import { Center, LoadingOverlay, Select, Text, Title } from '@mantine/core'
+import React, { useState } from 'react'
+import { LoadingOverlay, Select, Text, Title } from '@mantine/core'
 import { useAppContext } from '@src/App.context'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEditorContext } from '@src/modes/edit/Editor.context'
 import { Character, type Scene } from '@src/types'
-import { resolveBaseUrl } from 'vite'
+import { clone } from 'lodash'
 
 interface CharactersSceneFormProps {
     scene: Scene
 }
 export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene }) => {
     const { api, activeBook } = useAppContext()
-    const { activeChapter } = useEditorContext()
+    const { activeChapter, setActiveScene } = useEditorContext()
 
     const queryClient = useQueryClient()
     const [query, setQuery] = useState('')
@@ -22,7 +22,7 @@ export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene 
         status: toonStatus
     } = useQuery({
         queryKey: ['book', activeBook.id, 'characters'],
-        queryFn: () => api.list_all_characters()
+        queryFn: () => api.list_all_characters(activeBook.id)
     })
 
     const {
@@ -54,33 +54,72 @@ export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene 
     return (
         <>
             <Select
+                label='Find or create new character for scene'
                 searchable
                 creatable
                 data={mappedToons}
                 value={query}
-                onChange={(new_name) => {
-                    new_name && setQuery(new_name)
-                    api.add_and_or_create_new_character_to_scene(
-                        activeBook.id,
-                        scene.id,
-                        new_name
+                onChange={(char_id) => {
+                    api.add_character_to_scene(scene.id, char_id).then((new_scene) =>
+                        setActiveScene(activeChapter, new_scene as Scene)
                     )
-                    return new_name
-                }}
-                onCreate={(new_name) => {
-                    api.add_and_or_create_new_character_to_scene(
-                        activeBook.id,
-                        scene.id,
-                        new_name
-                    ).then()
+
                     queryClient
                         .invalidateQueries([
+                            [
+                                'book',
+                                activeBook.id,
+                                'chapter',
+                                scene.chapterId,
+                                'scene',
+                                scene.id
+                            ],
                             ['book', activeBook.id, 'scene', scene.id, 'characters'],
                             ['book', activeBook.id, 'characters']
                         ])
                         .then()
-                    //update scene.characters useQuery
-                    //update book.characters useQuery
+                    return char_id
+                }}
+                getCreateLabel={(create_name) => `+ Create new character ${create_name}?`}
+                onCreate={(new_name) => {
+                    api.create_new_character_to_scene(
+                        activeBook.id,
+                        scene.id,
+                        new_name
+                    ).then((new_scene) => {
+                        setActiveScene(activeChapter, new_scene)
+                        queryClient.setQueryData(
+                            [
+                                'book',
+                                activeBook.id,
+                                'chapter',
+                                scene.chapterId,
+                                'scene',
+                                scene.id
+                            ],
+                            new_scene
+                        )
+                        queryClient.setQueryData(
+                            ['book', activeBook.id, 'scene', scene.id, 'characters'],
+                            new_scene.characters
+                        )
+                    })
+                    // queryClient
+                    //     .invalidateQueries([
+                    //         [
+                    //             'book',
+                    //             activeBook.id,
+                    //             'chapter',
+                    //             scene.chapterId,
+                    //             'scene',
+                    //             scene.id
+                    //         ],
+                    //         ['book', activeBook.id, 'scene', scene.id],
+                    //         ['book', activeBook.id, 'index'],
+                    //         ['book', activeBook.id, 'scene', scene.id, 'characters'],
+                    //         ['book', activeBook.id, 'characters']
+                    //     ])
+                    //     .then()
                     return undefined
                 }}
             />
