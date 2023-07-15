@@ -105,7 +105,7 @@ class Book(Base):
         return session.scalars(stmt).all()
 
     @classmethod
-    def Fetch_by_UID(cls, session, uid):
+    def Fetch_by_UID(cls, session:Session, uid:str):
         stmt = select(cls).where(cls.uid == uid)
         return session.scalars(stmt).one()
 
@@ -265,19 +265,19 @@ class Scene(Base):
             data["notes"] = self.notes
             data["content"] = self.content
             data["location"] = self.location
-            data["characters"] = self.characters
+            data["characters"] = [toon.asdict() for toon in self.characters]
 
         return data
 
     @classmethod
     def Fetch_by_uid(cls, session:Session, scene_uid:str) -> 'Scene':
         stmt = select(cls).where(cls.uid == scene_uid)
-        return session.scalars(stmt).one()
+        return session.execute(stmt).scalars().one()
 
     @classmethod
     def List_all_characters_by_Uid(cls, session:Session, scene_uid:str) -> T.List[dict[str,str]]:
         scene = cls.Fetch_by_uid(session, scene_uid)
-        return [toon.asdict() for toon in scene.characters]
+        return scene.characters
 
 
 @contextlib.contextmanager
@@ -318,28 +318,38 @@ class Character(Base):
     @classmethod
     def Get_All(cls, session):
         stmt = select(cls)
-        return session.execute(stmt).all()
+        return session.scalars(stmt)
 
     @classmethod
     def Search(cls, session: Session, query: str) -> Sequence[Row['Character']]:
         stmt = select(cls).where(cls.name.ilike(f"{query}%"))
-        return session.execute(stmt).all()
+        return session.scalars(stmt)
 
     def asdict(self):
         return dict(
             id=self.uid,
             name=self.name,
             notes=self.notes,
-            book_id=self.book_id
+            book_id=self.book_id,
+            created_on=str(self.created_on),
+            updated_on=str(self.updated_on),
+            scene_count=len(self.scenes)
         )
 
     @classmethod
-    def Fetch_by_name_or_create(cls, session:Session, book_id:int, new_name:str):
+    def Fetch_by_Uid(cls, session:Session, scene_uid:str):
+        stmt = select(cls).where(cls.uid == scene_uid)
+        return session.execute(stmt).scalars().one()
+
+    @classmethod
+    def Fetch_by_name_or_create(cls, session:Session, new_name:str):
         try:
             stmt = select(cls).where(cls.name.ilike(new_name))
             return session.execute(stmt).one()
         except NoResultFound:
-            return cls(name=new_name, book_id=book_id)
+            record = cls(name=new_name)
+            session.add(record)
+            return record
 
 
 
