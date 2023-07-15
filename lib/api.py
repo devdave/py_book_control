@@ -260,9 +260,27 @@ class BCAPI:
 
         return []
 
-    def add_and_or_create_new_character_to_scene(self, book_id, scene_uid, new_name):
+
+    def add_character_to_scene(self, scene_uid, toon_uid  ):
         with self.app.get_db() as session:
             scene = models.Scene.Fetch_by_uid(session, scene_uid)
-            toon = models.Character.Fetch_by_name_or_create(session, new_name, book_id)
+            toon = models.Character.Fetch_by_Uid(session, toon_uid)
             scene.characters.append(toon)
+            scene.touch()
             session.commit()
+            return scene.asdict()
+
+
+
+    def create_new_character_to_scene(self, book_uid, scene_uid, new_name):
+        self.log.info(f"Looking for or add {book_uid=}, {scene_uid=}, {new_name=}")
+        with self.app.get_db() as session:
+            scene = models.Scene.Fetch_by_uid(session, scene_uid)
+            toon = models.Character(name=new_name)
+            book = models.Book.Fetch_by_UID(session, book_uid)
+            book.characters.append(toon)
+            book.touch()
+            scene.characters.append(toon)
+            scene.touch()
+            session.commit()
+            return scene.asdict()
