@@ -170,9 +170,9 @@ class APIBridge {
     }
     
     
-    async list_all_characters() {
+    async list_all_characters(book_uid:string) {
         
-        return await this.boundary.remote("list_all_characters", );
+        return await this.boundary.remote("list_all_characters", book_uid);
     }
     
     
@@ -188,9 +188,15 @@ class APIBridge {
     }
     
     
-    async add_and_create_new_character_to_scene(book_id:any, scene_uid:any, new_name:any) {
+    async add_character_to_scene(scene_uid:any, toon_uid:any) {
         
-        return await this.boundary.remote("add_and_create_new_character_to_scene", book_id, scene_uid, new_name);
+        return await this.boundary.remote("add_character_to_scene", scene_uid, toon_uid);
+    }
+    
+    
+    async create_new_character_to_scene(book_uid:any, scene_uid:any, new_name:any) {
+        
+        return await this.boundary.remote("create_new_character_to_scene", book_uid, scene_uid, new_name);
     }
     
 
