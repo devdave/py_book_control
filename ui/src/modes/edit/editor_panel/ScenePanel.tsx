@@ -134,7 +134,10 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
                 />
             </Tabs.Panel>
             <Tabs.Panel value='characters'>
-                <CharactersSceneForm scene={scene} />
+                <CharactersSceneForm
+                    scene={scene}
+                    key={scene.characters.length}
+                />
             </Tabs.Panel>
         </Tabs>
     )
