@@ -4,9 +4,10 @@ import random
 import contextlib
 import typing as T
 import datetime as DT
+from collections import defaultdict
 from typing import Tuple, Any, Sequence
 
-from sqlalchemy import select, update, ForeignKey, create_engine, DateTime, func, Table, Column, event, Row
+from sqlalchemy import select, update, ForeignKey, create_engine, DateTime, func, Table, Column, event, Row, and_
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -22,6 +23,8 @@ from sqlalchemy.orm import (
     attribute_keyed_dict,
     attributes
 )
+
+UID = str
 
 from .log_helper import getLogger
 
@@ -325,8 +328,8 @@ class Character(Base):
         stmt = select(cls).where(cls.name.ilike(f"{query}%"))
         return session.scalars(stmt)
 
-    def asdict(self):
-        return dict(
+    def asdict(self, extended=False):
+        data = dict(
             id=self.uid,
             name=self.name,
             notes=self.notes,
@@ -335,6 +338,25 @@ class Character(Base):
             updated_on=str(self.updated_on),
             scene_count=len(self.scenes)
         )
+
+        if extended is True:
+            chapter_titles = {}
+            chapter_map = defaultdict(list)
+
+            for scene in self.scenes: #type: Scene
+                chapter_titles[scene.chapter_id] = scene.chapter.title
+                chapter_map[scene.chapter_id].append((scene.uid, scene.title))
+
+            data['chapter_title'] = chapter_titles
+            data['chapter_map'] = chapter_map
+
+        return data
+
+
+
+
+
+        return data
 
     @classmethod
     def Fetch_by_Uid(cls, session:Session, scene_uid:str):
