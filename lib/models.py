@@ -351,6 +351,11 @@ class Character(Base):
             session.add(record)
             return record
 
+    @classmethod
+    def Fetch_by_Uid_and_Book(cls,session:Session, book:Book, character_uid:UID):
+        stmt = select(cls).where(and_(cls.book == book, cls.uid == character_uid))
+        return session.execute(stmt).scalars().one()
+
 
 
 
