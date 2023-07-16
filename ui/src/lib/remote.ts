@@ -199,6 +199,12 @@ class APIBridge {
         return await this.boundary.remote("create_new_character_to_scene", book_uid, scene_uid, new_name);
     }
     
+    
+    async fetch_character(book_uid:any, character_uid:any) {
+        
+        return await this.boundary.remote("fetch_character", book_uid, character_uid);
+    }
+    
 
 }
 

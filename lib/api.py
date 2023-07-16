@@ -219,7 +219,7 @@ class BCAPI:
             chapter.scenes.insert(to_pos, floating)
             session.commit()
 
-    def reorder_scenes(self, new_order: T.List[models.Scene]):
+    def reorder_scenes(self, new_order: T.List[dict[str,str]]):
         with self.app.get_db() as session:
             self.log.info("Reordering scenes: {}", new_order)
 
@@ -284,3 +284,10 @@ class BCAPI:
             scene.touch()
             session.commit()
             return scene.asdict()
+
+
+    def fetch_character(self, book_uid: models.UID, character_uid: models.UID):
+        with self.app.get_db() as session:
+            book = models.Book.Fetch_by_UID(session, book_uid) # type: models.Book
+            toon = models.Character.Fetch_by_Uid_and_Book(session, book, character_uid)
+            return toon.asdict(extended=True)
