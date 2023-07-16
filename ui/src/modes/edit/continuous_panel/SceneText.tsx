@@ -19,6 +19,7 @@ import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 import { PopoutTextarea } from '@src/widget/PopoutTextarea'
 import { Chapter, Scene } from '@src/types'
 import { ResizeablePanels } from '@src/widget/ResizeablePanels'
+import { IndicatedTextarea } from '@src/widget/IndicatedTextarea'
 
 import { modals } from '@mantine/modals'
 
@@ -39,44 +40,11 @@ const compile_scene2md = (scene: Scene) => {
     return 'Loading...'
 }
 
-interface IndicatedTextAreaProps {
-    form: UseFormReturnType<Partial<Scene>>
-    formField: string
-    indicatorStyle?: object
-    textStyle?: object
-}
-
-const IndicatedTextarea: React.FC<IndicatedTextAreaProps> = ({
-    form,
-    formField,
-    indicatorStyle,
-    textStyle
-}) => (
-    <Indicator
-        processing
-        color='red'
-        disabled={!form.isDirty(formField)}
-        style={indicatorStyle}
-    >
-        <Textarea
-            autosize
-            minRows={5}
-            {...form.getInputProps(formField)}
-            style={textStyle}
-        />
-    </Indicator>
-)
-
 export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
     const { api, activeBook } = useAppContext()
 
-    const {
-        activeScene,
-        activeChapter,
-        setActiveScene,
-        updateScene,
-        deleteScene
-    } = useEditorContext()
+    const { activeScene, activeChapter, setActiveScene, updateScene, deleteScene } =
+        useEditorContext()
 
     const [sceneMD, setSceneMD] = useState('')
     const queryClient = useQueryClient()
@@ -97,9 +65,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
 
         if (activeScene === undefined || activeChapter === undefined) {
             //These are both undefined
-            console.error(
-                'Cannot split scenes when there is no active scene or chapter.'
-            )
+            console.error('Cannot split scenes when there is no active scene or chapter.')
             throw new Error(
                 'Cannot split scenes when there is no active scene or chapter.'
             )
@@ -134,17 +100,14 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
     useDebouncedEffect(
         () => {
             async function reprocessMDnSave(): Promise<null | undefined> {
-                if (
-                    form.values.content &&
-                    form.values.content.trim().length === 0
-                ) {
+                if (form.values.content && form.values.content.trim().length === 0) {
                     modals.openConfirmModal({
                         modalId: 'shouldDeleteScene',
                         title: 'Scene body empty',
                         children: (
                             <Text size='sm'>
-                                The scene@apos;s content body is empty, do you
-                                want to delete this scene?
+                                The scene@apos;s content body is empty, do you want to
+                                delete this scene?
                             </Text>
                         ),
                         labels: {
@@ -177,10 +140,9 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                         title: 'Split/add new scene?',
                         children: (
                             <Text size='sm'>
-                                You have added a second title to the current
-                                scene. Was this a mistake or do you want to
-                                create and insert a new after the current scene
-                                with the new title?
+                                You have added a second title to the current scene. Was
+                                this a mistake or do you want to create and insert a new
+                                after the current scene with the new title?
                             </Text>
                         ),
                         labels: {
@@ -257,9 +219,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                             width: '100%',
                             boxSizing: 'border-box',
                             backgroundColor:
-                                theme.colorScheme === 'light'
-                                    ? 'white'
-                                    : 'black'
+                                theme.colorScheme === 'light' ? 'white' : 'black'
                         },
                         wrapper: {
                             height: '100%',
