@@ -5,11 +5,10 @@ import { useEditorContext } from '@src/modes/edit/Editor.context'
 import { Text } from '@mantine/core'
 import { useAppContext } from '@src/App.context'
 import { BookPanel } from '@src/modes/edit/book_panel/BookPanel'
-import { CharacterPanel } from '@src/modes/edit/character_panel/character_panel'
+import { CharacterPanel } from '@src/modes/edit/character_panel/CharacterPanel'
 
 export const Body = () => {
-    const { editMode, activeChapter, activeScene, activeElement } =
-        useEditorContext()
+    const { editMode, activeChapter, activeScene, activeElement } = useEditorContext()
 
     if (activeElement.type === ActiveElementTypes.BOOK) {
         return <BookPanel />
