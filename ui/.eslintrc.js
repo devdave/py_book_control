@@ -27,6 +27,7 @@ module.exports = {
         'no-console': 'off',
         'react-hooks/exhaustive-deps': 'warn',
         'react/react-in-jsx-scope': 'off',
+        'react/no-unescaped-entities': 'off',
         'react/jsx-tag-spacing': [
             'error',
             {
