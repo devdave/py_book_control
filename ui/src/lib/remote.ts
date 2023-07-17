@@ -205,6 +205,18 @@ class APIBridge {
         return await this.boundary.remote("fetch_character", book_uid, character_uid);
     }
     
+    
+    async update_character(changed_character:any) {
+        
+        return await this.boundary.remote("update_character", changed_character);
+    }
+    
+    
+    async delete_character(character_uid:any) {
+        
+        return await this.boundary.remote("delete_character", character_uid);
+    }
+    
 
 }
 
