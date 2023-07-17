@@ -1,16 +1,17 @@
 import { createContext, useContext } from 'react'
+import { UseQueryResult, UseMutationResult } from '@tanstack/react-query'
 
 import {
     ActiveElement,
     type Book,
     type Chapter,
     type ChapterIndex,
+    Character,
     EditModes,
     type Scene,
     type SceneIndex
 } from '@src/types'
 import APIBridge from '@src/lib/remote'
-import { UseMutationResult } from '@tanstack/react-query'
 import { Updater } from 'use-immer'
 import { ActiveElementHelper } from '@src/lib/ActiveElementHelper'
 
@@ -33,6 +34,14 @@ export interface EditorContextValue {
     setEditMode(mode: EditModes): void
     changeBookTitle: UseMutationResult<Book, Error, string>
     activeElement: ActiveElementHelper
+
+    fetchCharacter(book_id: string, character_id: string, enabled: boolean): UseQueryResult<Character, Error>
+    updateCharacter(changeset: Character): void
+    deleteCharacter(character_id: string): void
+    assignCharacter2Scene(scene: Scene, character_id: string): void
+    createNewCharacterAndAdd2Scene(scene: Scene, character_name: string): string | undefined
+    listCharactersByScene(scene: Scene): UseQueryResult<Character[], Error>
+    listAllCharacters(book: Book): UseQueryResult<Character[], Error>
 }
 
 export const EditorContext = createContext<EditorContextValue | null>(null)
