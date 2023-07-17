@@ -60,7 +60,7 @@ export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene 
                 getCreateLabel={(create_name) => `+ Create new character ${create_name}?`}
                 onCreate={(new_name) => createNewCharacterAndAdd2Scene(scene, new_name)}
             />
-            <Title order={2}>Scene Characters</Title>
+            <Title order={2}>Scene Characters (click to see detail view)</Title>
             {sceneCharacters.map((toon: Character) => (
                 <Text
                     key={toon.id}
