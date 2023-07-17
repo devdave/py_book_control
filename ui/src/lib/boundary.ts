@@ -38,7 +38,7 @@ class Boundary {
         }
     }
 
-    public remote(remoteName: string, ...args: any[]): Promise<any> {
+    public async remote(remoteName: string, ...args: any[]): Promise<any> {
         console.groupCollapsed(remoteName)
         this.info(`Calling ${remoteName} with:`, args)
         console.trace()
@@ -47,7 +47,7 @@ class Boundary {
         return retval
     }
 
-    private _remote(remoteName: string, ...args: any[]): Promise<any> {
+    private async _remote(remoteName: string, ...args: any[]): Promise<any> {
         this.connect()
 
         if (!(remoteName in this.backendHooks)) {
