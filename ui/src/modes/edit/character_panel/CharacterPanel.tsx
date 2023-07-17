@@ -8,15 +8,12 @@ import {
     Skeleton,
     Stack,
     Table,
-    Tabs,
     Text,
-    Textarea,
     Title
 } from '@mantine/core'
-import { useQuery } from '@tanstack/react-query'
 import { useAppContext } from '@src/App.context'
-import { Character, Scene } from '@src/types'
-import { MouseEventHandler, useState } from 'react'
+import { Character } from '@src/types'
+import { MouseEventHandler } from 'react'
 import { CharacterDetail } from '@src/modes/edit/character_panel/CharacterDetail'
 import { useEditorContext } from '@src/modes/edit/Editor.context'
 
@@ -41,7 +38,7 @@ const useStyle = createStyles((theme) => ({
 }))
 
 export const CharacterPanel = () => {
-    const { api, activeBook } = useAppContext()
+    const { activeBook } = useAppContext()
 
     const { activeElement, fetchCharacter, listAllCharacters } = useEditorContext()
 
@@ -51,8 +48,7 @@ export const CharacterPanel = () => {
         data: characters,
         isLoading: charactersIsLoading,
         status: charactersStatus,
-        failureReason: charactersLoadFailureReason,
-        isRefetching: charactersIsRefetching
+        failureReason: charactersLoadFailureReason
     } = listAllCharacters(activeBook)
 
     const enabledCurrentToonQuery =
@@ -67,7 +63,7 @@ export const CharacterPanel = () => {
     if (charactersIsLoading || !characters) {
         return (
             <Box
-                sx={(theme) => ({
+                sx={() => ({
                     minWidth: '100%',
                     minHeight: '80vh'
                 })}
