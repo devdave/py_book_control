@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAppContext } from '@src/App.context'
 import { Character } from '@src/types'
@@ -10,12 +10,14 @@ import {
     Tabs,
     Textarea,
     TextInput,
-    Text
+    Text,
+    Button
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { IndicatedTextInput } from '@src/widget/IndicatedTextInput'
 import { IndicatedTextarea } from '@src/widget/IndicatedTextarea'
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
+import { useEditorContext } from '@src/modes/edit/Editor.context'
 
 const useStyle = createStyles((theme) => ({
     filled_textarea: {
@@ -37,6 +39,8 @@ interface CharacterDetailProps {
 export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) => {
     const { api, activeBook, debounceTime } = useAppContext()
 
+    const { activeElement, updateCharacter, deleteCharacter } = useEditorContext()
+
     const { classes } = useStyle()
 
     const form = useForm<FormProps>({
@@ -46,9 +50,26 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
         }
     })
 
-    useDebouncedEffect(() => {}, [form.values], { delay: debounceTime })
+    useDebouncedEffect(
+        () => {
+            if (form.isDirty()) {
+                const changeset = {
+                    id: character.id,
+                    name: form.values.name,
+                    notes: form.values.notes
+                }
+                updateCharacter(changeset as Character)
+                form.resetDirty()
+            }
+        },
+        [form.values],
+        { delay: debounceTime }
+    )
 
-    console.log('Showing ', character)
+    const onDeleteClick = useCallback(() => {
+        activeElement.clearSubType()
+        deleteCharacter(character.id)
+    }, ['deleteCharacter'])
 
     return (
         <Tabs
@@ -91,6 +112,7 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
                         minRows: 5
                     }}
                 />
+                <Button onClick={onDeleteClick}>Delete?</Button>
             </Tabs.Panel>
         </Tabs>
     )

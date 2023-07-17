@@ -16,9 +16,9 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { useAppContext } from '@src/App.context'
 import { Character, Scene } from '@src/types'
-import { Tab } from '@mantine/core/lib/Tabs/Tab/Tab'
 import { MouseEventHandler, useState } from 'react'
 import { CharacterDetail } from '@src/modes/edit/character_panel/CharacterDetail'
+import { useEditorContext } from '@src/modes/edit/Editor.context'
 
 const useStyle = createStyles((theme) => ({
     active_style: {
@@ -43,38 +43,26 @@ const useStyle = createStyles((theme) => ({
 export const CharacterPanel = () => {
     const { api, activeBook } = useAppContext()
 
+    const { activeElement, fetchCharacter, listAllCharacters } = useEditorContext()
+
     const { classes } = useStyle()
-
-    const [selectedToonId, setSelectedToonId] = useState<string | undefined>(undefined)
-
-    const disableListChars =
-        activeBook && activeBook.id !== null && activeBook.id !== undefined
 
     const {
         data: characters,
         isLoading: charactersIsLoading,
         status: charactersStatus,
-        failureReason: characterLoadFailureReason
-    } = useQuery<Character[], Error, Character[]>(
-        ['book', activeBook.id, 'characters'],
-        () => api.list_all_characters(activeBook.id),
-        {
-            enabled: disableListChars
-        }
-    )
+        failureReason: charactersLoadFailureReason,
+        isRefetching: charactersIsRefetching
+    } = listAllCharacters(activeBook)
+
+    const enabledCurrentToonQuery =
+        activeElement.subType === 'character' && activeElement.subDetail !== undefined
 
     const {
         data: currentToon,
         isFetched: currentToonFetched,
         isLoading: currentToonIsLoading
-    } = useQuery<string, Error, Character>({
-        queryKey: ['book', activeBook.id, 'character', selectedToonId],
-        queryFn: () => api.fetch_character(activeBook.id, selectedToonId),
-        enabled: selectedToonId !== undefined
-    })
-
-    const currentToonAbleToRender =
-        selectedToonId !== undefined && selectedToonId.length > 0
+    } = fetchCharacter(activeBook.id, activeElement.subDetail as string, enabledCurrentToonQuery)
 
     if (charactersIsLoading || !characters) {
         return (
@@ -85,7 +73,7 @@ export const CharacterPanel = () => {
                 })}
                 pos='relative'
             >
-                <Text>Loading...</Text>
+                <Text>Loadin characters...</Text>
                 <LoadingOverlay visible />
             </Box>
         )
@@ -95,16 +83,15 @@ export const CharacterPanel = () => {
         return (
             <Box>
                 <Text>There was a problem loading the book's character data</Text>
-                {characterLoadFailureReason && (
-                    <Text>{characterLoadFailureReason.message}</Text>
-                )}
+                {charactersLoadFailureReason && <Text>{charactersLoadFailureReason.message}</Text>}
             </Box>
         )
     }
 
     const handleClick: MouseEventHandler<HTMLTableRowElement> = (evt) => {
         console.log(evt.currentTarget.dataset.id)
-        setSelectedToonId(evt.currentTarget.dataset.id)
+        activeElement.setCharacterById(evt.currentTarget.dataset.id as string)
+        // setSelectedToonId(evt.currentTarget.dataset.id)
     }
 
     const rows = characters.map((character: Character) => (
@@ -160,15 +147,14 @@ export const CharacterPanel = () => {
                     mih='100%'
                     miw='100%'
                 >
-                    {selectedToonId === undefined && (
-                        <Center>Click on a character to review</Center>
-                    )}
-                    {selectedToonId !== undefined && currentToonIsLoading === true && (
+                    {!enabledCurrentToonQuery && <Center>Click on a character to review</Center>}
+                    {enabledCurrentToonQuery && currentToonIsLoading && (
                         <Box
                             maw='100%'
                             mah='100%'
+                            mih='100%'
                         >
-                            <Text>Loading....</Text>
+                            <Text>Loading character....</Text>
                             <Skeleton />
                             <Skeleton />
                             <Skeleton />
@@ -176,20 +162,21 @@ export const CharacterPanel = () => {
                             <LoadingOverlay visible />
                         </Box>
                     )}
-                    {currentToonFetched && currentToon !== undefined && (
-                        <CharacterDetail
-                            key={selectedToonId}
-                            character={currentToon}
-                        />
-                    )}
-                    {currentToonFetched && currentToon === undefined && (
-                        <>
-                            <Text>
-                                There was a problem loading this character, please try
-                                again.
-                            </Text>
-                        </>
-                    )}
+                    {activeElement.subDetail !== undefined &&
+                        currentToonFetched &&
+                        currentToon !== undefined && (
+                            <CharacterDetail
+                                key={`${activeElement.subType} ${currentToon?.updated_on}`}
+                                character={currentToon}
+                            />
+                        )}
+                    {activeElement.subDetail !== undefined &&
+                        currentToonFetched &&
+                        currentToon === undefined && (
+                            <>
+                                <Text>There was a problem loading this character, please try again.</Text>
+                            </>
+                        )}
                 </Box>
             </Group>
         </Stack>
