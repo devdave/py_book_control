@@ -1,12 +1,14 @@
 import { Updater } from 'use-immer'
 import {
-    ActiveElement,
+    type ActiveElement,
+    ActiveElementSubTypes,
     ActiveElementTypes,
-    Book,
-    Chapter,
-    ChapterIndex,
-    Scene,
-    SceneIndex
+    type Book,
+    type Chapter,
+    type ChapterIndex,
+    type Character,
+    type Scene,
+    type SceneIndex
 } from '@src/types'
 
 export class ActiveElementHelper {
@@ -20,7 +22,7 @@ export class ActiveElementHelper {
     setTypeAndSubtype(
         type_name: ActiveElementTypes | undefined,
         type_detail: string | undefined,
-        subtype_name: 'scene' | undefined,
+        subtype_name: ActiveElementSubTypes | undefined,
         sub_detail: string | undefined
     ) {
         this.updater((draft) => {
@@ -38,7 +40,7 @@ export class ActiveElementHelper {
         })
     }
 
-    assignSubType(subtype_name: 'scene' | undefined, subtype_detail: string) {
+    assignSubType(subtype_name: ActiveElementSubTypes | undefined, subtype_detail: string) {
         this.updater((draft) => {
             draft.subtype = subtype_name
             draft.subdetail = subtype_detail
@@ -50,7 +52,7 @@ export class ActiveElementHelper {
     }
 
     public setActiveSceneById(chapter_id: string, scene_id: string) {
-        this.setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, 'scene', scene_id)
+        this.setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, ActiveElementSubTypes.SCENE, scene_id)
     }
 
     public isThisScene(scene: Scene | SceneIndex): boolean {
@@ -58,7 +60,7 @@ export class ActiveElementHelper {
     }
 
     public isThisSceneById(scene_id: string): boolean {
-        return this.state.subtype === 'scene' && this.state.subdetail === scene_id
+        return this.state.subtype === ActiveElementSubTypes.SCENE && this.state.subdetail === scene_id
     }
 
     public isThisChapter(chapter: Chapter | ChapterIndex): boolean {
@@ -66,7 +68,7 @@ export class ActiveElementHelper {
     }
 
     public isThisChapterById(chapter_id: string): boolean {
-        return this.state.type === 'chapter' && this.state.detail === chapter_id
+        return this.state.type === ActiveElementTypes.CHAPTER && this.state.detail === chapter_id
     }
 
     public setScene(chapter: Chapter | ChapterIndex, scene: Scene | SceneIndex) {
@@ -74,7 +76,7 @@ export class ActiveElementHelper {
     }
 
     public setSceneById(chapter_id: string, scene_id: string) {
-        this.setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, 'scene', scene_id)
+        this.setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, ActiveElementSubTypes.SCENE, scene_id)
     }
 
     public assignScene(scene: SceneIndex) {
@@ -82,7 +84,7 @@ export class ActiveElementHelper {
     }
 
     public assignSceneById(scene_id: string) {
-        this.assignSubType('scene', scene_id)
+        this.assignSubType(ActiveElementSubTypes.SCENE, scene_id)
     }
 
     public setChapter(chapter: Chapter | ChapterIndex) {
@@ -90,12 +92,7 @@ export class ActiveElementHelper {
     }
 
     public setChapterById(chapter_id: string) {
-        this.setTypeAndSubtype(
-            ActiveElementTypes.CHAPTER,
-            chapter_id,
-            undefined,
-            undefined
-        )
+        this.setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, undefined, undefined)
     }
 
     public assignChapter(chapter: Chapter) {
@@ -111,7 +108,7 @@ export class ActiveElementHelper {
     }
 
     public isThisBookById(book_id: string): boolean {
-        return this.state.type === 'book' && this.state.detail === book_id
+        return this.state.type === ActiveElementTypes.BOOK && this.state.detail === book_id
     }
 
     public setBook(book: Book) {
@@ -120,6 +117,14 @@ export class ActiveElementHelper {
 
     public setBookById(book_id: string) {
         this.setTypeAndSubtype(ActiveElementTypes.BOOK, book_id, undefined, undefined)
+    }
+
+    public setCharacter(character: Character) {
+        return this.setCharacterById(character.id)
+    }
+
+    public setCharacterById(character_id: string) {
+        return this.assignSubType(ActiveElementSubTypes.CHARACTER, character_id)
     }
 
     public get type() {
