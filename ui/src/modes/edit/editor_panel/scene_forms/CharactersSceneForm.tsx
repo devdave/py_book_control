@@ -11,30 +11,27 @@ interface CharactersSceneFormProps {
 }
 export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene }) => {
     const { api, activeBook } = useAppContext()
-    const { activeChapter, setActiveScene } = useEditorContext()
+    const {
+        activeChapter,
+        assignCharacter2Scene,
+        createNewCharacterAndAdd2Scene,
+        listAllCharacters,
+        listCharactersByScene,
+        setActiveScene
+    } = useEditorContext()
 
     const queryClient = useQueryClient()
     const [query, setQuery] = useState('')
 
-    const {
-        data: allToons,
-        isLoading: toonsIsLoading,
-        status: toonStatus
-    } = useQuery({
-        queryKey: ['book', activeBook.id, 'characters'],
-        queryFn: () => api.list_all_characters(activeBook.id)
-    })
+    const { data: toons, isLoading: toonsIsLoading, status: toonStatus } = listAllCharacters(activeBook)
 
     const {
         data: sceneCharacters,
-        isLoading: seceneCharactersIsLoading,
+        isLoading: sceneCharactersIsLoading,
         status: sceneCharactersStatus
-    } = useQuery({
-        queryKey: ['book', activeBook.id, 'scene', scene.id, 'characters'],
-        queryFn: () => api.list_characters_by_scene(scene.id)
-    })
+    } = listCharactersByScene(scene)
 
-    if (toonsIsLoading || seceneCharactersIsLoading) {
+    if (toonsIsLoading || sceneCharactersIsLoading) {
         return <LoadingOverlay visible />
     }
 
@@ -46,7 +43,7 @@ export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene 
         return <Text>Problem loading all scene characters list</Text>
     }
 
-    const mappedToons = allToons.map((toon: Character) => ({
+    const mappedToons = toons.map((toon: Character) => ({
         value: toon.id,
         label: toon.name
     }))
@@ -59,73 +56,18 @@ export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene 
                 creatable
                 data={mappedToons}
                 value={query}
-                onChange={(char_id) => {
-                    api.add_character_to_scene(scene.id, char_id).then((new_scene) =>
-                        setActiveScene(activeChapter, new_scene as Scene)
-                    )
-
-                    queryClient
-                        .invalidateQueries([
-                            [
-                                'book',
-                                activeBook.id,
-                                'chapter',
-                                scene.chapterId,
-                                'scene',
-                                scene.id
-                            ],
-                            ['book', activeBook.id, 'scene', scene.id, 'characters'],
-                            ['book', activeBook.id, 'characters']
-                        ])
-                        .then()
-                    return char_id
-                }}
+                onChange={(char_id) => char_id && assignCharacter2Scene(scene, char_id)}
                 getCreateLabel={(create_name) => `+ Create new character ${create_name}?`}
-                onCreate={(new_name) => {
-                    api.create_new_character_to_scene(
-                        activeBook.id,
-                        scene.id,
-                        new_name
-                    ).then((new_scene) => {
-                        setActiveScene(activeChapter, new_scene)
-                        queryClient.setQueryData(
-                            [
-                                'book',
-                                activeBook.id,
-                                'chapter',
-                                scene.chapterId,
-                                'scene',
-                                scene.id
-                            ],
-                            new_scene
-                        )
-                        queryClient.setQueryData(
-                            ['book', activeBook.id, 'scene', scene.id, 'characters'],
-                            new_scene.characters
-                        )
-                    })
-                    // queryClient
-                    //     .invalidateQueries([
-                    //         [
-                    //             'book',
-                    //             activeBook.id,
-                    //             'chapter',
-                    //             scene.chapterId,
-                    //             'scene',
-                    //             scene.id
-                    //         ],
-                    //         ['book', activeBook.id, 'scene', scene.id],
-                    //         ['book', activeBook.id, 'index'],
-                    //         ['book', activeBook.id, 'scene', scene.id, 'characters'],
-                    //         ['book', activeBook.id, 'characters']
-                    //     ])
-                    //     .then()
-                    return undefined
-                }}
+                onCreate={(new_name) => createNewCharacterAndAdd2Scene(scene, new_name)}
             />
             <Title order={2}>Scene Characters</Title>
             {sceneCharacters.map((toon: Character) => (
-                <Text key={toon.id}>{toon.name}</Text>
+                <Text
+                    key={toon.id}
+                    data-id={toon.id}
+                >
+                    {toon.name}
+                </Text>
             ))}
         </>
     )
