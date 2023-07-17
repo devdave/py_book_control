@@ -7,7 +7,7 @@ import datetime as DT
 from collections import defaultdict
 from typing import Tuple, Any, Sequence
 
-from sqlalchemy import select, update, ForeignKey, create_engine, DateTime, func, Table, Column, event, Row, and_
+from sqlalchemy import select, update, ForeignKey, create_engine, DateTime, func, Table, Column, event, Row, and_, delete
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -347,16 +347,20 @@ class Character(Base):
                 chapter_titles[scene.chapter_id] = scene.chapter.title
                 chapter_map[scene.chapter_id].append((scene.uid, scene.title))
 
-            data['chapter_title'] = chapter_titles
+            data['chapter_titles'] = chapter_titles
             data['chapter_map'] = chapter_map
 
         return data
 
+    def update(self, character_change:dict[str, str]):
+        SAFE = ['name', 'notes']
+        for safe_key in SAFE:
+            if safe_key in character_change:
+                setattr(self, safe_key, character_change[safe_key])
 
 
 
 
-        return data
 
     @classmethod
     def Fetch_by_Uid(cls, session:Session, scene_uid:str):
@@ -377,6 +381,13 @@ class Character(Base):
     def Fetch_by_Uid_and_Book(cls,session:Session, book:Book, character_uid:UID):
         stmt = select(cls).where(and_(cls.book == book, cls.uid == character_uid))
         return session.execute(stmt).scalars().one()
+
+    @classmethod
+    def Delete_by_Uid(cls, session:Session, character_uid: str):
+        stmt = delete(cls).where(cls.uid == character_uid)
+        return session.execute(stmt)
+
+
 
 
 
