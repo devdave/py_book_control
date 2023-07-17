@@ -219,7 +219,7 @@ class BCAPI:
             chapter.scenes.insert(to_pos, floating)
             session.commit()
 
-    def reorder_scenes(self, new_order: T.List[dict[str,str]]):
+    def reorder_scenes(self, new_order: T.List[dict[str, str]]):
         with self.app.get_db() as session:
             self.log.info("Reordering scenes: {}", new_order)
 
@@ -237,7 +237,7 @@ class BCAPI:
 
         return data["scenes"]
 
-    def list_all_characters(self, book_uid:str)->list[dict[str, str]]:
+    def list_all_characters(self, book_uid: str) -> list[dict[str, str]]:
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, book_uid)
             return [toon.asdict() for toon in book.characters]
@@ -260,8 +260,7 @@ class BCAPI:
 
         return []
 
-
-    def add_character_to_scene(self, scene_uid, toon_uid  ):
+    def add_character_to_scene(self, scene_uid, toon_uid):
         with self.app.get_db() as session:
             scene = models.Scene.Fetch_by_uid(session, scene_uid)
             toon = models.Character.Fetch_by_Uid(session, toon_uid)
@@ -269,8 +268,6 @@ class BCAPI:
             scene.touch()
             session.commit()
             return scene.asdict()
-
-
 
     def create_new_character_to_scene(self, book_uid, scene_uid, new_name):
         self.log.info(f"Looking for or add {book_uid=}, {scene_uid=}, {new_name=}")
@@ -285,9 +282,22 @@ class BCAPI:
             session.commit()
             return scene.asdict()
 
-
     def fetch_character(self, book_uid: models.UID, character_uid: models.UID):
         with self.app.get_db() as session:
-            book = models.Book.Fetch_by_UID(session, book_uid) # type: models.Book
+            book = models.Book.Fetch_by_UID(session, book_uid)  # type: models.Book
             toon = models.Character.Fetch_by_Uid_and_Book(session, book, character_uid)
             return toon.asdict(extended=True)
+
+    def update_character(self, changed_character: dict[str, str]):
+        with self.app.get_db() as session:
+            character = models.Character.Fetch_by_Uid(session, changed_character['id'])  # type: models.Character
+            character.update(changed_character)
+            session.commit()
+            return character.asdict(extended=True)
+
+    def delete_character(self, character_uid):
+        with self.app.get_db() as session:
+            models.Character.Delete_by_Uid(session, character_uid)
+            session.commit()
+            return True
+
