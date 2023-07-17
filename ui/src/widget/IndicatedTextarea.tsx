@@ -7,7 +7,7 @@ import { TextareaProps } from '@mantine/core/lib/Textarea/Textarea'
 interface IndicatedTextAreaProps {
     form: UseFormReturnType<any>
     formField: string
-    inputProps: TextareaProps & React.RefAttributes<HTMLTextAreaElement>
+    inputProps?: TextareaProps & React.RefAttributes<HTMLTextAreaElement>
     indicatorStyle?: object
     textStyle?: object
 }

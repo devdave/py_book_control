@@ -23,8 +23,10 @@ export const IndicatedTextInput: React.FC<IndicatedTextInputProps> = ({
         <Text>{label}</Text>
         <Indicator
             processing
+            withBorder
             color='red'
             position='top-start'
+            disabled={!form.isDirty(fieldName)}
             {...indicatorprops}
         >
             <TextInput
