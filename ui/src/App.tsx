@@ -8,34 +8,21 @@ import { AppContext, AppContextValue } from '@src/App.context'
 
 import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 
-import {
-    QueryClient,
-    QueryClientProvider,
-    useMutation,
-    useQueryClient
-} from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-import { LoadingOverlay, MantineProvider, Text } from '@mantine/core'
+import { LoadingOverlay, Text } from '@mantine/core'
 import { AppModes, Book, Font } from '@src/types'
 import { Manifest } from '@src/modes/manifest/Manifest'
 import { useImmer } from 'use-immer'
-//import APIBridge from "./lib/remote";
-
-declare global {
-    interface window {
-        pywebview: any
-    }
-}
 
 interface AppWrapperProps {
     api: APIBridge
     value: AppContextValue
-    activeFont: Font
     children: ReactNode
 }
 
-const AppWrapper: FC<AppWrapperProps> = ({ api, value, activeFont, children }) => (
+const AppWrapper: FC<AppWrapperProps> = ({ api, value, children }) => (
     <AppContext.Provider value={value}>
         <ThemeProvider api={api}>
             {children}
@@ -66,13 +53,12 @@ export default function App() {
         weight: '100'
     })
 
-    const boundary = new Boundary()
-    const api = new APIBridge(boundary)
+    const boundary = useMemo(() => new Boundary(), [])
 
-    const doReady = async () => {
+    const api = useMemo(() => new APIBridge(boundary), [boundary])
+
+    const doReady = useCallback(async () => {
         const response = await api.get_current_book()
-
-        console.log('Current book response:', response)
 
         if (response) {
             if (response.id !== undefined) {
@@ -82,9 +68,9 @@ export default function App() {
         }
 
         setIsReady(() => true)
-    }
+    }, [api, setActiveBook])
 
-    const checkFonts = () => {
+    const checkFonts = useCallback(() => {
         const fontAvailable = new Set<string>()
 
         // eslint-disable-next-line no-restricted-syntax
@@ -94,7 +80,7 @@ export default function App() {
             }
         }
         setFonts(fontAvailable)
-    }
+    }, [])
 
     useEffect(() => {
         if (window.pywebview !== undefined && window.pywebview.api !== undefined) {
@@ -102,13 +88,13 @@ export default function App() {
         } else {
             window.addEventListener(PYWEBVIEWREADY, doReady, { once: true })
         }
-    }, [])
+    }, [doReady])
 
     useEffect(() => {
         document.fonts.ready.then(() => {
             checkFonts()
         })
-    }, [])
+    }, [checkFonts])
 
     const _changeBook = useMutation<Book, Error, Book>((book) => api.update_book(book), {
         onSuccess: (updated: Book) => {
@@ -146,14 +132,13 @@ export default function App() {
             setActiveFont,
             debounceTime: 800
         }),
-        [api]
+        [activeBook, activeFont, api, appMode, fonts, setActiveBook, setActiveFont, updateBook]
     )
 
     return (
         <AppWrapper
             api={api}
             value={appContextValue}
-            activeFont={activeFont}
         >
             {useMemo(() => {
                 if (!isReady) {
@@ -172,7 +157,7 @@ export default function App() {
                     default:
                         return <Text>Application error: unexpected mode {appMode}</Text>
                 }
-            }, [appMode, isReady, activeBook])}
+            }, [appMode, isReady])}
         </AppWrapper>
     )
 }
