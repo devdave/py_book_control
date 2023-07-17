@@ -2,8 +2,8 @@ export interface Base {
     [key: string]: any
 
     id: string
-    created_on: string
-    updated_on: string
+    created_on?: string
+    updated_on?: string
 }
 
 export interface Book extends Base {
@@ -46,8 +46,11 @@ export interface Chapter extends ChapterIndex {
 
 export interface Character extends Base {
     name: string
-    book: Book
+    notes: string
+    book_id: Book
     scene_count?: number
+    chapter_titles?: object
+    chapter_map?: object
 }
 
 export enum AppModes {
@@ -81,9 +84,14 @@ export enum ActiveElementTypes {
     CHARACTERS = 'characters'
 }
 
+export enum ActiveElementSubTypes {
+    SCENE = 'scene',
+    CHARACTER = 'character'
+}
+
 export interface ActiveElement {
     type: ActiveElementTypes | undefined
     detail: string | undefined
-    subtype: 'scene' | undefined
+    subtype: ActiveElementSubTypes | undefined
     subdetail: string | undefined
 }
