@@ -340,15 +340,12 @@ class Character(Base):
         )
 
         if extended is True:
-            chapter_titles = {}
-            chapter_map = defaultdict(list)
+            locations = []
 
             for scene in self.scenes: #type: Scene
-                chapter_titles[scene.chapter_id] = scene.chapter.title
-                chapter_map[scene.chapter_id].append((scene.uid, scene.title))
+                locations.append((scene.chapter.title, scene.chapter.uid, scene.title, scene.uid))
 
-            data['chapter_titles'] = chapter_titles
-            data['chapter_map'] = chapter_map
+            data['locations'] = locations
 
         return data
 
