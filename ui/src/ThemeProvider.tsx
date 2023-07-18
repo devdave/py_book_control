@@ -34,7 +34,8 @@ export function ThemeProvider({ api, children }: ThemeProviderProps) {
                     globalStyles: (theme) => ({
                         textarea: {
                             fontFamily: `"${activeFont.name}"`,
-                            fontSize: `${activeFont.size}px`
+                            fontSize: `${activeFont.size}px`,
+                            lineHeight: `${activeFont.height}%`
                         },
                         colorScheme: theme.colorScheme,
                         backgroundColor: theme.colorScheme === 'light' ? 'white' : 'black'
@@ -47,7 +48,8 @@ export function ThemeProvider({ api, children }: ThemeProviderProps) {
                                 },
                                 input: {
                                     fontFamily: `"${activeFont.name}"`,
-                                    fontSize: `${activeFont.size}px`
+                                    fontSize: `${activeFont.size}px`,
+                                    lineHeight: `${activeFont.height}%`
                                 }
                             })
                         },
