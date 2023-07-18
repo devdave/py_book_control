@@ -162,7 +162,7 @@ export const CharacterPanel = () => {
                         currentToonFetched &&
                         currentToon !== undefined && (
                             <CharacterDetail
-                                key={`${activeElement.subType} ${currentToon?.updated_on}`}
+                                key={`${currentToon.id}`}
                                 character={currentToon}
                             />
                         )}
