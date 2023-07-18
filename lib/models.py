@@ -385,8 +385,49 @@ class Character(Base):
         return session.execute(stmt)
 
 
+class Setting(Base):
+    name: Mapped[str] = mapped_column(unique=True)
+    val: Mapped[str]
+    type: Mapped[str]
+
+
+    @classmethod
+    def Get(cls, session:Session, val_name:str):
+        stmt = select(cls).where(cls.name == val_name)
+        rec = session.execute(stmt).scalars().one()  # type: 'Setting'
+        match rec.type:
+            case 'string':
+                return rec.val
+            case 'number':
+                return int(rec.val)
+            case _:
+                return rec.val
+
+    @classmethod
+    def Set(cls, session: Session, val_name: str, value: str, type_name='string'):
+        stmt = select(cls).where(cls.name == val_name)
+        try:
+            rec = session.execute(stmt).scalars().one() # type: Setting
+        except NoResultFound:
+            rec = cls(name=val_name, val=value, type=type_name)
+        else:
+            rec.name = val_name
+            rec.val = value
+            rec.type = type_name
 
 
 
+    @classmethod
+    def All(cls, session):
+        stmt = select(cls)
+        return session.execute(stmt).scalars()  # type: list[Setting]
+
+    @classmethod
+    def BulkSet(cls, session, changeset):
+        for name, item in changeset.items():
+            cls.Set(session, name, item['value'], item['type'])
 
 
+
+    def asdict(self):
+        return dict(name=self.name, value=self.val, type=self.type)

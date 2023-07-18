@@ -301,3 +301,25 @@ class BCAPI:
             session.commit()
             return True
 
+
+    """
+        Settings
+    """
+
+    def fetchAllSettings(self):
+        with self.app.get_db() as session:
+            return [setting.asdict() for setting in models.Setting.All(session)]
+
+    def getSetting(self, name):
+        with self.app.get_db() as session:
+            return models.Setting.Get(session, name).asdict()
+
+    def setSetting(self, name, value, type):
+        with self.app.get_db() as session:
+            models.Setting.Set(session, name, value, type)
+            session.commit()
+
+    def bulkUpdateSettings(self, changeset):
+        with self.app.get_db() as session:
+            models.Setting.BulkSet(session, changeset)
+            session.commit()
