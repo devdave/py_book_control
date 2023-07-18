@@ -7,7 +7,7 @@ import datetime as DT
 from collections import defaultdict
 from typing import Tuple, Any, Sequence
 
-from sqlalchemy import select, update, ForeignKey, create_engine, DateTime, func, Table, Column, event, Row, and_, delete
+from sqlalchemy import select, update, ForeignKey, create_engine, DateTime, func, Table, Column, event, Row, and_, delete, insert
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -431,3 +431,13 @@ class Setting(Base):
 
     def asdict(self):
         return dict(name=self.name, value=self.val, type=self.type)
+
+    @classmethod
+    def SetDefault(cls, session, name, val, type):
+        stmt = select(cls).where(cls.name == name)
+        try:
+            session.execute(stmt).scalars().one()
+        except NoResultFound:
+            rec = cls(name = name, val = val, type = type)
+            session.add(rec)
+            session.commit()
