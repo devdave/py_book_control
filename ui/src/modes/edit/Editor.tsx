@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { PromptModal } from '@src/widget/input_modal'
 
 import { Body } from '@src/modes/edit/Body'
-import { CompositeHeader } from '@src/modes/edit/CompositeHeader'
+import { CompositeHeader } from '@src/common/CompositeHeader'
 
 import {
     type ActiveElement,
@@ -17,7 +17,8 @@ import {
     Character,
     EditModes,
     type Scene,
-    type SceneIndex
+    type SceneIndex,
+    UID
 } from '@src/types'
 import { useMutation, useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query'
 
@@ -88,6 +89,20 @@ export const Editor: React.FC = () => {
         }
     }, [activeBook, activeScene, activeChapter, index, indexIsLoading, indexIsSuccess])
 
+    /**
+     *
+     * Book stuff
+     *   ____              _
+     *  |  _ \            | |
+     *  | |_) | ___   ___ | | __
+     *  |  _ < / _ \ / _ \| |/ /
+     *  | |_) | (_) | (_) |   <
+     *  |____/ \___/ \___/|_|\_\
+     *
+     *
+     *
+     */
+
     const changeBookTitle = useMutation<Book, Error, string>({
         mutationFn: (new_title: string) => api.update_book_title(activeBook.id, new_title),
         onSuccess: (response: Book, new_title: string) => {
@@ -99,6 +114,20 @@ export const Editor: React.FC = () => {
             activeBook.title = new_title
         }
     })
+
+    /**
+     * Chapter stuff
+     *
+     *
+     *    _____ _                 _
+     *   / ____| |               | |
+     *  | |    | |__   __ _ _ __ | |_ ___ _ __
+     *  | |    | '_ \ / _` | '_ \| __/ _ \ '__|
+     *  | |____| | | | (_| | |_) | ||  __/ |
+     *   \_____|_| |_|\__,_| .__/ \__\___|_|
+     *                     | |
+     *                     |_|
+     */
 
     const createChapter = useMutation({
         mutationFn: (newChapter: object) => api.create_chapter(newChapter),
@@ -119,6 +148,16 @@ export const Editor: React.FC = () => {
 
     const getChapter: (chapterId: string) => Promise<Chapter> = async (chapterId: string) =>
         api.fetch_chapter(chapterId)
+
+    const fetchChapter = useCallback(
+        (book_id: UID, chapter_id: UID) =>
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            useQuery<Chapter, Error>({
+                queryFn: () => api.fetch_chapter(chapter_id),
+                queryKey: ['book', book_id, 'chapter', chapter_id]
+            }),
+        [api]
+    )
 
     const reorderChapter = useCallback(async (from: number, to: number) => {
         await api.reorder_chapter(from, to)
@@ -177,6 +216,16 @@ export const Editor: React.FC = () => {
      *
      *
      */
+
+    const fetchScene = useCallback(
+        (chapter_id: UID, scene_id: UID) =>
+            useQuery<Scene, Error>({
+                queryFn: () => api.fetch_scene(scene_id),
+                queryKey: ['book', activeBook.id, 'chapter', chapter_id, 'scene', scene_id]
+            }),
+        []
+    )
+
     const _addScene = useMutation({
         mutationFn: (newScene: { [key: string]: string }) =>
             api.create_scene(newScene.chapterId, newScene.title),
@@ -185,9 +234,21 @@ export const Editor: React.FC = () => {
             _setActiveScene(scene)
             _setActiveChapter(chapter)
 
-            // queryClient.invalidateQueries(['book', activeBook.id, 'chapter'])
-            queryClient.invalidateQueries(['book', activeBook.id, 'chapter', newSceneParts.chapterId]).then()
-            queryClient.invalidateQueries(['book', activeBook.id, 'index']).then()
+            queryClient
+                .invalidateQueries({
+                    queryKey: ['book', activeBook.id, 'chapter', newSceneParts.chapterId],
+                    exact: true,
+                    refetchType: 'active'
+                })
+                .then()
+
+            queryClient
+                .invalidateQueries({
+                    queryKey: ['book', activeBook.id, 'index'],
+                    exact: true,
+                    refetchType: 'active'
+                })
+                .then()
         }
     })
 
@@ -357,12 +418,35 @@ export const Editor: React.FC = () => {
         [api, useQuery]
     )
 
+    const _updateCharacterQueryCacheData = useCallback(
+        (original: Character[], updated: Character): Character[] =>
+            original.map((toon) => {
+                if (toon.id === updated.id) {
+                    return updated
+                }
+                return toon
+            }),
+        []
+    )
+
     const _updateCharacter = useMutation<Character, Error, Character>({
         mutationFn: (character: Character) => api.update_character(character),
         onSuccess: (updated_character) => {
             queryClient.setQueryData(
                 ['book', activeBook.id, 'character', updated_character.id],
                 () => updated_character
+            )
+
+            queryClient
+                .invalidateQueries({
+                    queryKey: ['book', activeBook.id, 'character', updated_character.id],
+                    exact: true,
+                    refetchType: 'active'
+                })
+                .then()
+
+            queryClient.setQueryData(['book', activeBook.id, 'characters'], (original) =>
+                _updateCharacterQueryCacheData(original as Character[], updated_character)
             )
 
             queryClient
@@ -465,7 +549,7 @@ export const Editor: React.FC = () => {
     )
 
     const listCharactersByScene = useCallback(
-        (scene: Scene) =>
+        (scene: Scene): UseQueryResult<Character[], Error> =>
             // eslint-disable-next-line react-hooks/rules-of-hooks
             useQuery({
                 queryKey: ['book', activeBook.id, 'scene', scene.id, 'characters'],
@@ -475,13 +559,13 @@ export const Editor: React.FC = () => {
     )
 
     const listAllCharacters = useCallback(
-        (book: Book) =>
+        (book: Book): UseQueryResult<Character[], Error> =>
             // eslint-disable-next-line react-hooks/rules-of-hooks
             useQuery({
                 queryKey: ['book', book.id, 'characters'],
                 queryFn: () => api.list_all_characters(book.id)
             }),
-        []
+        [api]
     )
 
     const editorContextValue = useMemo<EditorContextValue>(
@@ -489,14 +573,16 @@ export const Editor: React.FC = () => {
             index,
             activeChapter,
             activeScene,
+            fetchChapter,
             addChapter,
             updateChapter,
+            reorderChapter,
             editMode,
             api,
-            reorderChapter,
             reorderScene,
             setActiveChapter,
             setActiveScene,
+            fetchScene,
             addScene,
             createScene,
             updateScene,
@@ -516,6 +602,7 @@ export const Editor: React.FC = () => {
             index,
             activeChapter,
             activeScene,
+            fetchChapter,
             addChapter,
             updateChapter,
             editMode,
@@ -524,6 +611,7 @@ export const Editor: React.FC = () => {
             reorderScene,
             setActiveChapter,
             setActiveScene,
+            fetchScene,
             addScene,
             createScene,
             updateScene,
