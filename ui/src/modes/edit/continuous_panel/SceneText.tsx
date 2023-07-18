@@ -1,5 +1,5 @@
 import { useForm, UseFormReturnType } from '@mantine/form'
-import React, { Ref, useEffect, useRef, useState } from 'react'
+import React, { Ref, useCallback, useEffect, useRef, useState } from 'react'
 import {
     ActionIcon,
     Button,
@@ -57,42 +57,55 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
         }
     })
 
-    const doSplit = async (response: any) => {
-        console.group('doSplit')
+    const doSplit = useCallback(
+        async (response: any) => {
+            console.group('doSplit')
 
-        form.reset()
+            if (activeScene === undefined || activeChapter === undefined) {
+                //These are both undefined
+                console.error('Cannot split scenes when there is no active scene or chapter.')
+                throw new Error('Cannot split scenes when there is no active scene or chapter.')
+            }
 
-        if (activeScene === undefined || activeChapter === undefined) {
-            //These are both undefined
-            console.error('Cannot split scenes when there is no active scene or chapter.')
-            throw new Error('Cannot split scenes when there is no active scene or chapter.')
-        }
+            form.setFieldValue(
+                'content',
+                compile_scene2md({ title: response.title, content: response.content } as Scene)
+            )
 
-        const activeSceneId = activeScene.id
-        const activeChapId = activeChapter.id
+            const activeSceneId = activeScene.id
+            const activeChapId = activeChapter.id
 
-        activeScene.content = response.content
-        await api.update_scene(activeSceneId, activeScene)
+            activeScene.content = response.content
+            await api.update_scene(activeSceneId, activeScene)
 
-        const newSceneAndChapter = await api.create_scene(
-            activeChapId,
-            response.split_title,
-            activeScene.order + 1
-        )
+            const [newScene, newChapter] = await api.create_scene(
+                activeChapId,
+                response.split_title,
+                activeScene.order + 1
+            )
 
-        await queryClient.invalidateQueries({
-            queryKey: ['book', activeBook.id, 'index']
-        })
-        await queryClient.invalidateQueries({
-            queryKey: ['book', activeBook.id, 'chapter', activeChapId]
-        })
-        await queryClient.invalidateQueries({
-            queryKey: ['book', activeBook.id, 'scene', activeSceneId]
-        })
+            await queryClient.invalidateQueries({
+                queryKey: ['book', activeBook.id, 'index'],
+                exact: true,
+                refetchType: 'active'
+            })
+            await queryClient.invalidateQueries({
+                queryKey: ['book', activeBook.id, 'chapter', activeChapId],
+                exact: true,
+                refetchType: 'active'
+            })
+            await queryClient.invalidateQueries({
+                queryKey: ['book', activeBook.id, 'chapter', activeChapId, 'scene', activeSceneId],
+                exact: true,
+                refetchType: 'active'
+            })
 
-        setActiveScene(newSceneAndChapter[1], newSceneAndChapter[0])
-        console.groupEnd()
-    }
+            form.resetDirty()
+            setActiveScene(newChapter, newScene)
+            console.groupEnd()
+        },
+        [activeBook.id, activeChapter, activeScene, api, form, queryClient, setActiveScene]
+    )
 
     useDebouncedEffect(
         () => {
