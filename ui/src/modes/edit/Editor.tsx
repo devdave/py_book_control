@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { PromptModal } from '@src/widget/input_modal'
 
 import { Body } from '@src/modes/edit/Body'
-import { CompositeHeader } from '@src/common/CompositeHeader'
+import { CompositeHeader } from '@src/modes/edit/CompositeHeader'
 
 import {
     type ActiveElement,
