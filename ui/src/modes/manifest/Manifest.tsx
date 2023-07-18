@@ -12,8 +12,7 @@ import {
     useMantineColorScheme
 } from '@mantine/core'
 import { useAppContext } from '@src/App.context'
-import { useQuery } from '@tanstack/react-query'
-import { AppModes, Book } from '@src/types'
+import { AppModes, Book, UID } from '@src/types'
 import { MouseEventHandler, useCallback, useState } from 'react'
 
 import './manifest.css'
@@ -21,43 +20,28 @@ import { IconMoonStars, IconSun } from '@tabler/icons-react'
 
 const useStyles = createStyles((theme) => ({
     main: {
-        backgroundColor:
-            theme.colorScheme === 'light'
-                ? theme.colors.gray[0]
-                : theme.colors.dark[6]
+        backgroundColor: theme.colorScheme === 'light' ? theme.colors.gray[0] : theme.colors.dark[6]
     }
 }))
 
 export const Manifest = () => {
-    const { api, setActiveBook, setAppMode } = useAppContext()
+    const { api, setActiveBook, setAppMode, fetchStrippedBook, fetchStrippedBooks } = useAppContext()
 
-    const { classes, theme } = useStyles()
+    const { theme } = useStyles()
     const { colorScheme, toggleColorScheme } = useMantineColorScheme()
 
-    const [highlightBookID, setHighLightBookID] = useState<string | undefined>()
+    const [highlightBookID, setHighLightBookID] = useState<UID | undefined>()
 
-    const onToggleColorScheme = useCallback(
-        () => toggleColorScheme(),
-        [toggleColorScheme]
-    )
+    const onToggleColorScheme = useCallback(() => toggleColorScheme(), [toggleColorScheme])
 
-    const { data: books, isLoading: booksAreLoading } = useQuery({
-        staleTime: 30000,
-        queryFn: () => api.list_books(true),
-        queryKey: ['books', 'index']
-    })
+    const { data: books, isLoading: booksAreLoading } = fetchStrippedBooks()
 
     const {
         data: highlightedBook,
         status: highlightStatus,
         isFetched: highlightedIsFetched,
         isLoading: highlightedIsLoading
-    } = useQuery({
-        enabled: highlightBookID !== undefined,
-        staleTime: 10000,
-        queryFn: () => api.fetch_book_simple(highlightBookID as string),
-        queryKey: ['book', highlightBookID]
-    })
+    } = fetchStrippedBook(highlightBookID as UID)
 
     if (booksAreLoading) {
         return (
@@ -71,7 +55,7 @@ export const Manifest = () => {
 
     const handleBookClick: MouseEventHandler<HTMLElement> = async (evt) => {
         const { bookId } = evt.currentTarget.dataset
-        if (bookId == undefined) {
+        if (bookId === undefined) {
             console.error('Got a bad bookId for ', evt)
             return
         }
@@ -137,34 +121,34 @@ export const Manifest = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {books.map((book: Book) => (
-                            <tr
-                                className='bookrow'
-                                data-book-id={book.id}
-                                key={book.id}
-                                onClick={handleBookClick}
-                                onMouseEnter={handleMouseEnter}
-                                onMouseLeave={handleMouseLeave}
-                            >
-                                <td>{book.title}</td>
-                                <td>{book.words}</td>
-                                <td>{book.chapters && book.chapters.length}</td>
-                                <td>{book.updated_on}</td>
-                                <td>{book.created_on}</td>
-                            </tr>
-                        ))}
+                        {books &&
+                            books.map((book: Book) => (
+                                <tr
+                                    className='bookrow'
+                                    data-book-id={book.id}
+                                    key={book.id}
+                                    onClick={handleBookClick}
+                                    onMouseEnter={handleMouseEnter}
+                                    onMouseLeave={handleMouseLeave}
+                                >
+                                    <td>{book.title}</td>
+                                    <td>{book.words}</td>
+                                    <td>{book.chapters && book.chapters.length}</td>
+                                    <td>{book.updated_on}</td>
+                                    <td>{book.created_on}</td>
+                                </tr>
+                            ))}
                     </tbody>
                 </Table>
             </fieldset>
             <Title order={5}>Chapter notes</Title>
-            {/*{highlightBookID}, {JSON.stringify(highlightedBook)}, {highlightedIsLoading ? 'true' : 'false'}, {highlightStatus}, {highlightedIsFetched ? 'true' : 'false'}*/}
             <Paper
                 shadow='lg'
                 p='md'
                 withBorder
             >
-                {(function () {
-                    if (highlightBookID == undefined) {
+                {(function quick() {
+                    if (highlightBookID === undefined) {
                         return <Text>Hover over a book to see its notes</Text>
                     }
                     if (highlightedBook) {
