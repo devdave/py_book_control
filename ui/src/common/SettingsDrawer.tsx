@@ -1,5 +1,5 @@
 import { Checkbox, Drawer, NumberInput, Select, Text, Textarea, TextInput, Title } from '@mantine/core'
-import React from 'react'
+import React, { WheelEventHandler } from 'react'
 import { map } from 'lodash'
 import { useAppContext } from '@src/App.context'
 
@@ -65,6 +65,18 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close })
                 max={5000}
                 min={500}
                 step={100}
+            />
+            <NumberInput
+                label='Line height (in %)'
+                value={parseInt(activeFont.height, 10)}
+                onChange={(val) =>
+                    setActiveFont((draft) => {
+                        draft.height = val.toString()
+                    })
+                }
+                max={300}
+                min={80}
+                step={10}
             />
             <TextInput
                 label='AI API Key (disabled)'
