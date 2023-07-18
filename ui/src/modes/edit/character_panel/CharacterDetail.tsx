@@ -71,6 +71,8 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
         deleteCharacter(character.id)
     }, ['deleteCharacter'])
 
+    console.log(character)
+
     return (
         <Tabs
             defaultValue='notes'
