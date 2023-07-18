@@ -1,16 +1,6 @@
-import {
-    Button,
-    Center,
-    Paper,
-    TextInput,
-    Text,
-    Title,
-    Group,
-    Stack
-} from '@mantine/core'
+import { Button, Center, Paper, TextInput, Text, Title, Group, Stack } from '@mantine/core'
 import { Ref, useEffect, useRef, useState } from 'react'
 import { useForm } from '@mantine/form'
-import { useQuery } from '@tanstack/react-query'
 import { useAppContext } from '@src/App.context'
 import { Chapter, type Scene } from '@src/types'
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
@@ -19,17 +9,14 @@ import { SceneText } from './SceneText'
 
 export const ContinuousBody: React.FC = () => {
     const { api, activeBook, debounceTime } = useAppContext()
-    const { activeChapter, activeScene, addScene, updateChapter } = useEditorContext()
+    const { activeChapter, activeScene, addScene, fetchChapter, updateChapter } = useEditorContext()
     const paperRefs = useRef<Record<string, HTMLDivElement>>({})
 
     if (activeChapter === undefined) {
         throw Error('Data integrity issue, activechapter is not defined')
     }
 
-    const { data: chapter, isLoading: chapterIsLoading } = useQuery({
-        queryFn: () => api.fetch_chapter(activeChapter.id),
-        queryKey: ['book', activeBook.id, 'chapter', activeChapter?.id]
-    })
+    const { data: chapter, isLoading: chapterIsLoading } = fetchChapter(activeBook.id, activeChapter.id)
 
     const form = useForm({
         initialValues: {
@@ -53,9 +40,7 @@ export const ContinuousBody: React.FC = () => {
                     }
                     updateChapter(new_chapter)
                 } else {
-                    alert(
-                        'Full stop! Data integrity issue.  activeChapter is not defined.'
-                    )
+                    alert('Full stop! Data integrity issue.  activeChapter is not defined.')
                 }
             }
 
@@ -93,6 +78,14 @@ export const ContinuousBody: React.FC = () => {
         )
     }
 
+    if (!chapter) {
+        return (
+            <>
+                <Text>There was a problem loading the requested chapter.</Text>
+            </>
+        )
+    }
+
     return (
         <Stack>
             {/*Chapter title*/}
@@ -121,9 +114,7 @@ export const ContinuousBody: React.FC = () => {
             ))}
             {activeChapter?.scenes.length === 0 && (
                 <Center>
-                    <Button onClick={() => addScene(activeChapter.id)}>
-                        Create a scene
-                    </Button>
+                    <Button onClick={() => addScene(activeChapter.id)}>Create a scene</Button>
                 </Center>
             )}
         </Stack>
