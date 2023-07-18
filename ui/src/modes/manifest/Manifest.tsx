@@ -1,4 +1,5 @@
 import {
+    ActionIcon,
     createStyles,
     Group,
     Header,
@@ -13,10 +14,12 @@ import {
 } from '@mantine/core'
 import { useAppContext } from '@src/App.context'
 import { AppModes, Book, UID } from '@src/types'
-import { MouseEventHandler, useCallback, useState } from 'react'
+import React, { MouseEventHandler, useCallback, useState } from 'react'
 
 import './manifest.css'
-import { IconMoonStars, IconSun } from '@tabler/icons-react'
+import { IconMoonStars, IconSettings, IconSun } from '@tabler/icons-react'
+import { useDisclosure } from '@mantine/hooks'
+import { SettingsDrawer } from '@src/common/SettingsDrawer'
 
 const useStyles = createStyles((theme) => ({
     main: {
@@ -78,33 +81,44 @@ export const Manifest = () => {
         setHighLightBookID(undefined)
     }
 
+    const [opened, { open, close }] = useDisclosure(false)
+
     return (
         <Stack p='md'>
             <Header height={60}>
+                <SettingsDrawer
+                    opened={opened}
+                    close={close}
+                />
                 <Group
                     align='center'
                     position='apart'
                 >
                     <Title order={1}>Open or create a new book</Title>
-                    <Switch
-                        checked={colorScheme === 'dark'}
-                        onChange={onToggleColorScheme}
-                        size='lg'
-                        onLabel={
-                            <IconMoonStars
-                                color={theme.white}
-                                size='1.25rem'
-                                stroke={1.5}
-                            />
-                        }
-                        offLabel={
-                            <IconSun
-                                color={theme.colors.gray[6]}
-                                size='1.25rem'
-                                stroke={1.5}
-                            />
-                        }
-                    />
+                    <Group>
+                        <ActionIcon onClick={open}>
+                            <IconSettings />
+                        </ActionIcon>
+                        <Switch
+                            checked={colorScheme === 'dark'}
+                            onChange={onToggleColorScheme}
+                            size='lg'
+                            onLabel={
+                                <IconMoonStars
+                                    color={theme.white}
+                                    size='1.25rem'
+                                    stroke={1.5}
+                                />
+                            }
+                            offLabel={
+                                <IconSun
+                                    color={theme.colors.gray[6]}
+                                    size='1.25rem'
+                                    stroke={1.5}
+                                />
+                            }
+                        />
+                    </Group>
                 </Group>
             </Header>
 
