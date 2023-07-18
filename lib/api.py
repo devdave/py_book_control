@@ -312,7 +312,7 @@ class BCAPI:
 
     def getSetting(self, name):
         with self.app.get_db() as session:
-            return models.Setting.Get(session, name).asdict()
+            return models.Setting.Get(session, name)
 
     def setSetting(self, name, value, type):
         with self.app.get_db() as session:
@@ -323,3 +323,7 @@ class BCAPI:
         with self.app.get_db() as session:
             models.Setting.BulkSet(session, changeset)
             session.commit()
+
+    def setDefaultSetting(self, name, val, type):
+        with self.app.get_db() as session:
+            models.Setting.SetDefault(session, name, val, type)

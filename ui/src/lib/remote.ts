@@ -217,6 +217,36 @@ class APIBridge {
         return await this.boundary.remote("delete_character", character_uid);
     }
     
+    
+    async fetchAllSettings() {
+        
+        return await this.boundary.remote("fetchAllSettings", );
+    }
+    
+    
+    async getSetting(name:any) {
+        
+        return await this.boundary.remote("getSetting", name);
+    }
+    
+    
+    async setSetting(name:any, value:any, type:any) {
+        
+        return await this.boundary.remote("setSetting", name, value, type);
+    }
+    
+    
+    async bulkUpdateSettings(changeset:any) {
+        
+        return await this.boundary.remote("bulkUpdateSettings", changeset);
+    }
+    
+    
+    async setDefaultSetting(name:any, val:any, type:any) {
+        
+        return await this.boundary.remote("setDefaultSetting", name, val, type);
+    }
+    
 
 }
 
