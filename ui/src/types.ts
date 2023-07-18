@@ -1,7 +1,9 @@
+export type UID = string
+
 export interface Base {
     [key: string]: any
 
-    id: string
+    id: UID
     created_on?: string
     updated_on?: string
 }
@@ -14,7 +16,7 @@ export interface Book extends Base {
 }
 
 export interface SceneIndex extends Base {
-    chapterId: string
+    chapterId: UID
     title: string
     order: number
     words: number
@@ -47,7 +49,7 @@ export interface Chapter extends ChapterIndex {
 export interface Character extends Base {
     name: string
     notes: string
-    book_id: Book
+    book_id: UID
     scene_count?: number
     chapter_titles?: object
     chapter_map?: object
@@ -76,6 +78,7 @@ export interface Font {
     name: string
     size: number
     weight: string
+    height: string
 }
 
 export enum ActiveElementTypes {

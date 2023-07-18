@@ -1,7 +1,8 @@
 import { createContext, useContext } from 'react'
-import { AppModes, Book, Font } from '@src/types'
+import { AppModes, Book, Font, UID } from '@src/types'
 import APIBridge from '@src/lib/remote'
 import { Updater } from 'use-immer'
+import { UseQueryResult } from '@tanstack/react-query'
 
 export interface AppContextValue {
     api: APIBridge
@@ -13,6 +14,8 @@ export interface AppContextValue {
     setActiveBook: (val: Book) => void
 
     updateBook: (val: Partial<Book>) => void
+    fetchStrippedBook: (book_id: UID) => UseQueryResult<Book, Error>
+    fetchStrippedBooks: () => UseQueryResult<Book[], Error>
 
     fonts: Set<string>
     setFonts: (val: Set<string>) => void
@@ -23,7 +26,6 @@ export interface AppContextValue {
     debounceTime: number
 }
 
-// @ts-ignore
-export const AppContext = createContext<AppContextValue>(null)
+export const AppContext = createContext<AppContextValue>({} as AppContextValue)
 
 export const useAppContext = () => useContext(AppContext)

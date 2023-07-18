@@ -8,11 +8,11 @@ import { AppContext, AppContextValue } from '@src/App.context'
 
 import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { LoadingOverlay, Text } from '@mantine/core'
-import { AppModes, Book, Font } from '@src/types'
+import { AppModes, Book, Font, UID } from '@src/types'
 import { Manifest } from '@src/modes/manifest/Manifest'
 import { useImmer } from 'use-immer'
 
@@ -50,7 +50,8 @@ export default function App() {
     const [activeFont, setActiveFont] = useImmer<Font>({
         name: 'Calibri',
         size: 16,
-        weight: '100'
+        weight: '100',
+        height: '120%'
     })
 
     const boundary = useMemo(() => new Boundary(), [])
@@ -118,6 +119,28 @@ export default function App() {
         [_changeBook]
     )
 
+    const fetchStrippedBooks = useCallback(
+        () =>
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            useQuery<Book[], Error>({
+                queryFn: () => api.list_books(true),
+                queryKey: ['books', 'index']
+            }),
+        [api]
+    )
+
+    const fetchStrippedBook = useCallback(
+        (book_id: UID) =>
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            useQuery<Book, Error>({
+                enabled: book_id !== undefined,
+                staleTime: 10000,
+                queryFn: () => api.fetch_book_simple(book_id),
+                queryKey: ['book', book_id]
+            }),
+        []
+    )
+
     const appContextValue = useMemo<AppContextValue>(
         () => ({
             api,
@@ -126,13 +149,26 @@ export default function App() {
             activeBook,
             setActiveBook,
             updateBook,
+            fetchStrippedBook,
+            fetchStrippedBooks,
             fonts,
             setFonts,
             activeFont,
             setActiveFont,
             debounceTime: 800
         }),
-        [activeBook, activeFont, api, appMode, fonts, setActiveBook, setActiveFont, updateBook]
+        [
+            activeBook,
+            activeFont,
+            api,
+            appMode,
+            fonts,
+            setActiveBook,
+            setActiveFont,
+            updateBook,
+            fetchStrippedBook,
+            fetchStrippedBooks
+        ]
     )
 
     return (
