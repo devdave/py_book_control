@@ -38,6 +38,27 @@ def generate_id(length):
     alphanum = string.ascii_letters + string.digits
     return "".join(random.choice(alphanum) for _ in range(length))
 
+@contextlib.contextmanager
+def db_with():
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import Session
+
+    engine = create_engine("sqlite:///test.sqlite3", echo=True)
+    Base.metadata.create_all(engine, checkfirst=True)
+
+    with Session(engine) as session:
+        yield session
+
+
+def connect():
+    engine = create_engine("sqlite:///test.sqlite3", echo=False, pool_size=10, max_overflow=20)
+    Base.metadata.create_all(engine, checkfirst=True)
+
+    session_factory = sessionmaker(bind=engine)
+    Session = scoped_session(session_factory)
+
+    return engine, Session
+
 
 class Base(DeclarativeBase):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -283,26 +304,7 @@ class Scene(Base):
         return scene.characters
 
 
-@contextlib.contextmanager
-def db_with():
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import Session
 
-    engine = create_engine("sqlite:///test.sqlite3", echo=True)
-    Base.metadata.create_all(engine, checkfirst=True)
-
-    with Session(engine) as session:
-        yield session
-
-
-def connect():
-    engine = create_engine("sqlite:///test.sqlite3", echo=False)
-    Base.metadata.create_all(engine, checkfirst=True)
-
-    session_factory = sessionmaker(bind=engine)
-    Session = scoped_session(session_factory)
-
-    return engine, Session
 
 
 
@@ -394,7 +396,11 @@ class Setting(Base):
     @classmethod
     def Get(cls, session:Session, val_name:str):
         stmt = select(cls).where(cls.name == val_name)
-        rec = session.execute(stmt).scalars().one()  # type: 'Setting'
+        try:
+            rec = session.execute(stmt).scalars().one()  # type: 'Setting'
+        except NoResultFound:
+            log.error(f"Failed to fetch: {val_name}")
+            raise
 
         match rec.type:
             case 'string':
