@@ -100,12 +100,15 @@ export interface ActiveElement {
     subdetail: string | undefined
 }
 
-export enum AppSettingName {
-    fontName = 'font_name',
-    fontWeight = 'font_weight',
-    fontSize = 'font_size',
-    lineHeight = 'line_height',
-    debounceTime = 'debounce_time',
-    dontAskOnSplit = 'dontask_split',
-    dontAskOnClear2Delete = 'dontask_clear2delete'
+export type defaultSetterType<TTValues> = [keyof TTValues, TTValues[keyof TTValues], string]
+// export type MutationFunction<settingsSetterType<TTValues> = { name: keyof TTValues; value: TTValues[keyof TTValues] }>
+
+export interface AppSettingValues {
+    fontName: string
+    fontWeight: number
+    fontSize: number
+    lineHeight: number
+    debounceTime: number
+    dontAskOnSplit: boolean
+    dontAskOnClear2Delete: boolean
 }
