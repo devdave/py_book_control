@@ -48,6 +48,12 @@ export function SettingsManager<TValues extends object = Record<string, unknown>
         return undefined
     }
 
+    /**
+     * Set the value of a Setting
+     *
+     * @param name
+     * @param value
+     */
     function set<DefaultName extends keyof TValues>(name: DefaultName, value: TValues[DefaultName]) {
         console.log('Would set', name, value)
         if (setter) {
