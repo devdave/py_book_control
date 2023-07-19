@@ -75,20 +75,16 @@ export class AppSettings<TNames> {
         return this.default(name, val, 'boolean')
     }
 
-    public addState<TType extends ValidSettingType>(name: TNames, defval: ValidSettingType): void {
-        let typename: ValidSettingTypeNames = 'string'
+    public addState<TType extends ValidSettingType>(name: TNames, defval: TType): void {
         switch (typeof defval) {
             case 'boolean':
                 this.defaultBool(name, defval as boolean)
-                typename = 'boolean'
                 break
             case 'number':
                 this.defaultNumber(name, defval as number)
-                typename = 'number'
                 break
             case 'string':
                 this.defaultString(name, defval as string)
-                typename = 'string'
                 break
         }
     }
