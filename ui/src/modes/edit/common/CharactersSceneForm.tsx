@@ -7,20 +7,18 @@ import { ActiveElementSubTypes, ActiveElementTypes, Character, type Scene } from
 
 interface CharactersSceneFormProps {
     scene: Scene
+    nextTab: () => void
 }
-export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene }) => {
+export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene, nextTab }) => {
     const { api, activeBook } = useAppContext()
     const {
-        activeChapter,
         activeElement,
         assignCharacter2Scene,
         createNewCharacterAndAdd2Scene,
         listAllCharacters,
-        listCharactersByScene,
-        setActiveScene
+        listCharactersByScene
     } = useEditorContext()
 
-    const queryClient = useQueryClient()
     const [query, setQuery] = useState('')
 
     const { data: toons, isLoading: toonsIsLoading, status: toonStatus } = listAllCharacters(activeBook)
