@@ -395,25 +395,27 @@ class Setting(Base):
     def Get(cls, session:Session, val_name:str):
         stmt = select(cls).where(cls.name == val_name)
         rec = session.execute(stmt).scalars().one()  # type: 'Setting'
+
         match rec.type:
             case 'string':
                 return rec.val
             case 'number':
                 return int(rec.val)
+            case 'boolean':
+                return bool(int(rec.val))
             case _:
                 return rec.val
 
     @classmethod
-    def Set(cls, session: Session, val_name: str, value: str, type_name='string'):
+    def Set(cls, session: Session, val_name: str, value: str):
         stmt = select(cls).where(cls.name == val_name)
         try:
             rec = session.execute(stmt).scalars().one() # type: Setting
         except NoResultFound:
-            rec = cls(name=val_name, val=value, type=type_name)
+            raise ValueError(f'Attempting to set {val_name} but it hasn\'t been set in the DB yet.')
         else:
             rec.name = val_name
             rec.val = value
-            rec.type = type_name
 
 
 
@@ -441,3 +443,4 @@ class Setting(Base):
             rec = cls(name = name, val = val, type = type)
             session.add(rec)
             session.commit()
+

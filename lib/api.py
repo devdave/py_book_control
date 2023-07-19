@@ -312,11 +312,12 @@ class BCAPI:
 
     def getSetting(self, name):
         with self.app.get_db() as session:
-            return models.Setting.Get(session, name)
+            temp = models.Setting.Get(session, name)
+            return temp
 
-    def setSetting(self, name, value, type):
+    def setSetting(self, name, value):
         with self.app.get_db() as session:
-            models.Setting.Set(session, name, value, type)
+            models.Setting.Set(session, name, value)
             session.commit()
 
     def bulkUpdateSettings(self, changeset):
