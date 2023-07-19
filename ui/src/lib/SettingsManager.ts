@@ -13,12 +13,6 @@ export interface SettingsManagerReturn<TValues> {
     ) => [TValues[Name] | undefined, boolean, (value: TValues[Name]) => void]
 }
 
-interface TestSettings {
-    delay: number
-    disableSomethingImportant: boolean
-    thingName: string
-}
-
 export function SettingsManager<TValues extends object = Record<string, unknown>>({
     defaultSettings,
     setter,
@@ -97,6 +91,17 @@ export function SettingsManager<TValues extends object = Record<string, unknown>
     }, [defaultSetter, defaultSettings])
 
     return { get, set, reconcile, makeState }
+}
+
+/**
+ * Partial example usage
+ *
+ */
+
+interface TestSettings {
+    delay: number
+    disableSomethingImportant: boolean
+    thingName: string
 }
 
 const settings = SettingsManager<TestSettings>({
