@@ -4,14 +4,13 @@ import { ReactNode } from 'react'
 import { ModalsProvider } from '@mantine/modals'
 import APIBridge from '@src/lib/remote'
 import { useAppContext } from '@src/App.context'
-import { AppSettingName } from '@src/types'
 
 interface ThemeProviderProps {
     children: ReactNode
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-    const { appSettings } = useAppContext()
+    const { settings } = useAppContext()
     const preferredColorScheme = useColorScheme()
     const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
         key: 'mantine-color-scheme',
@@ -23,10 +22,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
     useHotkeys([['mod+J', () => toggleColorScheme()]])
 
-    const { data: fontName } = appSettings.get(AppSettingName.fontName)
-    const { data: fontSize } = appSettings.get(AppSettingName.fontSize)
-    const { data: fontWeight } = appSettings.get(AppSettingName.fontWeight)
-    const { data: lineHeight } = appSettings.get(AppSettingName.lineHeight)
+    const [fontName] = settings.makeState('fontName')
+    const [fontSize] = settings.makeState('fontSize')
+    const [fontWeight] = settings.makeState('fontWeight')
+    const [lineHeight] = settings.makeState('lineHeight')
 
     return (
         <ColorSchemeProvider
@@ -53,7 +52,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                                     colorScheme: theme.colorScheme
                                 },
                                 input: {
-                                    fontFamily: `"${fontName}"`,
+                                    fontFamily: `"${fontName}, serif"`,
                                     fontSize: `${fontSize}px`,
                                     fontWeight,
                                     lineHeight: `${lineHeight}%`
