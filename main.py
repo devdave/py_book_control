@@ -91,6 +91,8 @@ def main():
 
     worker = None
 
+    default_win_settings = dict(min_size=(800, 480,), js_api=api)
+
     if result.write_bridge is not None:
         assert (
             result.write_bridge.parent.exists() and result.write_bridge.parent.is_dir()
@@ -99,12 +101,11 @@ def main():
 
     if result.dev is True:
         worker = spinup_pnpm(result.url)
-        win1 = webview.create_window(
-            "PyOpen Talk", url="http://127.0.0.1:8080", js_api=api
-        )
+        default_win_settings['url'] = "http://127.0.0.1:8080"
     else:
-        win1 = webview.create_window("PyOpen Talk", url=str(result.url), js_api=api)
+        default_win_settings['url'] = str(result.url)
 
+    win1 = webview.create_window("PyBook Control", **default_win_settings)
     app.set_window(win1)
     webview.start(debug=True)
 
