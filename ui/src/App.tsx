@@ -31,7 +31,7 @@ const AppWrapper: FC<AppWrapperProps> = ({ value, children }) => (
     </AppContext.Provider>
 )
 
-export default function App() {
+const App: React.FC = () => {
     const queryClient = useQueryClient()
     const [appMode, setAppMode] = useState(AppModes.MANIFEST)
 
@@ -220,6 +220,7 @@ export default function App() {
 
     return (
         <AppWrapper value={appContextValue}>
+            <LoadingOverlay visible={!isReady} />
             {useMemo(() => {
                 if (!isReady) {
                     return <LoadingOverlay visible />
@@ -241,3 +242,5 @@ export default function App() {
         </AppWrapper>
     )
 }
+
+export default App
