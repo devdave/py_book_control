@@ -86,7 +86,7 @@ export function SettingsManager<TValues extends object = Record<string, unknown>
      * Must be called before any other member function is used
      *
      */
-    function reconcile() {
+    const reconcile = useCallback(() => {
         forEach(defaultSettings, (name, value: string | boolean | number) => {
             console.log('Would do default', name, value, typeof defaultSettings[name])
             if (defaultSetter) {
@@ -94,7 +94,7 @@ export function SettingsManager<TValues extends object = Record<string, unknown>
             }
             console.log('Would get current value')
         })
-    }
+    }, [defaultSetter, defaultSettings])
 
     return { get, set, reconcile, makeState }
 }
