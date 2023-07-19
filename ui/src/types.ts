@@ -46,13 +46,14 @@ export interface Chapter extends ChapterIndex {
     words: number
 }
 
+type CharacterLocation = [string, string, string, string]
+
 export interface Character extends Base {
     name: string
     notes: string
     book_id: UID
     scene_count?: number
-    chapter_titles?: object
-    chapter_map?: object
+    locations?: CharacterLocation[]
 }
 
 export enum AppModes {

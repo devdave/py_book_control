@@ -11,9 +11,10 @@ interface TextSceneFormProps {
     scene: Scene
     field: string
     label: string
+    nextTab?: () => void
 }
 
-const TextSceneForm: React.FC<TextSceneFormProps> = ({ scene, field, label }) => {
+const TextSceneForm: React.FC<TextSceneFormProps> = ({ scene, field, label, nextTab }) => {
     const { updateScene } = useEditorContext()
 
     const form = useForm({
@@ -42,6 +43,7 @@ const TextSceneForm: React.FC<TextSceneFormProps> = ({ scene, field, label }) =>
             autosize
             minRows={5}
             label={label}
+            onKeyUp={nextTab}
             autoCapitalize='sentences'
             {...form.getInputProps(field)}
         />

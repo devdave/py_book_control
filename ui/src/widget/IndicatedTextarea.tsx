@@ -10,6 +10,7 @@ interface IndicatedTextAreaProps {
     inputProps?: TextareaProps & React.RefAttributes<HTMLTextAreaElement>
     indicatorStyle?: object
     textStyle?: object
+    onKeyUp?: React.KeyboardEventHandler<HTMLTextAreaElement>
 }
 
 export const IndicatedTextarea: React.FC<IndicatedTextAreaProps> = ({
@@ -17,7 +18,8 @@ export const IndicatedTextarea: React.FC<IndicatedTextAreaProps> = ({
     formField,
     inputProps,
     indicatorStyle,
-    textStyle
+    textStyle,
+    onKeyUp
 }) => (
     <Indicator
         processing
@@ -29,6 +31,7 @@ export const IndicatedTextarea: React.FC<IndicatedTextAreaProps> = ({
         <Textarea
             autosize
             minRows={5}
+            onKeyUp={onKeyUp}
             {...form.getInputProps(formField)}
             {...inputProps}
         />

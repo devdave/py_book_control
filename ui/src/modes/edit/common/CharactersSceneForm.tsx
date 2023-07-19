@@ -1,10 +1,9 @@
 import React, { useState } from 'react'
 import { LoadingOverlay, Select, Text, Title } from '@mantine/core'
 import { useAppContext } from '@src/App.context'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useEditorContext } from '@src/modes/edit/Editor.context'
-import { Character, type Scene } from '@src/types'
-import { clone } from 'lodash'
+import { ActiveElementSubTypes, ActiveElementTypes, Character, type Scene } from '@src/types'
 
 interface CharactersSceneFormProps {
     scene: Scene
@@ -13,6 +12,7 @@ export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene 
     const { api, activeBook } = useAppContext()
     const {
         activeChapter,
+        activeElement,
         assignCharacter2Scene,
         createNewCharacterAndAdd2Scene,
         listAllCharacters,
@@ -65,6 +65,17 @@ export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene 
                 <Text
                     key={toon.id}
                     data-id={toon.id}
+                    style={{
+                        cursor: 'pointer'
+                    }}
+                    onClick={(evt) =>
+                        activeElement.setTypeAndSubtype(
+                            ActiveElementTypes.CHARACTERS,
+                            undefined,
+                            ActiveElementSubTypes.CHARACTER,
+                            toon.id
+                        )
+                    }
                 >
                     {toon.name}
                 </Text>

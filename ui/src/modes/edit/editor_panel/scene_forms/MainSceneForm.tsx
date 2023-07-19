@@ -1,6 +1,6 @@
 import { Anchor, Textarea, TextInput } from '@mantine/core'
 import { useForm, zodResolver } from '@mantine/form'
-import { type FC } from 'react'
+import { type FC, KeyboardEventHandler } from 'react'
 import z from 'zod'
 
 import { useEditorContext } from '../../Editor.context'
@@ -13,9 +13,10 @@ const formSchema = z.object({
 
 export interface SceneFormProps {
     scene: Scene
+    nextTab: () => void
 }
 
-export const MainSceneForm: FC<SceneFormProps> = ({ scene }) => {
+export const MainSceneForm: FC<SceneFormProps> = ({ scene, nextTab }) => {
     const { updateScene } = useEditorContext()
     const form = useForm<Partial<Scene>>({
         initialValues: {
@@ -41,6 +42,14 @@ export const MainSceneForm: FC<SceneFormProps> = ({ scene }) => {
         }
     )
 
+    const handleCtrlTab: KeyboardEventHandler = (evt) => {
+        if (evt.ctrlKey && evt.key === 'Tab') {
+            evt.preventDefault()
+            nextTab()
+            console.log('Tried to move to next tab')
+        }
+    }
+
     return (
         <>
             <TextInput
@@ -51,6 +60,7 @@ export const MainSceneForm: FC<SceneFormProps> = ({ scene }) => {
                 {...form.getInputProps('title')}
             />
             <Textarea
+                onKeyUp={handleCtrlTab}
                 autoCapitalize='sentences'
                 autosize
                 label='Content'

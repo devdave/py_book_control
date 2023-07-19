@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { KeyboardEventHandler, MouseEventHandler, useCallback, useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAppContext } from '@src/App.context'
 import { Character } from '@src/types'
@@ -11,13 +11,16 @@ import {
     Textarea,
     TextInput,
     Text,
-    Button
+    Button,
+    Table
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { IndicatedTextInput } from '@src/widget/IndicatedTextInput'
 import { IndicatedTextarea } from '@src/widget/IndicatedTextarea'
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 import { useEditorContext } from '@src/modes/edit/Editor.context'
+import { getChangedRanges } from '@tiptap/react'
+import { useHotkeys, useToggle } from '@mantine/hooks'
 
 const useStyle = createStyles((theme) => ({
     filled_textarea: {
@@ -42,6 +45,8 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
     const { activeElement, updateCharacter, deleteCharacter } = useEditorContext()
 
     const { classes } = useStyle()
+
+    const [activeTab, nextTab] = useToggle<string>(['notes', 'scenes'])
 
     const form = useForm<FormProps>({
         initialValues: {
@@ -73,9 +78,19 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
 
     console.log(character)
 
+    const handleKeyUp: KeyboardEventHandler<HTMLTextAreaElement> = (evt) => {
+        if (evt.ctrlKey && evt.key === 'Tab') {
+            evt.preventDefault()
+            nextTab()
+            console.log(activeTab)
+        }
+    }
+
+    useHotkeys([['ctrl+Tab', () => nextTab()]])
+
     return (
         <Tabs
-            defaultValue='notes'
+            value={activeTab}
             className={classes.filled_textarea}
             style={{
                 minWidth: '100%'
@@ -83,7 +98,7 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
         >
             <Tabs.List>
                 <Tabs.Tab value='notes'>Notes</Tabs.Tab>
-                <Tabs.Tab value='Scenes'>Scenes present</Tabs.Tab>
+                <Tabs.Tab value='scenes'>Scenes present</Tabs.Tab>
             </Tabs.List>
             <Tabs.Panel
                 value='notes'
@@ -101,6 +116,7 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
                 <IndicatedTextarea
                     form={form}
                     formField='notes'
+                    onKeyUp={handleKeyUp}
                     inputProps={{
                         classNames: {
                             input: classes.filled_textarea,
@@ -115,6 +131,31 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
                     }}
                 />
                 <Button onClick={onDeleteClick}>Delete?</Button>
+            </Tabs.Panel>
+            <Tabs.Panel
+                value='scenes'
+                style={{ width: '100%', minWidth: '100%' }}
+            >
+                <Table>
+                    <thead>
+                        <tr>
+                            <th>Chapter name</th>
+                            <th>Scene name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {character.locations &&
+                            character.locations.map(([chapter_name, chapter_id, scene_name, scene_id]) => (
+                                <tr
+                                    key={`${chapter_id}-${scene_id}`}
+                                    onClick={(evt) => activeElement.setSceneById(chapter_id, scene_id)}
+                                >
+                                    <td>{chapter_name}</td>
+                                    <td>{scene_name}</td>
+                                </tr>
+                            ))}
+                    </tbody>
+                </Table>
             </Tabs.Panel>
         </Tabs>
     )
