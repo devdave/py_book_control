@@ -2,14 +2,13 @@ import { Checkbox, Drawer, NumberInput, Select, Text, Textarea, TextInput, Title
 import React from 'react'
 import { map } from 'lodash'
 import { useAppContext } from '@src/App.context'
-import { AppSettingName } from '@src/types'
 
 interface SettingsDrawerProps {
     opened: boolean
     close: () => void
 }
 export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close }) => {
-    const { fonts, appSettings } = useAppContext()
+    const { fonts, settings } = useAppContext()
 
     const select_fonts = map([...fonts], (fontName: string) => ({ value: fontName, label: fontName }))
     const example_ipsum =
@@ -17,13 +16,13 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close })
         ' dolore magna aliqua. Fermentum iaculis eu non diam phasellus vestibulum lorem. Consequat ac felis ' +
         'donec et odio pellentesque diam volutpat commodo. Mi eget mauris pharetra et. '
 
-    const [fontName, setFontName] = appSettings.state<string>(AppSettingName.fontName)
-    const [fontSize, setFontSize] = appSettings.state<number>(AppSettingName.fontSize)
-    const [fontWeight, setFontWeight] = appSettings.state<number>(AppSettingName.fontWeight)
-    const [lineHeight, setLineHeight] = appSettings.state<number>(AppSettingName.lineHeight)
-    const [debounceDelay, setDebounceDelay] = appSettings.state<number>(AppSettingName.debounceTime)
-    const [dontAskSplit, setDontAskSplit] = appSettings.state<boolean>(AppSettingName.dontAskOnSplit)
-    const [dontAskClear, setDontAskClear] = appSettings.state<boolean>(AppSettingName.dontAskOnClear2Delete)
+    const [fontName, fontNameIsloading, setFontName] = settings.makeState('fontName')
+    const [fontSize, fontSizeIsLoading, setFontSize] = settings.makeState('fontSize')
+    const [fontWeight, fontWeightIsLoading, setFontWeight] = settings.makeState('fontWeight')
+    const [lineHeight, lineHeightIsLoading, setLineHeight] = settings.makeState('lineHeight')
+    const [debounceDelay, debounceDelayIsLoading, setDebounceDelay] = settings.makeState('debounceTime')
+    const [dontAskSplit, dontAskSplitIsLoading, setDontAskSplit] = settings.makeState('dontAskOnSplit')
+    const [dontAskClear, dontAskClearIsLoading, setDontAskClear] = settings.makeState('dontAskOnClear2Delete')
 
     console.log('SD', dontAskSplit, dontAskClear)
 

@@ -1,13 +1,12 @@
 import { createContext, useContext } from 'react'
-import { AppModes, AppSettingName, Book, Font, UID } from '@src/types'
+import { AppModes, AppSettingValues, Book, UID } from '@src/types'
 import APIBridge from '@src/lib/remote'
-import { Updater } from 'use-immer'
 import { UseQueryResult } from '@tanstack/react-query'
-import { AppSettings } from '@src/lib/AppSettings'
+import { SettingsManagerReturn } from '@src/lib/use-settings'
 
 export interface AppContextValue {
     api: APIBridge
-    appSettings: AppSettings<AppSettingName>
+    settings: SettingsManagerReturn<AppSettingValues>
 
     appMode: AppModes
     setAppMode: (mode: AppModes) => void
@@ -21,11 +20,6 @@ export interface AppContextValue {
 
     fonts: Set<string>
     setFonts: (val: Set<string>) => void
-
-    activeFont: Font
-    setActiveFont: Updater<Font>
-
-    debounceTime: number
 }
 
 export const AppContext = createContext<AppContextValue>({} as AppContextValue)

@@ -12,10 +12,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { LoadingOverlay, Text } from '@mantine/core'
-import { AppModes, AppSettingName, Book, Font, UID } from '@src/types'
+import { AppModes, AppSettingValues, type Book, type UID } from '@src/types'
+
 import { Manifest } from '@src/modes/manifest/Manifest'
 import { useImmer } from 'use-immer'
-import { AppSettings } from '@src/lib/AppSettings'
+import { useSettings } from '@src/lib/use-settings'
 
 interface AppWrapperProps {
     value: AppContextValue
@@ -49,57 +50,64 @@ const App: React.FC = () => {
     })
 
     const [fonts, setFonts] = useState<Set<string>>(new Set())
-    const [activeFont, setActiveFont] = useImmer<Font>({
-        name: 'Calibri',
-        size: 16,
-        weight: '100',
-        height: '120%'
-    })
 
     const boundary = useMemo(() => new Boundary(), [])
 
     const api = useMemo(() => new APIBridge(boundary), [boundary])
 
-    const defaultSetter = useMutation<any, Error, any, any>(
-        ['setting', 'default'],
-        ([name, val, type]: [AppSettingName, string | number, string]) =>
-            api.setDefaultSetting(name, val, type)
-    )
+    const directDefaultSetter = (
+        name: keyof AppSettingValues,
+        val: AppSettingValues[keyof AppSettingValues],
+        type: string
+    ) => {
+        api.setDefaultSetting(name, val, type).then()
+    }
 
-    const settingSetter = useMutation<any, Error, any, any>({
-        mutationKey: ['setting', 'setter'],
-        mutationFn: ([name, val]: [AppSettingName, string | number]) => api.setSetting(name, val),
-        onSuccess: (data: undefined, [name, val]: [AppSettingName, string | number, string]) => {
-            queryClient.setQueryData(['setting', name], () => val)
+    const settingsSetter = useMutation(({ name, value }) => api.setSetting(name, value), {
+        onSuccess: (data: undefined, { name, value }: { name: string; value: string }) => {
+            console.log(`Updated setting.${name} with ${value}`)
+            queryClient.setQueryData(['setting', name], () => value)
 
-            queryClient.invalidateQueries({
-                queryKey: ['settings'],
-                exact: true,
-                refetchType: 'active'
-            })
+            queryClient
+                .invalidateQueries({
+                    queryKey: ['settings'],
+                    exact: true,
+                    refetchType: 'active'
+                })
+                .then()
         }
     })
 
-    const appSettings = useMemo(() => new AppSettings<AppSettingName>(api, queryClient), [api])
+    const fetchSetting = (name: string) =>
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        useQuery({
+            queryKey: ['setting', name],
+            queryFn: () => api.getSetting(name)
+        })
+
+    const bulkDefaultSetter = (changeset: object[]): Promise<any> => api.bulkDefaultSettings(changeset)
+    const bulkFetchSettings = (): Promise<any> => api.fetchAllSettings()
+
+    const settings = useSettings<AppSettingValues>({
+        defaultSetter: directDefaultSetter,
+        bulkFetchSettings,
+        bulkDefaultSetter,
+        getter: fetchSetting,
+        setter: settingsSetter,
+        defaultSettings: {
+            fontName: 'calibri',
+            lineHeight: 150,
+            fontSize: 18,
+            fontWeight: 400,
+            debounceTime: 800,
+            dontAskOnSplit: false,
+            dontAskOnClear2Delete: false
+        }
+    })
 
     const doReady = useCallback(async () => {
         if (!defaultsDone) {
-            appSettings.assignDefaultSetter = defaultSetter
-            appSettings.assignSetter = settingSetter
-
-            appSettings.addState<string>(AppSettingName.fontName, 'calibri')
-
-            appSettings.addState<number>(AppSettingName.fontSize, 16)
-
-            appSettings.addState<number>(AppSettingName.fontWeight, 400)
-
-            appSettings.addState<number>(AppSettingName.lineHeight, 120)
-
-            appSettings.addState<number>(AppSettingName.debounceTime, 800)
-
-            appSettings.addState<boolean>(AppSettingName.dontAskOnSplit, false)
-
-            appSettings.addState<boolean>(AppSettingName.dontAskOnClear2Delete, false)
+            settings.reconcile()
             setDefaultsDone(true)
         }
 
@@ -114,7 +122,7 @@ const App: React.FC = () => {
         }
 
         setIsReady(() => true)
-    }, [api, appSettings, setActiveBook])
+    }, [defaultsDone, activeBook.title, settings, api, setActiveBook])
 
     const checkFonts = useCallback(() => {
         const fontAvailable = new Set<string>()
@@ -189,7 +197,7 @@ const App: React.FC = () => {
     const appContextValue = useMemo<AppContextValue>(
         () => ({
             api,
-            appSettings,
+            settings,
             appMode,
             setAppMode,
             activeBook,
@@ -198,23 +206,18 @@ const App: React.FC = () => {
             fetchStrippedBook,
             fetchStrippedBooks,
             fonts,
-            setFonts,
-            activeFont,
-            setActiveFont,
-            debounceTime: 800
+            setFonts
         }),
         [
             api,
-            appSettings,
+            settings,
             appMode,
             activeBook,
             setActiveBook,
             updateBook,
             fetchStrippedBook,
             fetchStrippedBooks,
-            fonts,
-            activeFont,
-            setActiveFont
+            fonts
         ]
     )
 
