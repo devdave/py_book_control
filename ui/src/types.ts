@@ -98,3 +98,13 @@ export interface ActiveElement {
     subtype: ActiveElementSubTypes | undefined
     subdetail: string | undefined
 }
+
+export enum AppSettingName {
+    fontName = 'font_name',
+    fontWeight = 'font_weight',
+    fontSize = 'font_size',
+    lineHeight = 'line_height',
+    debounceTime = 'debounce_time',
+    dontAskOnSplit = 'dontask_split',
+    dontAskOnClear2Delete = 'dontask_clear2delete'
+}

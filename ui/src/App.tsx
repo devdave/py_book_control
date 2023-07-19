@@ -12,19 +12,19 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { LoadingOverlay, Text } from '@mantine/core'
-import { AppModes, Book, Font, UID } from '@src/types'
+import { AppModes, AppSettingName, Book, Font, UID } from '@src/types'
 import { Manifest } from '@src/modes/manifest/Manifest'
 import { useImmer } from 'use-immer'
+import { AppSettings } from '@src/lib/AppSettings'
 
 interface AppWrapperProps {
-    api: APIBridge
     value: AppContextValue
     children: ReactNode
 }
 
-const AppWrapper: FC<AppWrapperProps> = ({ api, value, children }) => (
+const AppWrapper: FC<AppWrapperProps> = ({ value, children }) => (
     <AppContext.Provider value={value}>
-        <ThemeProvider api={api}>
+        <ThemeProvider>
             {children}
             <ReactQueryDevtools initialIsOpen={false} />
         </ThemeProvider>
@@ -36,6 +36,8 @@ export default function App() {
     const [appMode, setAppMode] = useState(AppModes.MANIFEST)
 
     const [isReady, setIsReady] = useState(false)
+    const [defaultsDone, setDefaultsDone] = useState(false)
+
     const [activeBook, setActiveBook] = useImmer<Book>({
         chapters: [],
         created_on: '',
@@ -58,18 +60,61 @@ export default function App() {
 
     const api = useMemo(() => new APIBridge(boundary), [boundary])
 
-    const doReady = useCallback(async () => {
-        const response = await api.get_current_book()
+    const defaultSetter = useMutation<any, Error, any, any>(
+        ['setting', 'default'],
+        ([name, val, type]: [AppSettingName, string | number, string]) =>
+            api.setDefaultSetting(name, val, type)
+    )
 
-        if (response) {
-            if (response.id !== undefined) {
-                setActiveBook(response as Book)
-                setAppMode(AppModes.EDITOR)
+    const settingSetter = useMutation<any, Error, any, any>({
+        mutationKey: ['setting', 'setter'],
+        mutationFn: ([name, val]: [AppSettingName, string | number]) => api.setSetting(name, val),
+        onSuccess: (data: undefined, [name, val]: [AppSettingName, string | number, string]) => {
+            queryClient.setQueryData(['setting', name], () => val)
+
+            queryClient.invalidateQueries({
+                queryKey: ['settings'],
+                exact: true,
+                refetchType: 'active'
+            })
+        }
+    })
+
+    const appSettings = useMemo(() => new AppSettings<AppSettingName>(api, queryClient), [api])
+
+    const doReady = useCallback(async () => {
+        if (!defaultsDone) {
+            appSettings.assignDefaultSetter = defaultSetter
+            appSettings.assignSetter = settingSetter
+
+            appSettings.addState<string>(AppSettingName.fontName, 'calibri')
+
+            appSettings.addState<number>(AppSettingName.fontSize, 16)
+
+            appSettings.addState<number>(AppSettingName.fontWeight, 400)
+
+            appSettings.addState<number>(AppSettingName.lineHeight, 120)
+
+            appSettings.addState<number>(AppSettingName.debounceTime, 800)
+
+            appSettings.addState<boolean>(AppSettingName.dontAskOnSplit, false)
+
+            appSettings.addState<boolean>(AppSettingName.dontAskOnClear2Delete, false)
+            setDefaultsDone(true)
+        }
+
+        if (activeBook.title === 'NotSet') {
+            const response = await api.get_current_book()
+            if (response) {
+                if (response.id !== undefined) {
+                    setActiveBook(response as Book)
+                    setAppMode(AppModes.EDITOR)
+                }
             }
         }
 
         setIsReady(() => true)
-    }, [api, setActiveBook])
+    }, [api, appSettings, setActiveBook])
 
     const checkFonts = useCallback(() => {
         const fontAvailable = new Set<string>()
@@ -138,12 +183,13 @@ export default function App() {
                 queryFn: () => api.fetch_book_simple(book_id),
                 queryKey: ['book', book_id]
             }),
-        []
+        [api]
     )
 
     const appContextValue = useMemo<AppContextValue>(
         () => ({
             api,
+            appSettings,
             appMode,
             setAppMode,
             activeBook,
@@ -158,24 +204,22 @@ export default function App() {
             debounceTime: 800
         }),
         [
-            activeBook,
-            activeFont,
             api,
+            appSettings,
             appMode,
-            fonts,
+            activeBook,
             setActiveBook,
-            setActiveFont,
             updateBook,
             fetchStrippedBook,
-            fetchStrippedBooks
+            fetchStrippedBooks,
+            fonts,
+            activeFont,
+            setActiveFont
         ]
     )
 
     return (
-        <AppWrapper
-            api={api}
-            value={appContextValue}
-        >
+        <AppWrapper value={appContextValue}>
             {useMemo(() => {
                 if (!isReady) {
                     return <LoadingOverlay visible />

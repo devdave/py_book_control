@@ -35,6 +35,8 @@ export const Manifest = () => {
 
     const [highlightBookID, setHighLightBookID] = useState<UID | undefined>()
 
+    const [opened, { open, close }] = useDisclosure(false)
+
     const onToggleColorScheme = useCallback(() => toggleColorScheme(), [toggleColorScheme])
 
     const { data: books, isLoading: booksAreLoading } = fetchStrippedBooks()
@@ -81,15 +83,13 @@ export const Manifest = () => {
         setHighLightBookID(undefined)
     }
 
-    const [opened, { open, close }] = useDisclosure(false)
-
     return (
         <Stack p='md'>
+            <SettingsDrawer
+                opened={opened}
+                close={close}
+            />
             <Header height={60}>
-                <SettingsDrawer
-                    opened={opened}
-                    close={close}
-                />
                 <Group
                     align='center'
                     position='apart'

@@ -1,17 +1,17 @@
-import { ColorSchemeProvider, ColorScheme, MantineProvider } from '@mantine/core'
-import { useHotkeys, useLocalStorage, useColorScheme } from '@mantine/hooks'
+import { ColorScheme, ColorSchemeProvider, MantineProvider } from '@mantine/core'
+import { useColorScheme, useHotkeys, useLocalStorage } from '@mantine/hooks'
 import { ReactNode } from 'react'
 import { ModalsProvider } from '@mantine/modals'
 import APIBridge from '@src/lib/remote'
 import { useAppContext } from '@src/App.context'
+import { AppSettingName } from '@src/types'
 
 interface ThemeProviderProps {
-    api: APIBridge
     children: ReactNode
 }
 
-export function ThemeProvider({ api, children }: ThemeProviderProps) {
-    const { activeFont } = useAppContext()
+export function ThemeProvider({ children }: ThemeProviderProps) {
+    const { appSettings } = useAppContext()
     const preferredColorScheme = useColorScheme()
     const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
         key: 'mantine-color-scheme',
@@ -23,6 +23,11 @@ export function ThemeProvider({ api, children }: ThemeProviderProps) {
 
     useHotkeys([['mod+J', () => toggleColorScheme()]])
 
+    const { data: fontName } = appSettings.get(AppSettingName.fontName)
+    const { data: fontSize } = appSettings.get(AppSettingName.fontSize)
+    const { data: fontWeight } = appSettings.get(AppSettingName.fontWeight)
+    const { data: lineHeight } = appSettings.get(AppSettingName.lineHeight)
+
     return (
         <ColorSchemeProvider
             colorScheme={colorScheme}
@@ -33,9 +38,10 @@ export function ThemeProvider({ api, children }: ThemeProviderProps) {
                     colorScheme,
                     globalStyles: (theme) => ({
                         textarea: {
-                            fontFamily: `"${activeFont.name}"`,
-                            fontSize: `${activeFont.size}px`,
-                            lineHeight: `${activeFont.height}%`
+                            fontFamily: `"${fontName}"`,
+                            fontSize: `${fontSize}px`,
+                            fontWeight,
+                            lineHeight: `${lineHeight}%`
                         },
                         colorScheme: theme.colorScheme,
                         backgroundColor: theme.colorScheme === 'light' ? 'white' : 'black'
@@ -47,17 +53,19 @@ export function ThemeProvider({ api, children }: ThemeProviderProps) {
                                     colorScheme: theme.colorScheme
                                 },
                                 input: {
-                                    fontFamily: `"${activeFont.name}"`,
-                                    fontSize: `${activeFont.size}px`,
-                                    lineHeight: `${activeFont.height}%`
+                                    fontFamily: `"${fontName}"`,
+                                    fontSize: `${fontSize}px`,
+                                    fontWeight,
+                                    lineHeight: `${lineHeight}%`
                                 }
                             })
                         },
                         TextInput: {
                             styles: () => ({
                                 input: {
-                                    fontFamily: `"${activeFont.name}"`,
-                                    fontSize: `${activeFont.size}px`
+                                    fontFamily: `"${fontName}"`,
+                                    fontSize: `${fontSize}px`,
+                                    fontWeight
                                 }
                             })
                         }

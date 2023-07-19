@@ -230,9 +230,9 @@ class APIBridge {
     }
     
     
-    async setSetting(name:any, value:any, type:any) {
+    async setSetting(name:any, value:any) {
         
-        return await this.boundary.remote("setSetting", name, value, type);
+        return await this.boundary.remote("setSetting", name, value);
     }
     
     

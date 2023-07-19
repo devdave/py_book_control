@@ -1,11 +1,13 @@
 import { createContext, useContext } from 'react'
-import { AppModes, Book, Font, UID } from '@src/types'
+import { AppModes, AppSettingName, Book, Font, UID } from '@src/types'
 import APIBridge from '@src/lib/remote'
 import { Updater } from 'use-immer'
 import { UseQueryResult } from '@tanstack/react-query'
+import { AppSettings } from '@src/lib/AppSettings'
 
 export interface AppContextValue {
     api: APIBridge
+    appSettings: AppSettings<AppSettingName>
 
     appMode: AppModes
     setAppMode: (mode: AppModes) => void
