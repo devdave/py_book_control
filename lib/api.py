@@ -71,7 +71,7 @@ class BCAPI:
         result = self.app.main_window.create_file_dialog(
             webview.OPEN_DIALOG, allow_multiple=False, file_types=self.FILE_TYPES
         )
-        print(result, repr(result))
+
 
     def create_source(self):
         result = self.app.main_window.create_file_dialog(
@@ -310,6 +310,8 @@ class BCAPI:
         with self.app.get_db() as session:
             return [setting.asdict() for setting in models.Setting.All(session)]
 
+        self.log.error('Failed to return correctly with fetch all')
+
     def getSetting(self, name):
         with self.app.get_db() as session:
             temp = models.Setting.Get(session, name)
@@ -323,6 +325,13 @@ class BCAPI:
     def bulkUpdateSettings(self, changeset):
         with self.app.get_db() as session:
             models.Setting.BulkSet(session, changeset)
+            session.commit()
+
+    def bulkDefaultSettings(self, changeset):
+        with self.app.get_db() as session:
+            for default in changeset:
+                models.Setting.SetDefault(session, default['name'], default['value'], default['type'])
+
             session.commit()
 
     def setDefaultSetting(self, name, val, type):
