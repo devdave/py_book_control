@@ -197,7 +197,7 @@ def process_args(func_args: T.List[ast.arg]):
     }
 
 
-def transform(payload: (str, set[str])):
+def transform(payload: [str, set[str]]):
     cls_name, functions = payload
 
     template = jinja2.Template(
