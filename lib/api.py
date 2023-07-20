@@ -72,7 +72,6 @@ class BCAPI:
             webview.OPEN_DIALOG, allow_multiple=False, file_types=self.FILE_TYPES
         )
 
-
     def create_source(self):
         result = self.app.main_window.create_file_dialog(
             webview.SAVE_DIALOG, allow_multiple=False, file_types=self.FILE_TYPES
@@ -290,7 +289,9 @@ class BCAPI:
 
     def update_character(self, changed_character: dict[str, str]):
         with self.app.get_db() as session:
-            character = models.Character.Fetch_by_Uid(session, changed_character['id'])  # type: models.Character
+            character = models.Character.Fetch_by_Uid(
+                session, changed_character["id"]
+            )  # type: models.Character
             character.update(changed_character)
             session.commit()
             return character.asdict(extended=True)
@@ -301,28 +302,26 @@ class BCAPI:
             session.commit()
             return True
 
-
     """
         Settings
     """
+    common_setting_type = T.Union[str, bool, int, None]
 
-    def fetchAllSettings(self):
+    def fetchAllSettings(self) -> [dict[str, common_setting_type]]:
         with self.app.get_db() as session:
             return [setting.asdict() for setting in models.Setting.All(session)]
 
-        self.log.error('Failed to return correctly with fetch all')
-
-    def getSetting(self, name):
+    def getSetting(self, name: str) -> common_setting_type:
         with self.app.get_db() as session:
             temp = models.Setting.Get(session, name)
             return temp
 
-    def setSetting(self, name, value):
+    def setSetting(self, name: str, value: common_setting_type):
         with self.app.get_db() as session:
             models.Setting.Set(session, name, value)
             session.commit()
 
-    def bulkUpdateSettings(self, changeset):
+    def bulkUpdateSettings(self, changeset: [dict[str, common_setting_type]]):
         with self.app.get_db() as session:
             models.Setting.BulkSet(session, changeset)
             session.commit()
@@ -330,7 +329,9 @@ class BCAPI:
     def bulkDefaultSettings(self, changeset):
         with self.app.get_db() as session:
             for default in changeset:
-                models.Setting.SetDefault(session, default['name'], default['value'], default['type'])
+                models.Setting.SetDefault(
+                    session, default["name"], default["value"], default["type"]
+                )
 
             session.commit()
 
