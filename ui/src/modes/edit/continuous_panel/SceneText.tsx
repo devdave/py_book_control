@@ -132,8 +132,24 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
 
                 const response = await api.process_scene_markdown(scene.id, form.values.content as string)
 
+                if (response.status === 'empty') {
+                    console.log(`Got empty: ${form.values.content} - ${form.values.content?.length}`)
+                    form.resetDirty()
+                    modals.openConfirmModal({
+                        title: 'Empty scene',
+                        children: <Text size='sm'>The scene body is empty, do you want to delete it?</Text>,
+                        labels: { confirm: 'Delete', cancel: 'Cancel' },
+                        onConfirm: () => {
+                            deleteScene(scene.chapterId, scene.id)
+                        }
+                    })
+                    return null
+                }
+
                 if (response.status === 'error') {
+                    console.log('Got a bad response ', response)
                     form.setValues({ content: sceneMD })
+                    form.resetDirty()
                     throw new Error(response.message)
                 }
 
