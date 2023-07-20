@@ -7,7 +7,21 @@ import datetime as DT
 from collections import defaultdict
 from typing import Tuple, Any, Sequence
 
-from sqlalchemy import select, update, ForeignKey, create_engine, DateTime, func, Table, Column, event, Row, and_, delete, insert
+from sqlalchemy import (
+    select,
+    update,
+    ForeignKey,
+    create_engine,
+    DateTime,
+    func,
+    Table,
+    Column,
+    event,
+    Row,
+    and_,
+    delete,
+    insert,
+)
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -21,7 +35,7 @@ from sqlalchemy.orm import (
     scoped_session,
     sessionmaker,
     attribute_keyed_dict,
-    attributes
+    attributes,
 )
 
 UID = str
@@ -38,6 +52,7 @@ def generate_id(length):
     alphanum = string.ascii_letters + string.digits
     return "".join(random.choice(alphanum) for _ in range(length))
 
+
 @contextlib.contextmanager
 def db_with():
     from sqlalchemy import create_engine
@@ -51,7 +66,9 @@ def db_with():
 
 
 def connect():
-    engine = create_engine("sqlite:///test.sqlite3", echo=False, pool_size=10, max_overflow=20)
+    engine = create_engine(
+        "sqlite:///test.sqlite3", echo=False, pool_size=10, max_overflow=20
+    )
     Base.metadata.create_all(engine, checkfirst=True)
 
     session_factory = sessionmaker(bind=engine)
@@ -98,7 +115,7 @@ class Book(Base):
         collection_class=ordering_list("order"),
     )
 
-    characters: Mapped[T.List['Character']] = relationship(back_populates='book')
+    characters: Mapped[T.List["Character"]] = relationship(back_populates="book")
 
     def update(self, change: T.Dict[str, str]):
         SAFE_KEYS = ["title", "notes"]
@@ -129,7 +146,7 @@ class Book(Base):
         return session.scalars(stmt).all()
 
     @classmethod
-    def Fetch_by_UID(cls, session:Session, uid:str):
+    def Fetch_by_UID(cls, session: Session, uid: str):
         stmt = select(cls).where(cls.uid == uid)
         return session.scalars(stmt).one()
 
@@ -224,9 +241,16 @@ class Chapter(Base):
 Scenes2Characters = Table(
     "scenes2characters",
     Base.metadata,
-    Column("scene_id", ForeignKey("Scene.id", name="FK_Scene2Character"), primary_key=True),
-    Column("character_id", ForeignKey("Character.id", name="FK_Character2Scene"), primary_key=True),
+    Column(
+        "scene_id", ForeignKey("Scene.id", name="FK_Scene2Character"), primary_key=True
+    ),
+    Column(
+        "character_id",
+        ForeignKey("Character.id", name="FK_Character2Scene"),
+        primary_key=True,
+    ),
 )
+
 
 class Scene(Base):
     uid: Mapped[str] = mapped_column(default=lambda: generate_id(12))
@@ -294,31 +318,29 @@ class Scene(Base):
         return data
 
     @classmethod
-    def Fetch_by_uid(cls, session:Session, scene_uid:str) -> 'Scene':
+    def Fetch_by_uid(cls, session: Session, scene_uid: str) -> "Scene":
         stmt = select(cls).where(cls.uid == scene_uid)
         return session.execute(stmt).scalars().one()
 
     @classmethod
-    def List_all_characters_by_Uid(cls, session:Session, scene_uid:str) -> T.List['Character']:
+    def List_all_characters_by_Uid(
+        cls, session: Session, scene_uid: str
+    ) -> T.List["Character"]:
         scene = cls.Fetch_by_uid(session, scene_uid)
         return scene.characters
-
-
-
-
-
-
 
 
 class Character(Base):
     uid: Mapped[str] = mapped_column(default=lambda: generate_id(GEN_LEN))
     name: Mapped[str] = mapped_column(unique=True)
-    notes: Mapped[str] = mapped_column(default='')
+    notes: Mapped[str] = mapped_column(default="")
 
-    book_id: Mapped[int] = mapped_column(ForeignKey('Book.id', name="FK_Book2Scenes"))
-    book: Mapped[Book] = relationship(back_populates='characters')
+    book_id: Mapped[int] = mapped_column(ForeignKey("Book.id", name="FK_Book2Scenes"))
+    book: Mapped[Book] = relationship(back_populates="characters")
 
-    scenes: Mapped[list[Scene]] = relationship(secondary=Scenes2Characters, back_populates="characters")
+    scenes: Mapped[list[Scene]] = relationship(
+        secondary=Scenes2Characters, back_populates="characters"
+    )
 
     @classmethod
     def Get_All(cls, session):
@@ -326,7 +348,7 @@ class Character(Base):
         return session.scalars(stmt)
 
     @classmethod
-    def Search(cls, session: Session, query: str) -> Sequence[Row['Character']]:
+    def Search(cls, session: Session, query: str) -> Sequence[Row["Character"]]:
         stmt = select(cls).where(cls.name.ilike(f"{query}%"))
         return session.scalars(stmt)
 
@@ -338,36 +360,34 @@ class Character(Base):
             book_id=self.book_id,
             created_on=str(self.created_on),
             updated_on=str(self.updated_on),
-            scene_count=len(self.scenes)
+            scene_count=len(self.scenes),
         )
 
         if extended is True:
             locations = []
 
-            for scene in self.scenes: #type: Scene
-                locations.append((scene.chapter.title, scene.chapter.uid, scene.title, scene.uid))
+            for scene in self.scenes:  # type: Scene
+                locations.append(
+                    (scene.chapter.title, scene.chapter.uid, scene.title, scene.uid)
+                )
 
-            data['locations'] = locations
+            data["locations"] = locations
 
         return data
 
-    def update(self, character_change:dict[str, str]):
-        SAFE = ['name', 'notes']
+    def update(self, character_change: dict[str, str]):
+        SAFE = ["name", "notes"]
         for safe_key in SAFE:
             if safe_key in character_change:
                 setattr(self, safe_key, character_change[safe_key])
 
-
-
-
-
     @classmethod
-    def Fetch_by_Uid(cls, session:Session, scene_uid:str):
+    def Fetch_by_Uid(cls, session: Session, scene_uid: str):
         stmt = select(cls).where(cls.uid == scene_uid)
         return session.execute(stmt).scalars().one()
 
     @classmethod
-    def Fetch_by_name_or_create(cls, session:Session, new_name:str):
+    def Fetch_by_name_or_create(cls, session: Session, new_name: str):
         try:
             stmt = select(cls).where(cls.name.ilike(new_name))
             return session.execute(stmt).one()
@@ -377,12 +397,12 @@ class Character(Base):
             return record
 
     @classmethod
-    def Fetch_by_Uid_and_Book(cls,session:Session, book:Book, character_uid:UID):
+    def Fetch_by_Uid_and_Book(cls, session: Session, book: Book, character_uid: UID):
         stmt = select(cls).where(and_(cls.book == book, cls.uid == character_uid))
         return session.execute(stmt).scalars().one()
 
     @classmethod
-    def Delete_by_Uid(cls, session:Session, character_uid: str):
+    def Delete_by_Uid(cls, session: Session, character_uid: str):
         stmt = delete(cls).where(cls.uid == character_uid)
         return session.execute(stmt)
 
@@ -392,9 +412,8 @@ class Setting(Base):
     val: Mapped[str]
     type: Mapped[str]
 
-
     @classmethod
-    def Get(cls, session:Session, val_name:str):
+    def Get(cls, session: Session, val_name: str):
         stmt = select(cls).where(cls.name == val_name)
         try:
             rec = session.execute(stmt).scalars().one()  # type: 'Setting'
@@ -403,11 +422,11 @@ class Setting(Base):
             raise
 
         match rec.type:
-            case 'string':
+            case "string":
                 return rec.val
-            case 'number':
+            case "number":
                 return int(rec.val)
-            case 'boolean':
+            case "boolean":
                 return bool(int(rec.val))
             case _:
                 return rec.val
@@ -416,26 +435,24 @@ class Setting(Base):
     def Set(cls, session: Session, val_name: str, value: str):
         stmt = select(cls).where(cls.name == val_name)
         try:
-            rec = session.execute(stmt).scalars().one() # type: Setting
+            rec = session.execute(stmt).scalars().one()  # type: Setting
         except NoResultFound:
-            raise ValueError(f'Attempting to set {val_name} but it hasn\'t been set in the DB yet.')
+            raise ValueError(
+                f"Attempting to set {val_name} but it hasn't been set in the DB yet."
+            )
         else:
             rec.name = val_name
             rec.val = value
 
-
-
     @classmethod
-    def All(cls, session):
+    def All(cls, session: Session):
         stmt = select(cls)
-        return session.execute(stmt).scalars()  # type: list[Setting]
+        return session.execute(stmt).scalars().all()  # type: T.Sequence['Setting']
 
     @classmethod
-    def BulkSet(cls, session, changeset):
+    def BulkSet(cls, session: Session, changeset):
         for name, item in changeset.items():
-            cls.Set(session, name, item['value'], item['type'])
-
-
+            cls.Set(session, name, item["value"], item["type"])
 
     def asdict(self):
         return dict(name=self.name, value=self.val, type=self.type)
@@ -446,7 +463,6 @@ class Setting(Base):
         try:
             session.execute(stmt).scalars().one()
         except NoResultFound:
-            rec = cls(name = name, val = val, type = type)
+            rec = cls(name=name, val=val, type=type)
             session.add(rec)
             session.commit()
-
