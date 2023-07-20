@@ -453,8 +453,19 @@ class Setting(Base):
         for name, item in changeset.items():
             cls.Set(session, name, item["value"])
 
-    def asdict(self):
-        return dict(name=self.name, value=self.val, type=self.type)
+    def asdict(self)->T.Mapping[str, common_setting_type]:
+        data = dict(name=self.name, type=self.type)
+        match self.type:
+            case 'number':
+                data['value'] = int(self.val)
+            case 'boolean' | 'bool':
+                data['value'] = bool(int(self.val))
+            case 'string':
+                data['value'] = self.val
+            case _:
+                data["value"] = self.val
+
+        return data
 
     @classmethod
     def SetDefault(
