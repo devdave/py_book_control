@@ -160,6 +160,9 @@ class BCAPI:
 
         processor = SceneProcessor()
         try:
+            if len(raw_text.strip()) == 0:
+                return dict(status='empty', markdown=raw_text )
+
             response = processor.walk(raw_text)
             if "markdown" not in response:
                 response["markdown"] = raw_text
