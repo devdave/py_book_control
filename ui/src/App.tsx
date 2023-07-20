@@ -22,14 +22,18 @@ import { forEach } from 'lodash'
 interface AppWrapperProps {
     value: AppContextValue
     children: ReactNode
+    safeToProceed: boolean
 }
 
-const AppWrapper: FC<AppWrapperProps> = ({ value, children }) => (
+const AppWrapper: FC<AppWrapperProps> = ({ value, children, safeToProceed }) => (
     <AppContext.Provider value={value}>
-        <ThemeProvider>
-            {children}
-            <ReactQueryDevtools initialIsOpen={false} />
-        </ThemeProvider>
+        {!safeToProceed && <LoadingOverlay visible />}
+        {safeToProceed && (
+            <ThemeProvider>
+                {children}
+                <ReactQueryDevtools initialIsOpen={false} />
+            </ThemeProvider>
+        )}
     </AppContext.Provider>
 )
 
@@ -230,7 +234,10 @@ const App: React.FC = () => {
     )
 
     return (
-        <AppWrapper value={appContextValue}>
+        <AppWrapper
+            value={appContextValue}
+            safeToProceed={isReady && defaultsDone}
+        >
             <LoadingOverlay visible={!isReady} />
             {useMemo(() => {
                 if (!isReady || !defaultsDone) {
@@ -249,7 +256,7 @@ const App: React.FC = () => {
                     default:
                         return <Text>Application error: unexpected mode {appMode}</Text>
                 }
-            }, [appMode, isReady])}
+            }, [appMode, defaultsDone, isReady])}
         </AppWrapper>
     )
 }
