@@ -2,13 +2,15 @@ import { map, Dictionary } from 'lodash'
 import { UseMutationResult, UseQueryResult } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
+type GenericTypes<TContainer> = TContainer[keyof TContainer]
+
 export interface SettingsManagerReturn<TValues> {
-    get: <Name extends keyof TValues>(name: Name) => UseQueryResult<TValues[Name]> | undefined
-    set: <Name extends keyof TValues>(name: Name, value: TValues[Name]) => TValues[Name]
+    get: <Field extends keyof TValues>(name: Field) => UseQueryResult<TValues[Field]> | undefined
+    set: <Field extends keyof TValues>(name: Field, value: TValues[Field]) => TValues[Field]
     reconcile: () => void
-    makeState: <Name extends keyof TValues>(
-        name: Name
-    ) => [TValues[Name] | undefined, boolean, (value: TValues[Name]) => void]
+    makeState: <Field extends keyof TValues>(
+        name: Field
+    ) => [TValues[Field] | undefined, boolean, (value: TValues[Field]) => void]
 }
 
 export function useSettings<TValues extends object = Record<string, unknown>>({
@@ -21,11 +23,16 @@ export function useSettings<TValues extends object = Record<string, unknown>>({
     defaultSettings: TValues
     bulkFetchSettings: () => Promise<object>
     setter: UseMutationResult<undefined, unknown, { name: string; value: string }, unknown>
-    getter: (<GK extends keyof TValues>(name: GK) => UseQueryResult<TValues[GK]>) | undefined
+    getter: (<Field extends keyof TValues>(name: Field) => UseQueryResult<TValues[Field]>) | undefined
     bulkDefaultSetter: (changeset: object[]) => Promise<object>
 }): SettingsManagerReturn<TValues> {
+    /**
+     * Internalized getter
+     *
+     * Eventually a place to use a cached copy versus calling home constantly
+     */
     const get = useCallback(
-        <K extends keyof TValues>(name: K): UseQueryResult<TValues[K]> | undefined =>
+        <Field extends keyof TValues>(name: Field): UseQueryResult<TValues[Field]> | undefined =>
             getter ? getter(name) : undefined,
         [getter]
     )
@@ -37,7 +44,7 @@ export function useSettings<TValues extends object = Record<string, unknown>>({
      * @param value
      */
     const set = useCallback(
-        <DefaultName extends keyof TValues>(name: DefaultName, value: TValues[DefaultName]) => {
+        <Field extends keyof TValues>(name: Field, value: TValues[Field]) => {
             console.log('Would set', name, value)
             if (setter) {
                 const coerce_name = name as string
@@ -59,14 +66,14 @@ export function useSettings<TValues extends object = Record<string, unknown>>({
      * @return [value, isLoading, updater]
      */
     const makeState = useCallback(
-        <K extends keyof TValues>(
-            name: K
-        ): [TValues[K] | undefined, boolean, (new_val: TValues[K]) => void] => {
+        <Field extends keyof TValues>(
+            name: Field
+        ): [TValues[Field] | undefined, boolean, (new_val: TValues[Field]) => void] => {
             const value = get(name)
             if (value === undefined) {
                 throw new Error('Missing getter for makeState')
             }
-            return [value.data, value.isLoading, (new_val: TValues[K]) => set(name, new_val)]
+            return [value.data, value.isLoading, (new_val: TValues[Field]) => set(name, new_val)]
         },
         [get, set]
     )
@@ -80,9 +87,9 @@ export function useSettings<TValues extends object = Record<string, unknown>>({
         const changeset = map(
             defaultSettings as Dictionary<unknown>,
             (
-                value: TValues[keyof TValues],
-                name: keyof TValues
-            ): { name: keyof TValues; value: TValues[keyof TValues]; type: string } => ({
+                name: keyof TValues,
+                value: GenericTypes<TValues>
+            ): { name: keyof TValues; value: GenericTypes<TValues>; type: string } => ({
                 name,
                 value,
                 type: typeof defaultSettings[name] as string
@@ -94,10 +101,7 @@ export function useSettings<TValues extends object = Record<string, unknown>>({
         bulkDefaultSetter(coerced as Array<object>)
             .then(() => console.log('Defaults set'))
             .catch((reason) => console.error('Defaults failed with', reason))
-
-        console.log('Would get current values')
-        bulkFetchSettings().then()
-    }, [bulkDefaultSetter, bulkFetchSettings, defaultSettings])
+    }, [bulkDefaultSetter, defaultSettings])
 
     return { get, set, reconcile, makeState }
 }
