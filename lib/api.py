@@ -6,6 +6,7 @@ from .scene_processor import SceneProcessor2 as SceneProcessor
 from .application import BCApplication
 from . import models
 from .log_helper import getLogger
+from .app_types import common_setting_type, UniqueID
 
 
 class BCAPI:
@@ -204,7 +205,7 @@ class BCAPI:
                 parent = scene.chapter  # type: models.Chapter
                 parent.scenes.remove(scene)
                 session.delete(scene)
-                parent.scenes.reorder()
+                parent.scenes.reorder()  # type: ignore
                 parent.touch()
                 session.commit()
                 return True
@@ -241,11 +242,11 @@ class BCAPI:
             book = models.Book.Fetch_by_UID(session, book_uid)
             return [toon.asdict() for toon in book.characters]
 
-    def list_characters_by_scene(self, scene_id):
+    def list_characters_by_scene(self, scene_id: UniqueID):
         with self.app.get_db() as session:
             toons = models.Scene.List_all_characters_by_Uid(
                 session, scene_id
-            )  # type: [models.Character]
+            )  # type: T.List[models.Character]
             if toons is not None:
                 return [toon.asdict() for toon in toons]
             else:
@@ -259,7 +260,7 @@ class BCAPI:
 
         return []
 
-    def add_character_to_scene(self, scene_uid, toon_uid):
+    def add_character_to_scene(self, scene_uid:UniqueID, toon_uid:UniqueID):
         with self.app.get_db() as session:
             scene = models.Scene.Fetch_by_uid(session, scene_uid)
             toon = models.Character.Fetch_by_Uid(session, toon_uid)
@@ -268,7 +269,7 @@ class BCAPI:
             session.commit()
             return scene.asdict()
 
-    def create_new_character_to_scene(self, book_uid, scene_uid, new_name):
+    def create_new_character_to_scene(self, book_uid:UniqueID, scene_uid:UniqueID, new_name:str):
         self.log.info(f"Looking for or add {book_uid=}, {scene_uid=}, {new_name=}")
         with self.app.get_db() as session:
             scene = models.Scene.Fetch_by_uid(session, scene_uid)
@@ -287,7 +288,7 @@ class BCAPI:
             toon = models.Character.Fetch_by_Uid_and_Book(session, book, character_uid)
             return toon.asdict(extended=True)
 
-    def update_character(self, changed_character: dict[str, str]):
+    def update_character(self, changed_character: dict[str, str|UniqueID]):
         with self.app.get_db() as session:
             character = models.Character.Fetch_by_Uid(
                 session, changed_character["id"]
@@ -296,7 +297,7 @@ class BCAPI:
             session.commit()
             return character.asdict(extended=True)
 
-    def delete_character(self, character_uid):
+    def delete_character(self, character_uid: UniqueID):
         with self.app.get_db() as session:
             models.Character.Delete_by_Uid(session, character_uid)
             session.commit()
@@ -305,9 +306,8 @@ class BCAPI:
     """
         Settings
     """
-    common_setting_type = T.Union[str, bool, int, None]
 
-    def fetchAllSettings(self) -> [dict[str, common_setting_type]]:
+    def fetchAllSettings(self) -> T.List[dict[str, common_setting_type]]:
         with self.app.get_db() as session:
             return [setting.asdict() for setting in models.Setting.All(session)]
 
@@ -321,7 +321,7 @@ class BCAPI:
             models.Setting.Set(session, name, value)
             session.commit()
 
-    def bulkUpdateSettings(self, changeset: [dict[str, common_setting_type]]):
+    def bulkUpdateSettings(self, changeset: T.List[dict[str, common_setting_type]]):
         with self.app.get_db() as session:
             models.Setting.BulkSet(session, changeset)
             session.commit()

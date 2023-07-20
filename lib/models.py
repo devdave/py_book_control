@@ -35,8 +35,7 @@ from sqlalchemy.orm import (
 )
 
 from .log_helper import getLogger
-
-UID = str
+from .app_types import common_setting_type, UID, UniqueID
 
 
 log = getLogger(__name__)
@@ -69,9 +68,8 @@ def connect():
     Base.metadata.create_all(engine, checkfirst=True)
 
     session_factory = sessionmaker(bind=engine)
-    Session = scoped_session(session_factory)
 
-    return engine, Session
+    return engine, scoped_session(session_factory)
 
 
 class Base(DeclarativeBase):
@@ -210,7 +208,7 @@ class Chapter(Base):
         return sum(scene.words for scene in self.scenes)
 
     @classmethod
-    def Fetch_all(cls, session, stripped=False):
+    def Fetch_all(cls, session):
         stmt = select(cls)
         return session.scalars(stmt)
 
@@ -410,7 +408,7 @@ class Setting(Base):
     type: Mapped[str]
 
     @classmethod
-    def Get(cls, session: Session, val_name: str):
+    def Get(cls, session: Session, val_name: str) -> common_setting_type:
         stmt = select(cls).where(cls.name == val_name)
         try:
             rec = session.execute(stmt).scalars().one()  # type: 'Setting'
@@ -429,7 +427,7 @@ class Setting(Base):
                 return rec.val
 
     @classmethod
-    def Set(cls, session: Session, val_name: str, value: str):
+    def Set(cls, session: Session, val_name: str, value: common_setting_type):
         stmt = select(cls).where(cls.name == val_name)
         try:
             rec = session.execute(stmt).scalars().one()  # type: Setting
@@ -439,7 +437,7 @@ class Setting(Base):
             )
         else:
             rec.name = val_name
-            rec.val = value
+            rec.val = str(value)
 
     @classmethod
     def All(cls, session: Session) -> T.Sequence["Setting"]:
@@ -447,7 +445,11 @@ class Setting(Base):
         return session.execute(stmt).scalars().all()
 
     @classmethod
-    def BulkSet(cls, session: Session, changeset):
+    def BulkSet(
+        cls,
+        session: Session,
+        changeset: T.Dict[str, T.Dict[str, common_setting_type]],
+    ):
         for name, item in changeset.items():
             cls.Set(session, name, item["value"])
 
@@ -455,7 +457,9 @@ class Setting(Base):
         return dict(name=self.name, value=self.val, type=self.type)
 
     @classmethod
-    def SetDefault(cls, session: Session, name, val, setting_type):
+    def SetDefault(
+        cls, session: Session, name: str, val: common_setting_type, setting_type
+    ):
         stmt = select(cls).where(cls.name == name)
         try:
             session.execute(stmt).scalars().one()
