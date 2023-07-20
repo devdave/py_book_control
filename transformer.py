@@ -48,9 +48,8 @@ class FuncDef(T.NamedTuple):
     arg_names: T.List[str]
 
 
-def process_source(src_file: pathlib.Path, dest: pathlib.Path|None = None):
+def process_source(src_file: pathlib.Path, dest: pathlib.Path | None = None):
     module = ast.parse(src_file.read_text(), src_file.name, mode="exec")
-
 
     body = []
 
@@ -83,13 +82,13 @@ def process_class(class_elm: ast.ClassDef):
 
 
 def py2ts_value(something):
-
     if isinstance(something, str):
         return f"'{something}'"
     elif isinstance(something, bool):
-        return "true" if something is True else 'false'
+        return "true" if something is True else "false"
     else:
         return repr(something)
+
 
 def process_function(func_elm: ast.FunctionDef):
     # unit tests... we don't need no stinking unit tests!
@@ -97,7 +96,9 @@ def process_function(func_elm: ast.FunctionDef):
 
     arg_map = dict()
 
-    definition = FuncDef(process_args(func_elm.args.args), ast.get_docstring(func_elm), [], [])
+    definition = FuncDef(
+        process_args(func_elm.args.args), ast.get_docstring(func_elm), [], []
+    )
 
     mapped_defaults = dict()
 
@@ -120,9 +121,9 @@ def process_function(func_elm: ast.FunctionDef):
         married.reverse()
         mapped_defaults = dict(married)
 
-
-    for arg in func_elm.args.args: # type: ast.arg
-        if arg.arg == "self": continue
+    for arg in func_elm.args.args:  # type: ast.arg
+        if arg.arg == "self":
+            continue
 
         definition.arg_names.append(arg.arg)
 
@@ -131,14 +132,14 @@ def process_function(func_elm: ast.FunctionDef):
         arg_def = func_elm
 
         if isinstance(arg.annotation, ast.Subscript):
-            #fuck it
+            # fuck it
             func_type = "any"
 
         elif arg.annotation is not None and hasattr(arg.annotation, "id"):
             match arg.annotation.id:
                 case "str":
                     func_type = "string"
-                case ["int","float"]:
+                case ["int", "float"]:
                     func_type = "number"
                 case "bool":
                     func_type = "boolean"
@@ -146,13 +147,15 @@ def process_function(func_elm: ast.FunctionDef):
                     func_type = "any"
 
         arg_map[arg.arg] = f"{arg.arg}:{func_type}"
-        if arg.arg in mapped_defaults and mapped_defaults[arg.arg] in (None, 'None'):
+        if arg.arg in mapped_defaults and mapped_defaults[arg.arg] in (None, "None"):
             del mapped_defaults[arg.arg]
 
         if arg.arg not in mapped_defaults:
             arg_body = f"{arg.arg}:{func_type}"
         else:
-            arg_body = f"{arg.arg}:{func_type} = {mapped_defaults[arg.arg]}".replace("'","")
+            arg_body = f"{arg.arg}:{func_type} = {mapped_defaults[arg.arg]}".replace(
+                "'", ""
+            )
 
         definition.compiled.append(arg_body)
 
@@ -160,33 +163,35 @@ def process_function(func_elm: ast.FunctionDef):
 
 
 def process_default_argument(defaultOp):
-
-    if isinstance(defaultOp, (ast.unaryop, ast.UnaryOp,)) is True:
-        #Very likely a negative number
+    if (
+        isinstance(
+            defaultOp,
+            (
+                ast.unaryop,
+                ast.UnaryOp,
+            ),
+        )
+        is True
+    ):
+        # Very likely a negative number
         if isinstance(defaultOp.op, ast.USub):
             return f"-{defaultOp.operand.value}"
         elif isinstance(defaultOp.op, ast.UAdd):
             return f"+{defaultOp.operand.value}"
     elif isinstance(defaultOp, ast.Constant):
         if defaultOp.value is True:
-            return 'true'
+            return "true"
         elif defaultOp.value is False:
-            return 'false'
+            return "false"
         else:
             return str(defaultOp.value)
 
-    elif hasattr(defaultOp, 'val'):
+    elif hasattr(defaultOp, "val"):
         return defaultOp.val
     else:
-        raise ValueError(f"I don't know how to handle {type(defaultOp)} {vars(defaultOp)}")
-
-
-
-
-
-
-
-
+        raise ValueError(
+            f"I don't know how to handle {type(defaultOp)} {vars(defaultOp)}"
+        )
 
 
 def process_args(func_args: T.List[ast.arg]):
@@ -208,15 +213,15 @@ def transform(payload: [str, set[str]]):
 
 class MainArgs(tap.Tap):
     """
-        Dirt simple AST to hopefully parseable Javascript/Typescript
+    Dirt simple AST to hopefully parseable Javascript/Typescript
     """
+
     source: pathlib.Path  # Source Python file to transform into quasi js/ts
     dest: pathlib.Path = None  # optional file to write to instead of printing to stdout
 
     def configure(self) -> None:
         self.add_argument("source", type=pathlib.Path)
         self.add_argument("dest", type=pathlib.Path)
-
 
 
 def main():
@@ -227,10 +232,12 @@ def main():
         args.dest = None
 
     if args.dest is not None:
-        assert args.dest.parent.exists(), f"Cannot write {args.dest.name} to {args.dest.parent} as it does not exist!"
-        assert args.dest.parent.is_dir(), f"Cannot write {args.dest.name} to {args.dest.parent} as it is not a dir!"
-
-
+        assert (
+            args.dest.parent.exists()
+        ), f"Cannot write {args.dest.name} to {args.dest.parent} as it does not exist!"
+        assert (
+            args.dest.parent.is_dir()
+        ), f"Cannot write {args.dest.name} to {args.dest.parent} as it is not a dir!"
 
     process_source(args.source, dest=args.dest)
 

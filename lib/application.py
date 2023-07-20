@@ -2,6 +2,7 @@ import webview
 from . import models
 from contextlib import contextmanager
 
+
 class BCApplication:
     main_window: webview.Window
     book_id: int
@@ -13,7 +14,6 @@ class BCApplication:
 
         # Makes sure we can connect
         self.engine, self.Session = models.connect()
-
 
     @property
     def has_active_book(self):

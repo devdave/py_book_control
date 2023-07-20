@@ -6,7 +6,6 @@ from .scene import Scene
 
 
 class Chapter:
-
     scenes: T.List[Scene]
     title: str
     subtitle: str
@@ -56,7 +55,6 @@ class Chapter:
                 subtitle = paragraph.get_body()
                 continue
             elif paragraph.is_empty() is False:
-
                 if paragraph.properties.is_right is True:
                     current_scene.add_location(paragraph.get_body())
 
@@ -72,7 +70,6 @@ class Chapter:
 
                 last_was_empty = False
             elif paragraph.is_empty() is True:
-
                 # Two consecutive blank lines detected!
                 if last_was_empty is True:
                     if len(current_scene) > 0:

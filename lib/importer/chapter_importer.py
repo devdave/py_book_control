@@ -3,8 +3,7 @@ from .docx import Docx
 
 
 class Scene:
-
-    title:str
+    title: str
     _body: list[str]
     location: str
     notes: str
@@ -31,9 +30,7 @@ class Scene:
         self.title = self.title.strip()
 
 
-
 class ChapterImporter:
-
     scenes: list[Scene]
     title: str
 
@@ -41,15 +38,14 @@ class ChapterImporter:
         self.scenes = []
         self.title = ""
 
-    def add_scene(self, scene:Scene):
+    def add_scene(self, scene: Scene):
         self.scenes.append(scene)
 
     def __len__(self):
         return len(self.scenes)
 
     @classmethod
-    def Load(cls, src:pathlib.Path):
-
+    def Load(cls, src: pathlib.Path):
         chapter = ChapterImporter()
 
         document = Docx.Load(src)
@@ -93,9 +89,3 @@ class ChapterImporter:
             chapter.title = src.name
 
         return chapter
-
-
-
-
-
-

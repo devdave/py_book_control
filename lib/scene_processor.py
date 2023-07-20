@@ -30,27 +30,29 @@ class SceneProcessor2:
     ast: T.List[T.Dict[str, T.Any]]
 
     def __init__(self):
-        self.status = 'error'
-        self.msg = 'unknown error or status unset'
+        self.status = "error"
+        self.msg = "unknown error or status unset"
         self.title = None
         self.content = []
 
-        #split vars
+        # split vars
         self.split_title = None
         self.split_content = []
 
-        self.parser = mistune.create_markdown(renderer='ast')
+        self.parser = mistune.create_markdown(renderer="ast")
         self.ast = []
 
-    def collect_text(self, ast_node:T.Dict[str, T.Any]) -> str:
+    def collect_text(self, ast_node: T.Dict[str, T.Any]) -> str:
         body = []
-        for child in ast_node['children']:
-            if child['type'] == 'text':
-                body.append(child['raw'])
-            elif child['type'] == 'softbreak':
-                body.append('\n')
+        for child in ast_node["children"]:
+            if child["type"] == "text":
+                body.append(child["raw"])
+            elif child["type"] == "softbreak":
+                body.append("\n")
             else:
-                raise ValueError(f"I don't know how to collect text from {child}-{repr(child)}")
+                raise ValueError(
+                    f"I don't know how to collect text from {child}-{repr(child)}"
+                )
 
         return "".join(body)
 
@@ -59,66 +61,62 @@ class SceneProcessor2:
 
 {content}"""
 
-
     def walk(self, raw_txt: str):
         self.ast = self.parser(raw_txt)
-
 
         if len(self.ast[0]) <= 0:
             raise ValueError("A scene must have at least a title.")
 
-        if self.ast[0]['type'] != 'heading':
+        if self.ast[0]["type"] != "heading":
             raise ValueError("A scene must start with a `# Scene title` header line.")
 
-        if self.ast[0]['attrs']['level'] != 2:
+        if self.ast[0]["attrs"]["level"] != 2:
             raise ValueError("A scene title must have a double sharp/2 # heading.")
 
-        self.title = self.collect_text(self.ast [0]).strip()
+        self.title = self.collect_text(self.ast[0]).strip()
 
-        if len(self.ast) > 1 and self.ast[1]['type'] != 'blank_line':
+        if len(self.ast) > 1 and self.ast[1]["type"] != "blank_line":
             raise ValueError("Expected a blank line after the scene title!")
 
         for child in self.ast[2:]:
-            if child['type'] == 'heading':
-                if child['attrs']['level'] != 2:
+            if child["type"] == "heading":
+                if child["attrs"]["level"] != 2:
                     raise ValueError("Scene split tile must have double sharp/2 #'s.")
 
-                if self.status != 'split':
-                    self.status = 'split'
+                if self.status != "split":
+                    self.status = "split"
                     self.split_title = self.collect_text(child).strip()
                 else:
                     raise ValueError("Parser can only split one scene at a time!")
 
-            elif child['type'] == 'paragraph':
-                if self.status == 'split':
+            elif child["type"] == "paragraph":
+                if self.status == "split":
                     self.split_content.append(self.collect_text(child))
                 else:
                     self.content.append(self.collect_text(child))
 
-            elif child['type'] == 'blank_line':
-                if self.status == 'split':
-                    self.split_content.append('')
+            elif child["type"] == "blank_line":
+                if self.status == "split":
+                    self.split_content.append("")
                 else:
-                    self.content.append('')
+                    self.content.append("")
             else:
-                raise ValueError(f"Unexpected token {child['type']} - unsure what to do with {repr(child)}")
+                raise ValueError(
+                    f"Unexpected token {child['type']} - unsure what to do with {repr(child)}"
+                )
         else:
-            if self.status == 'error':
-                self.status = 'success'
+            if self.status == "error":
+                self.status = "success"
 
         # TODO - get rid of the status field and just rely on exceptions
         response = dict(
-            status=self.status,
-            title=self.title,
-            content="\n".join(self.content)
+            status=self.status, title=self.title, content="\n".join(self.content)
         )
 
-        if self.status == 'split':
-            response['split_title'] = self.split_title
-            response['split_content'] = ("\n".join(self.split_content)).strip()
-            response['markdown'] = self.compile(self.title, response['content'])
-
-
+        if self.status == "split":
+            response["split_title"] = self.split_title
+            response["split_content"] = ("\n".join(self.split_content)).strip()
+            response["markdown"] = self.compile(self.title, response["content"])
 
         return response
 
@@ -188,7 +186,7 @@ class SceneProcessor:
     def consume(self, raw_scene: str):
         ast = Document(raw_scene.strip())
 
-        response = dict() # type: dict[str, str]
+        response = dict()  # type: dict[str, str]
         if len(ast.children) < 1:
             return dict(status="error", msg="Scene is missing a title")
 
@@ -200,11 +198,11 @@ class SceneProcessor:
         paragraphs = []
         for element in ast.children[1:]:
             if isinstance(
-                    element,
-                    (
-                            block_token.Paragraph,
-                            block_token.BlockCode,
-                    ),
+                element,
+                (
+                    block_token.Paragraph,
+                    block_token.BlockCode,
+                ),
             ):
                 subbody = [child.content for child in element.children]
                 paragraphs.append("\n".join(subbody))

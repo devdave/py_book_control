@@ -15,10 +15,9 @@ from lib.log_helper import getLogger
 HERE = pathlib.Path(__file__).parent
 LOG = getLogger(__name__)
 
+
 def setup_logging(level=logging.DEBUG):
     print(f"Setting up logging for {__name__}")
-
-
 
     root = getLogger(__name__)
     lib = getLogger("lib")
@@ -26,19 +25,18 @@ def setup_logging(level=logging.DEBUG):
     root.setLevel(level)
     lib.setLevel(level)
 
-
     console = logging.StreamHandler()
     console.setLevel(level)
 
-    basic_format = logging.Formatter('%(levelname)s - %(name)s.%(funcName)s@%(lineno)s - %(message)s')
+    basic_format = logging.Formatter(
+        "%(levelname)s - %(name)s.%(funcName)s@%(lineno)s - %(message)s"
+    )
     console.setFormatter(basic_format)
 
     root.addHandler(console)
     lib.addHandler(console)
 
     root.info("Logging setup")
-
-
 
 
 def spinup_pnpm(url_path: pathlib.Path):
@@ -85,13 +83,18 @@ def main():
     LOG.debug("dev={}", result.dev)
     LOG.debug("write_bridge={}", result.write_bridge)
 
-
     app = BCApplication()
     api = BCAPI(app)
 
     worker = None
 
-    default_win_settings = dict(min_size=(800, 480,), js_api=api)
+    default_win_settings = dict(
+        min_size=(
+            800,
+            480,
+        ),
+        js_api=api,
+    )
 
     if result.write_bridge is not None:
         assert (
@@ -101,9 +104,9 @@ def main():
 
     if result.dev is True:
         worker = spinup_pnpm(result.url)
-        default_win_settings['url'] = "http://127.0.0.1:8080"
+        default_win_settings["url"] = "http://127.0.0.1:8080"
     else:
-        default_win_settings['url'] = str(result.url)
+        default_win_settings["url"] = str(result.url)
 
     win1 = webview.create_window("PyBook Control", **default_win_settings)
     app.set_window(win1)

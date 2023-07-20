@@ -6,7 +6,6 @@ from extractor.lib.docx import DocxParagraph
 
 
 class Scene:
-
     body: T.List[DocxParagraph]
     location: T.List[str]
     notes: T.List[str]

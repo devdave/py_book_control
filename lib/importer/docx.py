@@ -13,7 +13,6 @@ class UNSET:
 
 
 class DocxProperty:
-
     style_name: str
     orientation: str
 
@@ -47,7 +46,6 @@ class DocxProperty:
 
     @classmethod
     def Load(cls, src_elm: _Element):
-
         # get style
         style = "Normal"
         style_sub = src_elm.find(TAGS.StyleType.value)
@@ -68,13 +66,18 @@ class DocxProperty:
 
 
 class DocxParagraph:
-
     body: T.List[str]
     properties: DocxProperty
     hard_break: bool
     paraId: str
 
-    def __init__(self, body, properties, paraId, hard_break=False,):
+    def __init__(
+        self,
+        body,
+        properties,
+        paraId,
+        hard_break=False,
+    ):
         self.body = body
         self.properties = properties
         self.paraId = paraId
@@ -97,7 +100,6 @@ class DocxParagraph:
 
     @classmethod
     def Load(cls, src_elm: _Element):
-
         property_xml = src_elm.find(TAGS.ParaStyle.value)
         property = (
             DocxProperty.Load(property_xml)
@@ -115,13 +117,11 @@ class DocxParagraph:
                 cleaned = unicodedata.normalize("NFKD", text_elm.text)
                 body.append(cleaned)
 
-
         paraId = src_elm.attrib[TAGS.paraId.value]
         return cls(body, property, paraId, hard_break=hard_break)
 
 
 class Docx:
-
     paragraphs: T.List[DocxParagraph]
     st_ctime: int
     st_mtime: int
