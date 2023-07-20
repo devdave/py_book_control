@@ -1,23 +1,19 @@
-import datetime
 import string
 import random
 import contextlib
 import typing as T
 import datetime as DT
-from collections import defaultdict
-from typing import Tuple, Any, Sequence
+
+from typing import Sequence
 
 from sqlalchemy import (
     select,
     update,
     ForeignKey,
     create_engine,
-    DateTime,
     func,
     Table,
     Column,
-    event,
-    Row,
     and_,
     delete,
     insert,
@@ -38,9 +34,10 @@ from sqlalchemy.orm import (
     attributes,
 )
 
+from .log_helper import getLogger
+
 UID = str
 
-from .log_helper import getLogger
 
 log = getLogger(__name__)
 
@@ -348,9 +345,9 @@ class Character(Base):
         return session.scalars(stmt)
 
     @classmethod
-    def Search(cls, session: Session, query: str) -> Sequence[Row["Character"]]:
+    def Search(cls, session: Session, query: str) -> Sequence["Character"]:
         stmt = select(cls).where(cls.name.ilike(f"{query}%"))
-        return session.scalars(stmt)
+        return session.execute(stmt).scalars().all()
 
     def asdict(self, extended=False):
         data = dict(
@@ -445,24 +442,24 @@ class Setting(Base):
             rec.val = value
 
     @classmethod
-    def All(cls, session: Session):
+    def All(cls, session: Session) -> T.Sequence["Setting"]:
         stmt = select(cls)
-        return session.execute(stmt).scalars().all()  # type: T.Sequence['Setting']
+        return session.execute(stmt).scalars().all()
 
     @classmethod
     def BulkSet(cls, session: Session, changeset):
         for name, item in changeset.items():
-            cls.Set(session, name, item["value"], item["type"])
+            cls.Set(session, name, item["value"])
 
     def asdict(self):
         return dict(name=self.name, value=self.val, type=self.type)
 
     @classmethod
-    def SetDefault(cls, session, name, val, type):
+    def SetDefault(cls, session: Session, name, val, setting_type):
         stmt = select(cls).where(cls.name == name)
         try:
             session.execute(stmt).scalars().one()
         except NoResultFound:
-            rec = cls(name=name, val=val, type=type)
+            rec = cls(name=name, val=val, type=setting_type)
             session.add(rec)
             session.commit()

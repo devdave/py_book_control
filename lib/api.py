@@ -1,7 +1,7 @@
 import typing as T
 import logging
 
-import webview
+import webview  # type: ignore
 from .scene_processor import SceneProcessor2 as SceneProcessor
 from .application import BCApplication
 from . import models
