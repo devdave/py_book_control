@@ -21,6 +21,7 @@ import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 import { useEditorContext } from '@src/modes/edit/Editor.context'
 import { getChangedRanges } from '@tiptap/react'
 import { useHotkeys, useToggle } from '@mantine/hooks'
+import { useRotate } from '@src/lib/use-rotate'
 
 const useStyle = createStyles((theme) => ({
     filled_textarea: {
@@ -40,13 +41,15 @@ interface CharacterDetailProps {
 }
 
 export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) => {
-    const { api, activeBook, debounceTime } = useAppContext()
+    const { api, activeBook, settings } = useAppContext()
+
+    const [debounceTime, debounceTimeIsLoading, setDebounceTime] = settings.makeState('debounceTime')
 
     const { activeElement, updateCharacter, deleteCharacter } = useEditorContext()
 
     const { classes } = useStyle()
 
-    const [activeTab, nextTab] = useToggle<string>(['notes', 'scenes'])
+    const [activeTab, nextTab] = useRotate(['notes', 'scenes'])
 
     const form = useForm<FormProps>({
         initialValues: {
@@ -68,7 +71,7 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
             }
         },
         [form.values],
-        { delay: debounceTime }
+        { delay: debounceTime as number }
     )
 
     const onDeleteClick = useCallback(() => {
@@ -79,14 +82,21 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
     console.log(character)
 
     const handleKeyUp: KeyboardEventHandler<HTMLTextAreaElement> = (evt) => {
-        if (evt.ctrlKey && evt.key === 'Tab') {
-            evt.preventDefault()
-            nextTab()
-            console.log(activeTab)
+        if (evt.ctrlKey) {
+            if (evt.key === 'Tab') {
+                evt.preventDefault()
+                nextTab()
+            } else if (evt.key === 'ArrowRight') {
+                evt.preventDefault()
+                nextTab()
+            }
         }
     }
 
-    useHotkeys([['ctrl+Tab', () => nextTab()]])
+    useHotkeys([
+        ['ctrl+Tab', () => nextTab()],
+        ['ctrl+ArrowRight', () => nextTab()]
+    ])
 
     return (
         <Tabs
@@ -95,6 +105,8 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
             style={{
                 minWidth: '100%'
             }}
+            loop
+            onTabChange={(name) => name && nextTab(name)}
         >
             <Tabs.List>
                 <Tabs.Tab value='notes'>Notes</Tabs.Tab>
@@ -103,6 +115,7 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
             <Tabs.Panel
                 value='notes'
                 style={{ width: '100%', minWidth: '100%' }}
+                onClick={() => nextTab('notes')}
             >
                 <IndicatedTextInput
                     form={form}

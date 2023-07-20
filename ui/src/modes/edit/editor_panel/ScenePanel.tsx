@@ -1,5 +1,5 @@
 import { createStyles, Skeleton, Tabs, Text } from '@mantine/core'
-import { type FC, KeyboardEventHandler } from 'react'
+import { type FC, KeyboardEventHandler, useCallback } from 'react'
 import { IconId, IconMapPin, IconNote, IconUsers, IconVocabulary } from '@tabler/icons-react'
 import { type Scene, type UID } from '@src/types'
 import { useAppContext } from '@src/App.context'
@@ -7,6 +7,8 @@ import { useAppContext } from '@src/App.context'
 import { CharactersSceneForm } from '@src/modes/edit/common/CharactersSceneForm'
 import { useEditorContext } from '@src/modes/edit/Editor.context'
 import { useHotkeys, useToggle } from '@mantine/hooks'
+import { find } from 'lodash'
+import { useRotate } from '@src/lib/use-rotate'
 import TextSceneForm from './scene_forms/TextSceneForm'
 
 import { MainSceneForm } from './scene_forms/MainSceneForm'
@@ -23,7 +25,7 @@ export interface ScenePanelProps {
 
 export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
     const { api, activeBook } = useAppContext()
-    const { fetchScene } = useEditorContext()
+    const { activeElement, fetchScene, activeScene, setActiveScene, activeChapter } = useEditorContext()
     const { classes } = useStyles()
 
     const {
@@ -33,8 +35,58 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
         error: sceneLoadError
     } = fetchScene(indexedScene.chapterId as UID, indexedScene.id as UID)
 
-    const [activeTab, nextTab] = useToggle(['content', 'summary', 'notes', 'location', 'characters'])
-    useHotkeys([['ctrl+tab', () => nextTab()]])
+    const [activeTab, nextTab] = useRotate(['content', 'summary', 'notes', 'location', 'characters'])
+    useHotkeys(
+        [
+            ['ctrl+tab', () => nextTab()],
+            ['ctrl+Tab', () => nextTab()],
+            ['ctrl+ArrowRight', () => nextTab()]
+        ],
+        []
+    )
+
+    const goPriorScene = useCallback(() => {
+        if (activeScene && activeScene.order > 0 && activeChapter) {
+            const prior_scene = find(activeChapter.scenes, { order: activeScene.order - 1 })
+            if (prior_scene) {
+                setActiveScene(activeChapter, prior_scene)
+            }
+        }
+    }, [activeChapter, activeScene, setActiveScene])
+
+    const goNextScene = useCallback(() => {
+        if (activeScene && activeChapter && activeScene.order + 1 < activeChapter.scenes.length) {
+            const next_scene = find(activeChapter.scenes, { order: activeScene.order + 1 })
+            if (next_scene) {
+                setActiveScene(activeChapter, next_scene)
+            }
+        }
+    }, [activeScene, activeScene])
+
+    const handleCtrlKey: KeyboardEventHandler<HTMLTextAreaElement> = (evt) => {
+        if (evt.ctrlKey) {
+            let action
+            switch (evt.key) {
+                case 'Tab':
+                case 'ArrowRight':
+                    action = nextTab
+                    break
+                case 'PageUp':
+                    action = goPriorScene
+                    break
+                case 'PageDown':
+                    action = goNextScene
+                    break
+                default:
+                    break
+            }
+            if (action) {
+                console.log('Handling ctrl key')
+                evt.preventDefault()
+                action()
+            }
+        }
+    }
 
     if (sceneIsLoading) {
         return (
@@ -46,6 +98,7 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
             </>
         )
     }
+
     if (sceneLoadStatus === 'error') {
         const errorMessage =
             sceneLoadError instanceof Error ? sceneLoadError.message : (sceneLoadError as string)
@@ -59,18 +112,11 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
         )
     }
 
-    const handleCtrlTab: KeyboardEventHandler<HTMLTextAreaElement> = (evt) => {
-        if (evt.ctrlKey && evt.key === 'Tab') {
-            evt.preventDefault()
-            nextTab()
-        }
-    }
-    console.log('ScenePanel', scene)
-
     return (
         <Tabs
             classNames={{ panel: classes.tabPanel }}
             value={activeTab}
+            onTabChange={(name) => name && nextTab(name)}
         >
             <Tabs.List>
                 <Tabs.Tab
@@ -112,13 +158,13 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
             <Tabs.Panel value='content'>
                 <MainSceneForm
                     scene={scene}
-                    nextTab={nextTab}
+                    onKeyUp={handleCtrlKey}
                 />
             </Tabs.Panel>
             <Tabs.Panel value='summary'>
                 <TextSceneForm
                     scene={scene}
-                    nextTab={nextTab}
+                    onKeyUp={handleCtrlKey}
                     field='summary'
                     label='Summary'
                 />
@@ -126,7 +172,7 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
             <Tabs.Panel value='notes'>
                 <TextSceneForm
                     scene={scene}
-                    nextTab={nextTab}
+                    onKeyUp={handleCtrlKey}
                     field='notes'
                     label='Notes'
                 />
@@ -134,7 +180,7 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
             <Tabs.Panel value='location'>
                 <TextSceneForm
                     scene={scene}
-                    nextTab={nextTab}
+                    onKeyUp={handleCtrlKey}
                     field='location'
                     label='Location'
                 />
@@ -142,7 +188,7 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
             <Tabs.Panel value='characters'>
                 <CharactersSceneForm
                     scene={scene}
-                    nextTab={nextTab}
+                    onKeyUp={handleCtrlKey}
                     key={scene.characters.length}
                 />
             </Tabs.Panel>

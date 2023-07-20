@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { KeyboardEventHandler, useState } from 'react'
 import { LoadingOverlay, Select, Text, Title } from '@mantine/core'
 import { useAppContext } from '@src/App.context'
 import { useQueryClient } from '@tanstack/react-query'
@@ -7,9 +7,9 @@ import { ActiveElementSubTypes, ActiveElementTypes, Character, type Scene } from
 
 interface CharactersSceneFormProps {
     scene: Scene
-    nextTab: () => void
+    onKeyUp: KeyboardEventHandler<HTMLTextAreaElement>
 }
-export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene, nextTab }) => {
+export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene, onKeyUp }) => {
     const { api, activeBook } = useAppContext()
     const {
         activeElement,
@@ -19,9 +19,9 @@ export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene,
         listCharactersByScene
     } = useEditorContext()
 
-    const [query, setQuery] = useState('')
-
     const { data: toons, isLoading: toonsIsLoading, status: toonStatus } = listAllCharacters(activeBook)
+
+    const [query, setQuery] = useState('')
 
     const {
         data: sceneCharacters,
@@ -52,11 +52,18 @@ export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene,
                 label='Find or create new character for scene'
                 searchable
                 creatable
+                placeholder={query}
                 data={mappedToons}
-                value={query}
-                onChange={(char_id) => char_id && assignCharacter2Scene(scene, char_id)}
+                onChange={(char_id) => {
+                    char_id && assignCharacter2Scene(scene, char_id)
+                    setQuery('')
+                }}
                 getCreateLabel={(create_name) => `+ Create new character ${create_name}?`}
-                onCreate={(new_name) => createNewCharacterAndAdd2Scene(scene, new_name)}
+                onCreate={(new_name) => {
+                    createNewCharacterAndAdd2Scene(scene, new_name)
+                    setQuery('')
+                    return ''
+                }}
             />
             <Title order={2}>Scene Characters (click to see detail view)</Title>
             {sceneCharacters.map((toon: Character) => (

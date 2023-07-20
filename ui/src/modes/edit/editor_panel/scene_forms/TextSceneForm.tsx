@@ -1,6 +1,6 @@
 import { Anchor, Textarea, TextInput } from '@mantine/core'
 import { useForm, zodResolver } from '@mantine/form'
-import { type FC } from 'react'
+import { type FC, KeyboardEventHandler, MouseEventHandler } from 'react'
 import z from 'zod'
 
 import { useEditorContext } from '../../Editor.context'
@@ -11,10 +11,10 @@ interface TextSceneFormProps {
     scene: Scene
     field: string
     label: string
-    nextTab?: () => void
+    onKeyUp: KeyboardEventHandler<HTMLTextAreaElement>
 }
 
-const TextSceneForm: React.FC<TextSceneFormProps> = ({ scene, field, label, nextTab }) => {
+const TextSceneForm: React.FC<TextSceneFormProps> = ({ scene, field, label, onKeyUp }) => {
     const { updateScene } = useEditorContext()
 
     const form = useForm({
@@ -43,8 +43,8 @@ const TextSceneForm: React.FC<TextSceneFormProps> = ({ scene, field, label, next
             autosize
             minRows={5}
             label={label}
-            onKeyUp={nextTab}
             autoCapitalize='sentences'
+            onKeyUp={onKeyUp}
             {...form.getInputProps(field)}
         />
     )

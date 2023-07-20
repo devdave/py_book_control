@@ -13,10 +13,10 @@ const formSchema = z.object({
 
 export interface SceneFormProps {
     scene: Scene
-    nextTab: () => void
+    onKeyUp: KeyboardEventHandler<HTMLTextAreaElement>
 }
 
-export const MainSceneForm: FC<SceneFormProps> = ({ scene, nextTab }) => {
+export const MainSceneForm: FC<SceneFormProps> = ({ scene, onKeyUp }) => {
     const { updateScene } = useEditorContext()
     const form = useForm<Partial<Scene>>({
         initialValues: {
@@ -42,14 +42,6 @@ export const MainSceneForm: FC<SceneFormProps> = ({ scene, nextTab }) => {
         }
     )
 
-    const handleCtrlTab: KeyboardEventHandler = (evt) => {
-        if (evt.ctrlKey && evt.key === 'Tab') {
-            evt.preventDefault()
-            nextTab()
-            console.log('Tried to move to next tab')
-        }
-    }
-
     return (
         <>
             <TextInput
@@ -60,12 +52,14 @@ export const MainSceneForm: FC<SceneFormProps> = ({ scene, nextTab }) => {
                 {...form.getInputProps('title')}
             />
             <Textarea
-                onKeyUp={handleCtrlTab}
+                onKeyUp={onKeyUp}
                 autoCapitalize='sentences'
                 autosize
                 label='Content'
                 minRows={4}
                 spellCheck
+                data-autofocus
+                autoFocus
                 {...form.getInputProps('content')}
             />
             <br />

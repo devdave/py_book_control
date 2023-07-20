@@ -1,17 +1,10 @@
-import {
-    Accordion,
-    Button,
-    Center,
-    createStyles,
-    Group,
-    Text,
-    Title
-} from '@mantine/core'
+import { Accordion, Button, Center, createStyles, Group, Text, Title } from '@mantine/core'
 import { useCallback, useEffect, useRef } from 'react'
 import { IconGripVertical } from '@tabler/icons-react'
 import { find, map } from 'lodash'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 import { Scene } from '@src/types'
+import { useHotkeys } from '@mantine/hooks'
 import { ScenePanel } from './ScenePanel'
 import { useEditorContext } from '../Editor.context'
 
@@ -23,8 +16,7 @@ const useStyles = createStyles((theme) => ({
 }))
 
 const SceneList = () => {
-    const { activeChapter, activeScene, addScene, reorderScene, setActiveScene } =
-        useEditorContext()
+    const { activeChapter, activeScene, addScene, reorderScene, setActiveScene } = useEditorContext()
     const { classes } = useStyles()
     const accordionRefs = useRef<Record<string, HTMLDivElement>>({})
 
@@ -67,6 +59,29 @@ const SceneList = () => {
             addScene(activeChapter.id), [activeChapter, addScene]
         }
     }, [activeChapter])
+
+    const goPriorScene = useCallback(() => {
+        if (activeScene && activeScene.order > 0 && activeChapter) {
+            const prior_scene = find(activeChapter.scenes, { order: activeScene.order - 1 })
+            if (prior_scene) {
+                setActiveScene(activeChapter, prior_scene)
+            }
+        }
+    }, [activeChapter, activeScene, setActiveScene])
+
+    const goNextScene = useCallback(() => {
+        if (activeScene && activeChapter && activeScene.order + 1 < activeChapter.scenes.length) {
+            const next_scene = find(activeChapter.scenes, { order: activeScene.order + 1 })
+            if (next_scene) {
+                setActiveScene(activeChapter, next_scene)
+            }
+        }
+    }, [activeScene, activeScene])
+
+    useHotkeys([
+        ['ctrl+PageUp', () => goPriorScene()],
+        ['ctrl+PageDown', () => goNextScene()]
+    ])
 
     if (activeChapter === undefined) {
         return (
@@ -113,8 +128,7 @@ const SceneList = () => {
                                                 ref={(ref) => {
                                                     draggable.innerRef(ref)
                                                     if (ref) {
-                                                        accordionRefs.current[scene.id] =
-                                                            ref
+                                                        accordionRefs.current[scene.id] = ref
                                                     }
                                                 }}
                                                 value={scene.id}
@@ -122,16 +136,12 @@ const SceneList = () => {
                                             >
                                                 <Accordion.Control
                                                     icon={
-                                                        <Center
-                                                            {...draggable.dragHandleProps}
-                                                        >
+                                                        <Center {...draggable.dragHandleProps}>
                                                             <IconGripVertical size='0.75rem' />
                                                         </Center>
                                                     }
                                                 >
-                                                    <Text weight='bold'>
-                                                        Scene #{scene.order + 1}
-                                                    </Text>
+                                                    <Text weight='bold'>Scene #{scene.order + 1}</Text>
                                                 </Accordion.Control>
                                                 <Accordion.Panel>
                                                     <ScenePanel
