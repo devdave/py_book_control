@@ -299,7 +299,7 @@ class Scene(Base):
         return session.execute(stmt).scalars().one()
 
     @classmethod
-    def List_all_characters_by_Uid(cls, session:Session, scene_uid:str) -> T.List[dict[str,str]]:
+    def List_all_characters_by_Uid(cls, session:Session, scene_uid:str) -> T.List['Character']:
         scene = cls.Fetch_by_uid(session, scene_uid)
         return scene.characters
 

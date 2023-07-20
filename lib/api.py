@@ -68,7 +68,7 @@ class BCAPI:
             return book.asdict(stripped=True)
 
     def find_source(self):
-        result = self.app.main_window.create_file_dialog(
+        return self.app.main_window.create_file_dialog(
             webview.OPEN_DIALOG, allow_multiple=False, file_types=self.FILE_TYPES
         )
 
@@ -241,11 +241,11 @@ class BCAPI:
             book = models.Book.Fetch_by_UID(session, book_uid)
             return [toon.asdict() for toon in book.characters]
 
-        return []
-
     def list_characters_by_scene(self, scene_id):
         with self.app.get_db() as session:
-            toons = models.Scene.List_all_characters_by_Uid(session, scene_id)
+            toons = models.Scene.List_all_characters_by_Uid(
+                session, scene_id
+            )  # type: [models.Character]
             if toons is not None:
                 return [toon.asdict() for toon in toons]
             else:
@@ -253,7 +253,7 @@ class BCAPI:
 
     def search_characters(self, query):
         with self.app.get_db() as session:
-            result = models.Character.Search(query)
+            result = models.Character.Search(session, query)
             if result is not None:
                 return [toon.asdict for toon in result]
 
