@@ -11,12 +11,13 @@ import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-import { LoadingOverlay, Text } from '@mantine/core'
+import { LoadingOverlay, TabsValue, Text } from '@mantine/core'
 import { AppModes, AppSettingValues, type Book, type UID } from '@src/types'
 
 import { Manifest } from '@src/modes/manifest/Manifest'
 import { useImmer } from 'use-immer'
 import { useSettings } from '@src/lib/use-settings'
+import { forEach } from 'lodash'
 
 interface AppWrapperProps {
     value: AppContextValue
@@ -86,7 +87,14 @@ const App: React.FC = () => {
         })
 
     const bulkDefaultSetter = (changeset: object[]): Promise<any> => api.bulkDefaultSettings(changeset)
-    const bulkFetchSettings = (): Promise<any> => api.fetchAllSettings()
+    const bulkFetchSettings = (): Promise<AppSettingValues> => api.fetchAllSettings()
+
+    const reconcileSettings = (values: NonNullable<unknown>[]) => {
+        console.log(`Got bulk settings ${JSON.stringify(values)}`)
+        forEach(values, (setting, idx) => {
+            queryClient.setQueryData(['setting', setting.name], () => setting.value)
+        })
+    }
 
     const settings = useSettings<AppSettingValues>({
         bulkFetchSettings,
@@ -106,7 +114,7 @@ const App: React.FC = () => {
 
     const doReady = useCallback(async () => {
         if (!defaultsDone) {
-            settings.reconcile()
+            settings.reconcile(reconcileSettings)
             setDefaultsDone(true)
         }
 
@@ -224,7 +232,7 @@ const App: React.FC = () => {
         <AppWrapper value={appContextValue}>
             <LoadingOverlay visible={!isReady} />
             {useMemo(() => {
-                if (!isReady) {
+                if (!isReady || !defaultsDone) {
                     return <LoadingOverlay visible />
                 }
 
