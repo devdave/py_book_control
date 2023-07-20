@@ -47,7 +47,9 @@ export const PromptModal = (promptText: string): Promise<string> =>
                     <TextInput
                         placeholder={promptText}
                         data-autofocus
-                        onChange={(evt) => (textValue = evt.currentTarget.value)}
+                        onChange={(evt) => {
+                            textValue = evt.currentTarget.value
+                        }}
                         onKeyDown={detectEnter}
                     />
                     <Button onClick={handleClick}>Create</Button>
@@ -99,7 +101,9 @@ class InputModal {
                         <TextInput
                             placeholder={prompt}
                             data-autofocus
-                            onChange={(evt) => (textValue = evt.currentTarget.value)}
+                            onChange={(evt) => {
+                                textValue = evt.currentTarget.value
+                            }}
                             onKeyDown={detectEnter}
                         />
                         <Button onClick={handleClick}>Create</Button>
@@ -141,7 +145,9 @@ class InputModal {
                     <TextInput
                         placeholder={prompt}
                         data-autofocus
-                        onChange={(evt) => (textValue = evt.currentTarget.value)}
+                        onChange={(evt) => {
+                            textValue = evt.currentTarget.value
+                        }}
                         onKeyDown={detectEnter}
                     />
                     <Button onClick={handleClick}>Create</Button>

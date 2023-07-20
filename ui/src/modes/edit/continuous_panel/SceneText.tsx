@@ -1,30 +1,17 @@
-import { useForm, UseFormReturnType } from '@mantine/form'
-import React, { Ref, useCallback, useEffect, useRef, useState } from 'react'
-import {
-    ActionIcon,
-    Button,
-    Center,
-    createStyles,
-    Divider,
-    Flex,
-    Group,
-    Indicator,
-    Skeleton,
-    Text,
-    Textarea,
-    TextInput
-} from '@mantine/core'
+import { useForm } from '@mantine/form'
+import React, { useCallback, useState } from 'react'
+import { Button, Flex, Indicator, Skeleton, Text, Textarea } from '@mantine/core'
 
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
-import { PopoutTextarea } from '@src/widget/PopoutTextarea'
-import { Chapter, Scene } from '@src/types'
+
+import { type Scene } from '@src/types'
 import { ResizeablePanels } from '@src/widget/ResizeablePanels'
 import { IndicatedTextarea } from '@src/widget/IndicatedTextarea'
 
 import { modals } from '@mantine/modals'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { IconWindowMaximize } from '@tabler/icons-react'
+
 import { useAppContext } from '@src/App.context'
 import { useEditorContext } from '../Editor.context'
 
@@ -148,9 +135,10 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
 
                 if (response.status === 'error') {
                     console.log('Got a bad response ', response)
-                    form.setValues({ content: sceneMD })
+                    // form.setValues({ content: sceneMD })
                     form.resetDirty()
-                    throw new Error(response.message)
+                    form.setFieldError('content', response.message)
+                    // throw new Error(response.message)
                 }
 
                 if (response.status === 'split') {

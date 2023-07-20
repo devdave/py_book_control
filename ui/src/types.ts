@@ -104,6 +104,7 @@ export type defaultSetterType<TTValues> = [keyof TTValues, TTValues[keyof TTValu
 // export type MutationFunction<settingsSetterType<TTValues> = { name: keyof TTValues; value: TTValues[keyof TTValues] }>
 
 export interface AppSettingValues {
+    [key: string]: string | number | boolean
     fontName: string
     fontWeight: number
     fontSize: number

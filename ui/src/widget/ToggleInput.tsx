@@ -32,7 +32,7 @@ export const ToggleInput: React.FC<ToggleInputProps> = ({ value, onChange, title
         () => {
             if (form.isDirty()) {
                 doUpdate()
-                if (state == 'input') {
+                if (state === 'input') {
                     toggle()
                 }
             }
@@ -42,17 +42,17 @@ export const ToggleInput: React.FC<ToggleInputProps> = ({ value, onChange, title
     )
 
     const handleKeyEnter = (evt: React.KeyboardEvent<HTMLInputElement>) => {
-        if (evt.key == 'Enter' || evt.key == 'enter') {
+        if (evt.key === 'Enter' || evt.key === 'enter') {
             if (form.isDirty()) {
                 doUpdate()
             }
             toggle()
-        } else if (evt.key == 'Escape') {
+        } else if (evt.key === 'Escape') {
             toggle()
         }
     }
 
-    if (state == 'input') {
+    if (state === 'input') {
         return (
             <Indicator
                 color='red'
