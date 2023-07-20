@@ -89,7 +89,6 @@ const App: React.FC = () => {
     const bulkFetchSettings = (): Promise<any> => api.fetchAllSettings()
 
     const settings = useSettings<AppSettingValues>({
-        defaultSetter: directDefaultSetter,
         bulkFetchSettings,
         bulkDefaultSetter,
         getter: fetchSetting,

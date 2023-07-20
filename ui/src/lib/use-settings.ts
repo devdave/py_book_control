@@ -16,19 +16,13 @@ export function useSettings<TValues extends object = Record<string, unknown>>({
     setter,
     getter,
     bulkFetchSettings,
-    bulkDefaultSetter,
-    defaultSetter
+    bulkDefaultSetter
 }: {
     defaultSettings: TValues
     bulkFetchSettings: () => Promise<object>
     setter: UseMutationResult<undefined, unknown, { name: string; value: string }, unknown>
     getter: (<GK extends keyof TValues>(name: GK) => UseQueryResult<TValues[GK]>) | undefined
     bulkDefaultSetter: (changeset: object[]) => Promise<object>
-    defaultSetter: (
-        name: keyof TValues,
-        new_value: TValues[keyof TValues],
-        name_type: string
-    ) => void | undefined
 }): SettingsManagerReturn<TValues> {
     const get = useCallback(
         <K extends keyof TValues>(name: K): UseQueryResult<TValues[K]> | undefined =>
