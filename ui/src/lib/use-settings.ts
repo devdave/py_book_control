@@ -2,23 +2,22 @@ import { map, Dictionary } from 'lodash'
 import { UseMutationResult, UseQueryResult } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { useImmer } from 'use-immer'
-import { object, string, unknown } from 'zod'
 
 type GenericTypes<TContainer> = TContainer[keyof TContainer]
-
-export interface SettingsManagerReturn<TValues> {
-    get: <Field extends keyof TValues>(name: Field) => UseQueryResult<TValues[Field]> | undefined
-    set: <Field extends keyof TValues>(name: Field, value: TValues[Field]) => TValues[Field]
-    reconcile: (onValuesLoaded?: (values: NonNullable<unknown>[]) => void) => void
-    makeState: <Field extends keyof TValues>(
-        name: Field
-    ) => [TValues[Field] | undefined, boolean, (value: TValues[Field]) => void]
-}
 
 export interface ApplicationSetting<TValues extends object = Record<string, unknown>> {
     name: keyof TValues
     value: TValues[keyof TValues]
     type: 'string' | 'boolean' | 'number' | 'undefined'
+}
+
+export interface SettingsManagerReturn<TValues extends object = Record<string, unknown>> {
+    get: <Field extends keyof TValues>(name: Field) => UseQueryResult<TValues[Field]> | undefined
+    set: <Field extends keyof TValues>(name: Field, value: TValues[Field]) => TValues[Field]
+    reconcile: (onValuesLoaded: (values: ApplicationSetting<TValues>[]) => void) => void
+    makeState: <Field extends keyof TValues>(
+        name: Field
+    ) => [TValues[Field] | undefined, boolean, (value: TValues[Field]) => void]
 }
 
 export function useSettings<TValues extends object = Record<string, unknown>>({
@@ -91,7 +90,7 @@ export function useSettings<TValues extends object = Record<string, unknown>>({
      *
      */
     const reconcile = useCallback(
-        (onValuesLoaded: undefined | ((changeset: ApplicationSetting<TValues>[]) => void) = undefined) => {
+        (onValuesLoaded: (changeset: ApplicationSetting<TValues>[]) => void) => {
             console.log('Ensuring defaults are set')
             if (!defaultSettings) {
                 throw new Error('Somehow missing default settings!  Cannot proceed')

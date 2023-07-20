@@ -16,7 +16,7 @@ import { AppModes, AppSettingValues, type Book, type UID } from '@src/types'
 
 import { Manifest } from '@src/modes/manifest/Manifest'
 import { useImmer } from 'use-immer'
-import { useSettings } from '@src/lib/use-settings'
+import { ApplicationSetting, useSettings } from '@src/lib/use-settings'
 import { forEach } from 'lodash'
 
 interface AppWrapperProps {
@@ -87,9 +87,10 @@ const App: React.FC = () => {
         })
 
     const bulkDefaultSetter = (changeset: object[]): Promise<any> => api.bulkDefaultSettings(changeset)
-    const bulkFetchSettings = (): Promise<AppSettingValues> => api.fetchAllSettings()
 
-    const reconcileSettings = (values: NonNullable<unknown>[]) => {
+    const bulkFetchSettings = (): Promise<ApplicationSetting<AppSettingValues>[]> => api.fetchAllSettings()
+
+    const reconcileSettings = (values: ApplicationSetting<AppSettingValues>[]) => {
         console.log(`Got bulk settings ${JSON.stringify(values)}`)
         forEach(values, (setting, idx) => {
             queryClient.setQueryData(['setting', setting.name], () => setting.value)
