@@ -127,6 +127,20 @@ export class ActiveElementHelper {
         return this.assignSubType(ActiveElementSubTypes.CHARACTER, character_id)
     }
 
+    public setFocus(name: string, id: string | undefined = undefined) {
+        this.updater((draft) => {
+            draft.focus = name
+            draft.focus_id = id
+        })
+    }
+
+    public isFocussed(name: string, id?: string) {
+        if (id) {
+            return this.state.focus === name && this.state.focus_id === id
+        }
+        return this.state.focus === name
+    }
+
     public get type() {
         return this.state.type
     }
@@ -141,6 +155,21 @@ export class ActiveElementHelper {
 
     public get subDetail() {
         return this.state.subdetail
+    }
+
+    public get focus() {
+        return this.state.focus
+    }
+
+    public get focus_id() {
+        return this.state.focus_id
+    }
+
+    clearFocus() {
+        this.updater((draft) => {
+            draft.focus = undefined
+            draft.focus_id = undefined
+        })
     }
 
     clearSubType() {
@@ -158,11 +187,8 @@ export class ActiveElementHelper {
     }
 
     clear() {
-        this.updater((draft) => {
-            draft.type = undefined
-            draft.detail = undefined
-            draft.subtype = undefined
-            draft.subdetail = undefined
-        })
+        this.clearType()
+        this.clearSubType()
+        this.clearFocus()
     }
 }
