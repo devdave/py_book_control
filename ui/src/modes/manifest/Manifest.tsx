@@ -42,10 +42,10 @@ export const Manifest = () => {
     const { data: books, isLoading: booksAreLoading } = fetchStrippedBooks()
 
     const {
-        data: highlightedBook,
-        status: highlightStatus,
-        isFetched: highlightedIsFetched,
-        isLoading: highlightedIsLoading
+        data: highlightedBook
+        // status: highlightStatus,
+        // isFetched: highlightedIsFetched,
+        // isLoading: highlightedIsLoading
     } = fetchStrippedBook(highlightBookID as UID)
 
     if (booksAreLoading) {
@@ -69,7 +69,6 @@ export const Manifest = () => {
         const response = await api.set_current_book(bookId)
         const book = await api.fetch_book_simple(bookId)
         setActiveBook(book)
-        console.log('Set activeBook to ', book)
         setAppMode(AppModes.EDITOR)
     }
 
