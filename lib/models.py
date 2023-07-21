@@ -155,12 +155,9 @@ class Book(Base):
             created_on=str(self.created_on),
             words=str(self.words),
             notes=self.notes,
+            chapters=[chapter.asdict(stripped) for chapter in self.chapters],
         )
-        if stripped is False:
-            data["chapters"] = [chapter.asdict() for chapter in self.chapters]
-        else:
-            # return an empty list so we can get a count
-            data["chapters"] = list(range(len(self.chapters)))
+
 
         return data
 
