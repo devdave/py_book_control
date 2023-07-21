@@ -44,7 +44,7 @@ log = getLogger(__name__)
 GEN_LEN = 18
 
 
-def generate_id(length):
+def generate_id(length) -> UniqueID:
     alphanum = string.ascii_letters + string.digits
     return "".join(random.choice(alphanum) for _ in range(length))
 
@@ -86,6 +86,7 @@ class Base(DeclarativeBase):
         session.execute(stmt)
 
     def touch(self):
+        # noinspection PyTypeChecker
         self.updated_on = DT.datetime.now()
 
     @classmethod
@@ -309,6 +310,8 @@ class Scene(Base):
             data["content"] = self.content
             data["location"] = self.location
             data["characters"] = [toon.asdict() for toon in self.characters]
+        else:
+             data['notes'] = self.notes and len(self.notes.strip()) > 0
 
         return data
 
@@ -454,7 +457,7 @@ class Setting(Base):
             cls.Set(session, name, item["value"])
 
     def asdict(self)->T.Mapping[str, common_setting_type]:
-        data = dict(name=self.name, type=self.type)
+        data = dict(name=self.name, type=self.type)  # type: T.Dict[str, common_setting_type]
         match self.type:
             case 'number':
                 data['value'] = int(self.val)
