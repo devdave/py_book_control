@@ -98,6 +98,8 @@ export interface ActiveElement {
     detail: string | undefined
     subtype: ActiveElementSubTypes | undefined
     subdetail: string | undefined
+    focus: string | undefined
+    focus_id: string | number | undefined
 }
 
 export type defaultSetterType<TTValues> = [keyof TTValues, TTValues[keyof TTValues], string]
