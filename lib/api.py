@@ -118,10 +118,10 @@ class BCAPI:
 
         return False
 
-    def fetch_stripped_chapters(self):
+    def fetch_stripped_chapters(self, book_uid: UniqueID):
         if self.app.has_active_book:
             with self.app.get_db() as session:
-                book = models.Book.Fetch_by_Id(session, self.app.book_id)
+                book = models.Book.Fetch_by_UID(session, book_uid)
                 return [chapter.asdict(stripped=True) for chapter in book.chapters]
 
         return []

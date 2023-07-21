@@ -104,9 +104,9 @@ class APIBridge {
     }
     
     
-    async fetch_stripped_chapters() {
+    async fetch_stripped_chapters(book_uid:any) {
         
-        return await this.boundary.remote("fetch_stripped_chapters", );
+        return await this.boundary.remote("fetch_stripped_chapters", book_uid);
     }
     
     
