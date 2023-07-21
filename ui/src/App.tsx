@@ -60,14 +60,6 @@ const App: React.FC = () => {
 
     const api = useMemo(() => new APIBridge(boundary), [boundary])
 
-    const directDefaultSetter = (
-        name: keyof AppSettingValues,
-        val: AppSettingValues[keyof AppSettingValues],
-        type: string
-    ) => {
-        api.setDefaultSetting(name, val, type).then()
-    }
-
     const settingsSetter = useMutation(({ name, value }) => api.setSetting(name, value), {
         onSuccess: (data: undefined, { name, value }: { name: string; value: string }) => {
             console.log(`Updated setting.${name} with ${value}`)
