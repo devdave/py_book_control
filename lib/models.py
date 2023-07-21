@@ -37,9 +37,7 @@ from sqlalchemy.orm import (
 from .log_helper import getLogger
 from .app_types import common_setting_type, UID, UniqueID
 
-
 log = getLogger(__name__)
-
 
 GEN_LEN = 18
 
@@ -98,6 +96,14 @@ class Base(DeclarativeBase):
     def __tablename__(self):
         return self.__name__
 
+    def update(self, changeset):
+        if not hasattr(self, 'SAFE_KEYS'):
+            raise AttributeError(f"Attempting to update {self} with `{changeset=}` but missing SAFE_KEYS")
+
+        for safe_key in getattr(self, 'SAFE_KEYS'):
+            if safe_key in changeset:
+                setattr(self, safe_key, changeset[safe_key])
+
 
 class Book(Base):
     uid: Mapped[str] = mapped_column(default=lambda: generate_id(GEN_LEN))
@@ -111,11 +117,17 @@ class Book(Base):
         collection_class=ordering_list("order"),
     )
 
+    SAFE_KEYS = ["title", "notes"]
+
+
     characters: Mapped[T.List["Character"]] = relationship(back_populates="book")
 
+    # scene_statuses: Mapped[T.List["SceneStatus"]] = relationship(back_populates="book",
+    #                                                              cascade='all, delete-orphan',
+    #                                                              )
+
     def update(self, change: T.Dict[str, str]):
-        SAFE_KEYS = ["title", "notes"]
-        for safe in SAFE_KEYS:
+        for safe in self.SAFE_KEYS:
             if safe in change:
                 setattr(self, safe, change[safe])
 
@@ -128,8 +140,8 @@ class Book(Base):
 
         book = cls.Fetch_by_UID(session, uid)
 
-        SAFE_KEYS = ["title", "notes"]
-        for safe in SAFE_KEYS:
+
+        for safe in cls.SAFE_KEYS:
             if safe in changeset:
                 setattr(book, safe, changeset[safe])
 
@@ -158,7 +170,6 @@ class Book(Base):
             chapters=[chapter.asdict(stripped) for chapter in self.chapters],
         )
 
-
         return data
 
     @hybrid_property
@@ -183,6 +194,8 @@ class Chapter(Base):
 
     book_id: Mapped[int] = mapped_column(ForeignKey("Book.id"))
     book: Mapped["Book"] = relationship(back_populates="chapters")
+
+    SAFE_KEYS = ["title", "order", "summary", "notes"]
 
     def asdict(self, stripped=False):
         data = dict(
@@ -223,12 +236,13 @@ class Chapter(Base):
 
         session.commit()
 
-    def update(self, chapter_data: dict[str, str]):
-        VALID = ["title", "order", "summary", "notes"]
-
-        for key, value in chapter_data.items():
-            if key in VALID:
-                setattr(self, key, value)
+    # def update(self, chapter_data: dict[str, str]):
+    #
+    #
+    #
+    #     for key, value in chapter_data.items():
+    #         if key in VALID:
+    #             setattr(self, key, value)
 
 
 Scenes2Characters = Table(
@@ -255,6 +269,9 @@ class Scene(Base):
     notes: Mapped[str] = mapped_column(default="")
     location: Mapped[str] = mapped_column(default="")
 
+    status: Mapped['SceneStatus'] = relationship(back_populates="scenes")
+    scene_status_id: Mapped[int] = mapped_column(ForeignKey('SceneStatus.id', name="FK_Scene2SceneStatus"), default=None, nullable=True)
+
     characters: Mapped[list["Character"]] = relationship(
         secondary=Scenes2Characters,
         back_populates="scenes",
@@ -265,21 +282,16 @@ class Scene(Base):
     chapter_id: Mapped[int] = mapped_column(ForeignKey("Chapter.id"))
     chapter: Mapped["Chapter"] = relationship(back_populates="scenes")
 
-    FMT_STR = "%y/%m/%d %H:%M:%S"
+    SAFE_KEY = [
+        "title",
+        "order",
+        "summary",
+        "content",
+        "notes",
+        "location",
+    ]
 
-    def update(self, newScene: dict[str, str]):
-        VALID = [
-            "title",
-            "order",
-            "summary",
-            "content",
-            "notes",
-            "location",
-            "characters",
-        ]
-        for key, value in newScene.items():
-            if key in VALID:
-                setattr(self, key, value)
+    FMT_STR = "%y/%m/%d %H:%M:%S"
 
     @hybrid_property
     def words(self):
@@ -308,7 +320,7 @@ class Scene(Base):
             data["location"] = self.location
             data["characters"] = [toon.asdict() for toon in self.characters]
         else:
-             data['notes'] = self.notes and len(self.notes.strip()) > 0
+            data['notes'] = self.notes and len(self.notes.strip()) > 0
 
         return data
 
@@ -319,7 +331,7 @@ class Scene(Base):
 
     @classmethod
     def List_all_characters_by_Uid(
-        cls, session: Session, scene_uid: str
+            cls, session: Session, scene_uid: str
     ) -> T.List["Character"]:
         scene = cls.Fetch_by_uid(session, scene_uid)
         return scene.characters
@@ -336,6 +348,8 @@ class Character(Base):
     scenes: Mapped[list[Scene]] = relationship(
         secondary=Scenes2Characters, back_populates="characters"
     )
+
+    SAFE_KEY = ["name", "notes"]
 
     @classmethod
     def Get_All(cls, session):
@@ -370,12 +384,6 @@ class Character(Base):
 
         return data
 
-    def update(self, character_change: dict[str, str]):
-        SAFE = ["name", "notes"]
-        for safe_key in SAFE:
-            if safe_key in character_change:
-                setattr(self, safe_key, character_change[safe_key])
-
     @classmethod
     def Fetch_by_Uid(cls, session: Session, scene_uid: str):
         stmt = select(cls).where(cls.uid == scene_uid)
@@ -407,6 +415,8 @@ class Setting(Base):
     val: Mapped[str]
     type: Mapped[str]
 
+    SAFE_KEY = ['val']
+
     @classmethod
     def Get(cls, session: Session, val_name: str) -> common_setting_type:
         stmt = select(cls).where(cls.name == val_name)
@@ -433,7 +443,7 @@ class Setting(Base):
             rec = session.execute(stmt).scalars().one()  # type: Setting
         except NoResultFound:
             raise ValueError(
-                f"Attempting to set {val_name} but it hasn't been set in the DB yet."
+                f"Attempting to set {val_name} but it hasn't been created in the DB yet and therefore has no default."
             )
         else:
             rec.name = val_name
@@ -446,14 +456,14 @@ class Setting(Base):
 
     @classmethod
     def BulkSet(
-        cls,
-        session: Session,
-        changeset: T.Dict[str, T.Dict[str, common_setting_type]],
+            cls,
+            session: Session,
+            changeset: T.Dict[str, T.Dict[str, common_setting_type]],
     ):
         for name, item in changeset.items():
             cls.Set(session, name, item["value"])
 
-    def asdict(self)->T.Mapping[str, common_setting_type]:
+    def asdict(self) -> T.Mapping[str, common_setting_type]:
         data = dict(name=self.name, type=self.type)  # type: T.Dict[str, common_setting_type]
         match self.type:
             case 'number':
@@ -469,7 +479,7 @@ class Setting(Base):
 
     @classmethod
     def SetDefault(
-        cls, session: Session, name: str, val: common_setting_type, setting_type
+            cls, session: Session, name: str, val: common_setting_type, setting_type
     ):
         stmt = select(cls).where(cls.name == name)
         try:
@@ -478,3 +488,13 @@ class Setting(Base):
             rec = cls(name=name, val=val, type=setting_type)
             session.add(rec)
             session.commit()
+
+
+class SceneStatus(Base):
+    uid: Mapped[UniqueID] = mapped_column(default=lambda: generate_id(GEN_LEN))
+    name: Mapped[str]
+
+    book: Mapped['Book'] = relationship("Book.id", back_populates="scene_statuses")
+    book_id: Mapped[int] = mapped_column(ForeignKey("Book.id", name="FK_SceneStatus2Book"))
+
+    scenes: Mapped[T.List['Scene']] = relationship(back_populates="status")
