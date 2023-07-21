@@ -146,7 +146,6 @@ export const Editor: React.FC = () => {
         createChapter.mutate({ book_id: activeBook.id, title: chapterTitle })
     }, [activeBook, createChapter])
 
-    //WTF did I do here?  What is this?
     const getChapter: (chapterId: string) => Promise<Chapter> = useCallback(
         async (chapterId: string) => api.fetch_chapter(chapterId),
         [api]
