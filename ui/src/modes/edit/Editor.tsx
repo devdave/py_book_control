@@ -25,8 +25,6 @@ import { useMutation, useQuery, useQueryClient, UseQueryResult } from '@tanstack
 import { useAppContext } from '@src/App.context'
 import { useImmer } from 'use-immer'
 import { ActiveElementHelper } from '@src/lib/ActiveElementHelper'
-import { string } from 'zod'
-import sceneList from '@src/modes/edit/editor_panel/SceneList'
 import { LeftPanel } from './LeftPanel'
 import { EditorContext, type EditorContextValue } from './Editor.context'
 
@@ -39,7 +37,9 @@ export const Editor: React.FC = () => {
         type: undefined,
         detail: undefined,
         subtype: undefined,
-        subdetail: undefined
+        subdetail: undefined,
+        focus: undefined,
+        focus_id: undefined
     })
 
     const activeElement = useMemo<ActiveElementHelper>(
@@ -64,7 +64,7 @@ export const Editor: React.FC = () => {
         dataUpdatedAt: indexUpdatedAt
     } = useQuery({
         queryKey: ['book', activeBook.id, 'index'],
-        queryFn: () => api.fetch_stripped_chapters()
+        queryFn: () => api.fetch_stripped_chapters(activeBook.id)
     })
 
     useEffect(() => {
@@ -219,6 +219,7 @@ export const Editor: React.FC = () => {
 
     const fetchScene = useCallback(
         (chapter_id: UID, scene_id: UID) =>
+            // eslint-disable-next-line react-hooks/rules-of-hooks
             useQuery<Scene, Error>({
                 queryFn: () => api.fetch_scene(scene_id),
                 queryKey: ['book', activeBook.id, 'chapter', chapter_id, 'scene', scene_id]
