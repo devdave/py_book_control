@@ -97,16 +97,18 @@ class Base(DeclarativeBase):
         return self.__name__
 
     def update(self, changeset):
-        if not hasattr(self, 'SAFE_KEYS'):
-            raise AttributeError(f"Attempting to update {self} with `{changeset=}` but missing SAFE_KEYS")
+        if not hasattr(self, "SAFE_KEYS"):
+            raise AttributeError(
+                f"Attempting to update {self} with `{changeset=}` but missing SAFE_KEYS"
+            )
 
-        for safe_key in getattr(self, 'SAFE_KEYS'):
+        for safe_key in getattr(self, "SAFE_KEYS"):
             if safe_key in changeset:
                 setattr(self, safe_key, changeset[safe_key])
 
 
 class Book(Base):
-    uid: Mapped[str] = mapped_column(default=lambda: generate_id(GEN_LEN))
+    uid: Mapped[UniqueID] = mapped_column(default=lambda: generate_id(GEN_LEN))
     title: Mapped[str]
     notes: Mapped[str] = mapped_column(default="")
 
@@ -119,12 +121,9 @@ class Book(Base):
 
     SAFE_KEYS = ["title", "notes"]
 
-
     characters: Mapped[T.List["Character"]] = relationship(back_populates="book")
 
-    # scene_statuses: Mapped[T.List["SceneStatus"]] = relationship(back_populates="book",
-    #                                                              cascade='all, delete-orphan',
-    #                                                              )
+    scene_statuses: Mapped[T.List["SceneStatus"]] = relationship(back_populates="book")
 
     def update(self, change: T.Dict[str, str]):
         for safe in self.SAFE_KEYS:
@@ -140,7 +139,6 @@ class Book(Base):
 
         book = cls.Fetch_by_UID(session, uid)
 
-
         for safe in cls.SAFE_KEYS:
             if safe in changeset:
                 setattr(book, safe, changeset[safe])
@@ -154,7 +152,7 @@ class Book(Base):
         return session.scalars(stmt).all()
 
     @classmethod
-    def Fetch_by_UID(cls, session: Session, uid: str):
+    def Fetch_by_UID(cls, session: Session, uid: UniqueID):
         stmt = select(cls).where(cls.uid == uid)
         return session.scalars(stmt).one()
 
@@ -178,7 +176,7 @@ class Book(Base):
 
 
 class Chapter(Base):
-    uid: Mapped[str] = mapped_column(default=lambda: generate_id(GEN_LEN))
+    uid: Mapped[UniqueID] = mapped_column(default=lambda: generate_id(GEN_LEN))
     title: Mapped[str]
     order: Mapped[int]
 
@@ -224,7 +222,7 @@ class Chapter(Base):
         return session.scalars(stmt)
 
     @classmethod
-    def Fetch_by_uid(cls, session: Session, chapter_uid) -> "Chapter":
+    def Fetch_by_uid(cls, session: Session, chapter_uid: UniqueID) -> "Chapter":
         stmt = select(cls).where(cls.uid == chapter_uid)
         return session.scalars(stmt).one()
 
@@ -260,7 +258,7 @@ Scenes2Characters = Table(
 
 
 class Scene(Base):
-    uid: Mapped[str] = mapped_column(default=lambda: generate_id(12))
+    uid: Mapped[UniqueID] = mapped_column(default=lambda: generate_id(12))
     title: Mapped[str]
     order: Mapped[int]
 
@@ -269,8 +267,12 @@ class Scene(Base):
     notes: Mapped[str] = mapped_column(default="")
     location: Mapped[str] = mapped_column(default="")
 
-    status: Mapped['SceneStatus'] = relationship(back_populates="scenes")
-    scene_status_id: Mapped[int] = mapped_column(ForeignKey('SceneStatus.id', name="FK_Scene2SceneStatus"), default=None, nullable=True)
+    status: Mapped["SceneStatus"] = relationship(back_populates="scenes")
+    scene_status_id: Mapped[int] = mapped_column(
+        ForeignKey("SceneStatus.id", name="FK_Scene2SceneStatus"),
+        default=None,
+        nullable=True,
+    )
 
     characters: Mapped[list["Character"]] = relationship(
         secondary=Scenes2Characters,
@@ -311,6 +313,8 @@ class Scene(Base):
             created_on=str(self.created_on),
             updated_on=str(self.updated_on),
             words=self.words,
+            status=self.status.name if self.status else None,
+            status_id=self.status.id if self.status else None,
         )
 
         if stripped is False:
@@ -320,25 +324,25 @@ class Scene(Base):
             data["location"] = self.location
             data["characters"] = [toon.asdict() for toon in self.characters]
         else:
-            data['notes'] = self.notes and len(self.notes.strip()) > 0
+            data["notes"] = self.notes and len(self.notes.strip()) > 0
 
         return data
 
     @classmethod
-    def Fetch_by_uid(cls, session: Session, scene_uid: str) -> "Scene":
+    def Fetch_by_uid(cls, session: Session, scene_uid: UniqueID) -> "Scene":
         stmt = select(cls).where(cls.uid == scene_uid)
         return session.execute(stmt).scalars().one()
 
     @classmethod
     def List_all_characters_by_Uid(
-            cls, session: Session, scene_uid: str
+        cls, session: Session, scene_uid: UniqueID
     ) -> T.List["Character"]:
         scene = cls.Fetch_by_uid(session, scene_uid)
         return scene.characters
 
 
 class Character(Base):
-    uid: Mapped[str] = mapped_column(default=lambda: generate_id(GEN_LEN))
+    uid: Mapped[UniqueID] = mapped_column(default=lambda: generate_id(GEN_LEN))
     name: Mapped[str] = mapped_column(unique=True)
     notes: Mapped[str] = mapped_column(default="")
 
@@ -385,7 +389,7 @@ class Character(Base):
         return data
 
     @classmethod
-    def Fetch_by_Uid(cls, session: Session, scene_uid: str):
+    def Fetch_by_Uid(cls, session: Session, scene_uid: UniqueID):
         stmt = select(cls).where(cls.uid == scene_uid)
         return session.execute(stmt).scalars().one()
 
@@ -400,12 +404,14 @@ class Character(Base):
             return record
 
     @classmethod
-    def Fetch_by_Uid_and_Book(cls, session: Session, book: Book, character_uid: UID):
+    def Fetch_by_Uid_and_Book(
+        cls, session: Session, book: Book, character_uid: UniqueID
+    ):
         stmt = select(cls).where(and_(cls.book == book, cls.uid == character_uid))
         return session.execute(stmt).scalars().one()
 
     @classmethod
-    def Delete_by_Uid(cls, session: Session, character_uid: str):
+    def Delete_by_Uid(cls, session: Session, character_uid: UniqueID):
         stmt = delete(cls).where(cls.uid == character_uid)
         return session.execute(stmt)
 
@@ -415,7 +421,7 @@ class Setting(Base):
     val: Mapped[str]
     type: Mapped[str]
 
-    SAFE_KEY = ['val']
+    SAFE_KEY = ["val"]
 
     @classmethod
     def Get(cls, session: Session, val_name: str) -> common_setting_type:
@@ -456,22 +462,24 @@ class Setting(Base):
 
     @classmethod
     def BulkSet(
-            cls,
-            session: Session,
-            changeset: T.Dict[str, T.Dict[str, common_setting_type]],
+        cls,
+        session: Session,
+        changeset: T.Dict[str, T.Dict[str, common_setting_type]],
     ):
         for name, item in changeset.items():
             cls.Set(session, name, item["value"])
 
     def asdict(self) -> T.Mapping[str, common_setting_type]:
-        data = dict(name=self.name, type=self.type)  # type: T.Dict[str, common_setting_type]
+        data = dict(
+            name=self.name, type=self.type
+        )  # type: T.Dict[str, common_setting_type]
         match self.type:
-            case 'number':
-                data['value'] = int(self.val)
-            case 'boolean' | 'bool':
-                data['value'] = bool(int(self.val))
-            case 'string':
-                data['value'] = self.val
+            case "number":
+                data["value"] = int(self.val)
+            case "boolean" | "bool":
+                data["value"] = bool(int(self.val))
+            case "string":
+                data["value"] = self.val
             case _:
                 data["value"] = self.val
 
@@ -479,7 +487,7 @@ class Setting(Base):
 
     @classmethod
     def SetDefault(
-            cls, session: Session, name: str, val: common_setting_type, setting_type
+        cls, session: Session, name: str, val: common_setting_type, setting_type
     ):
         stmt = select(cls).where(cls.name == name)
         try:
@@ -493,8 +501,57 @@ class Setting(Base):
 class SceneStatus(Base):
     uid: Mapped[UniqueID] = mapped_column(default=lambda: generate_id(GEN_LEN))
     name: Mapped[str]
+    color: Mapped[str] = mapped_column(default="gray")
 
-    book: Mapped['Book'] = relationship("Book.id", back_populates="scene_statuses")
-    book_id: Mapped[int] = mapped_column(ForeignKey("Book.id", name="FK_SceneStatus2Book"))
+    book: Mapped["Book"] = relationship(back_populates="scene_statuses")
+    book_id: Mapped[int] = mapped_column(
+        ForeignKey("Book.id", name="FK_SceneStatus2Book")
+    )
 
-    scenes: Mapped[T.List['Scene']] = relationship(back_populates="status")
+    scenes: Mapped[T.List["Scene"]] = relationship(back_populates="status")
+
+    SAFE_KEYS = ["name", "color"]
+
+    def asdict(self, stripped=True):
+        data = dict(id=self.uid, name=self.name)
+
+        if stripped is False:
+            data["scenes"] = [
+                dict(id=scene.uid, title=scene.title) for scene in self.scenes
+            ]
+
+        return data
+
+    @classmethod
+    def Fetch_by_Uid(cls, session, scene_uid: UniqueID) -> "SceneStatus":
+        stmt = select(cls).where(cls.uid == scene_uid)
+        return session.execute(stmt).scalars().one()
+
+    @classmethod
+    def Fetch_by_Name(
+        cls, session, book_uid: UniqueID, status_name: str
+    ) -> T.Optional["SceneStatus"]:
+        # TODO security threat!
+        stmt = select(cls).where(
+            cls.book.uid == book_uid, cls.name.ilike(f"{status_name}%")
+        )
+        print("Fetch by name", stmt)
+        return session.execute(stmt).scalars().one_or_none()
+
+    @classmethod
+    def Fetch_All(cls, session: Session) -> T.Sequence["SceneStatus"]:
+        stmt = select(cls)
+        return session.execute(stmt).scalars().all()
+
+    @classmethod
+    def Create(cls, session, book_uid: UniqueID, name: str):
+        record = cls.Fetch_by_Name(session, book_uid, name)
+        if record is not None:
+            raise ValueError(f"{name} already exists")
+        book = Book.Fetch_by_UID(session, book_uid)
+        return cls(name=name, book=book)
+
+    @classmethod
+    def Delete(cls, session: Session, status_uid: UniqueID):
+        stmt = delete(cls).where(cls.uid == status_uid)
+        return session.execute(stmt)
