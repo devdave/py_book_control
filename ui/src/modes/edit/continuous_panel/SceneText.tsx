@@ -15,6 +15,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useAppContext } from '@src/App.context'
 import { useHotkeys } from '@mantine/hooks'
 import { find } from 'lodash'
+import { modifySelection } from '@testing-library/user-event/event/selection/modifySelection'
 import { useEditorContext } from '../Editor.context'
 
 interface SceneTextProps {
@@ -30,12 +31,15 @@ const compile_scene2md = (scene: Scene) => {
 }
 
 export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
-    const { api, activeBook } = useAppContext()
+    const { api, activeBook, settings } = useAppContext()
 
     const { activeScene, activeChapter, setActiveScene, setActiveChapter, updateScene, deleteScene } =
         useEditorContext()
 
-    const [sceneMD, setSceneMD] = useState('')
+    const [debounceTime, debounceIsloading] = settings.makeState('debounceTime')
+    const [dontask2delete, dontask2deleteIsLoadibng] = settings.makeState('dontAskOnClear2Delete')
+    const [dontask2split, dontask2splitIsLoading] = settings.makeState('dontAskOnSplit')
+
     const queryClient = useQueryClient()
 
     const form = useForm<Partial<Scene>>({
@@ -185,7 +189,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                 }
 
                 updateScene(new_scene as Scene)
-                setSceneMD((prev) => response.markdown)
+
                 form.resetDirty()
                 return null
             }
