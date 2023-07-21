@@ -147,8 +147,10 @@ export const Editor: React.FC = () => {
     }, [activeBook, createChapter])
 
     //WTF did I do here?  What is this?
-    const getChapter: (chapterId: string) => Promise<Chapter> = async (chapterId: string) =>
-        api.fetch_chapter(chapterId)
+    const getChapter: (chapterId: string) => Promise<Chapter> = useCallback(
+        async (chapterId: string) => api.fetch_chapter(chapterId),
+        [api]
+    )
 
     const fetchChapter = useCallback(
         (book_id: UID, chapter_id: UID) =>
