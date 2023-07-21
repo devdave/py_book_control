@@ -1,4 +1,5 @@
-export type UID = string
+export type UniqueId = string
+export type UID = UniqueId
 
 export interface Base {
     [key: string]: any
@@ -6,6 +7,11 @@ export interface Base {
     id: UID
     created_on?: string
     updated_on?: string
+}
+
+export interface SceneStatus extends Base {
+    name: string
+    scene?: Scene
 }
 
 export interface Book extends Base {
@@ -20,6 +26,8 @@ export interface SceneIndex extends Base {
     title: string
     order: number
     words: number
+    status: SceneStatus['name']
+    status_id?: UID
 }
 
 export interface Scene extends SceneIndex {
@@ -114,4 +122,10 @@ export interface AppSettingValues {
     debounceTime: number
     dontAskOnSplit: boolean
     dontAskOnClear2Delete: boolean
+}
+
+export interface attachSceneStatus2SceneProps {
+    scene_uid?: Scene['id']
+    status_uid?: SceneStatus['id']
+    status_name?: string
 }

@@ -11,14 +11,16 @@ import { CompositeHeader } from '@src/modes/edit/CompositeHeader'
 
 import {
     type ActiveElement,
+    type attachSceneStatus2SceneProps,
     type Book,
     type Chapter,
     type ChapterIndex,
-    Character,
+    type Character,
     EditModes,
     type Scene,
     type SceneIndex,
-    UID
+    type SceneStatus,
+    type UID
 } from '@src/types'
 import { useMutation, useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query'
 
@@ -103,6 +105,7 @@ export const Editor: React.FC = () => {
      *
      */
 
+    //TODO get rid of this!
     const changeBookTitle = useMutation<Book, Error, string>({
         mutationFn: (new_title: string) => api.update_book_title(activeBook.id, new_title),
         onSuccess: (response: Book, new_title: string) => {
@@ -355,6 +358,53 @@ export const Editor: React.FC = () => {
         }
     })
 
+    const _attachSceneStatus2Scene = useMutation<Scene, Error, attachSceneStatus2SceneProps>({
+        mutationKey: ['scene', 'status_update'],
+        mutationFn: (changeset: attachSceneStatus2SceneProps) =>
+            api.attach_scene_status2scene(changeset.scene_uid, changeset.status_uid),
+        onSuccess: (new_scene: Scene) => {
+            queryClient.setQueryData(
+                ['book', activeBook.id, 'chapter', new_scene.chapterId, 'scene', new_scene.id],
+                () => new_scene
+            )
+
+            queryClient
+                .invalidateQueries({
+                    queryKey: ['book', activeBook.id, 'chapter', new_scene.chapterId, 'scene', new_scene.id],
+                    exact: true,
+                    refetchType: 'active'
+                })
+                .then()
+            queryClient
+                .invalidateQueries({
+                    queryKey: ['book', activeBook.id, 'sceneStatuses'],
+                    exact: true,
+                    refetchType: 'active'
+                })
+                .then()
+        }
+    })
+
+    const attachSceneStatus2Scene = useCallback(
+        (book_uid: Book['id'], scene: Scene, status: SceneStatus) => {
+            api.attach_scene_status2scene(scene.id, status.id).then(() => {
+                queryClient
+                    .invalidateQueries({
+                        queryKey: ['book', book_uid, 'chapter', scene.chapterId, 'scene', scene.id],
+                        exact: true,
+                        refetchType: 'active'
+                    })
+                    .then()
+                queryClient.invalidateQueries({
+                    queryKey: ['book', book_uid, 'sceneStatuses'],
+                    exact: true,
+                    refetchType: 'active'
+                })
+            })
+        },
+        [api, queryClient]
+    )
+
     const updateScene = useCallback(
         async (scene: Scene) => {
             changeScene.mutate(scene)
@@ -597,6 +647,98 @@ export const Editor: React.FC = () => {
         [api]
     )
 
+    /**
+     * Scene Status
+     *
+     *
+     *    ______                       _____ __       __
+     *   / ____|                      / ____| |      | |
+     *  | (___   ___ ___ _ __   ___  | (___ | |_ __ _| |_ _   _ ___
+     *   \___ \ / __/ _ \ '_ \ / _ \  \___ \| __/ _` | __| | | / __|
+     *   ____) | (_|  __/ | | |  __/  ____) | || (_| | |_| |_| \__ \
+     *  |_____/ \___\___|_| |_|\___| |_____/ \__\__,_|\__|\__,_|___/
+     *
+     *
+     *
+     *
+     */
+
+    const fetchAllSceneStatuses = useCallback(
+        (book_id: Book['id']): UseQueryResult<SceneStatus[], Error> =>
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            useQuery({
+                queryKey: ['book', book_id, 'sceneStatuses'],
+                queryFn: () => api.fetch_all_scene_statuses(book_id)
+            }),
+        [api]
+    )
+
+    const fetchSceneStatus = useCallback(
+        (book_uid: Book['id'], status_uid: SceneStatus['id']): UseQueryResult<SceneStatus, Error> =>
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            useQuery({
+                queryKey: ['book', book_uid, 'sceneStatus', status_uid],
+                queryFn: () => api.fetch_scene_status(status_uid)
+            }),
+        [api]
+    )
+
+    const createSceneStatus = (name: SceneStatus['name'], book: Book, scene?: Scene) => {
+        api.create_scene_status(name, book.id, scene?.id).then(() => {
+            queryClient
+                .invalidateQueries({
+                    queryKey: ['book', book.id, 'sceneStatuses'],
+                    exact: true,
+                    refetchType: 'active'
+                })
+                .then()
+            if (scene) {
+                queryClient
+                    .invalidateQueries({
+                        queryKey: ['book', book.id, 'chapter', scene.chapterId, 'scene', scene.id],
+                        exact: true,
+                        refetchType: 'active'
+                    })
+                    .then()
+            }
+        })
+    }
+
+    interface _updateSceneStatusArgs {
+        book_uid: Book['id']
+        status_uid: SceneStatus['id']
+        changeset: SceneStatus
+    }
+
+    const _updateSceneStatus = useMutation({
+        mutationKey: ['sceneStatus', 'updating'],
+        mutationFn: ({ status_uid, changeset }: _updateSceneStatusArgs) =>
+            api.update_scene_status(status_uid, changeset),
+        onSuccess: (new_status: SceneStatus, params: _updateSceneStatusArgs) => {
+            queryClient
+                .invalidateQueries({
+                    queryKey: ['book', params.book_uid, 'sceneStatuses'],
+                    exact: true,
+                    refetchType: 'active'
+                })
+                .then()
+        }
+    })
+    const updateSceneStatus = (book_uid: Book['id'], status_uid: SceneStatus['id'], changeset: SceneStatus) =>
+        _updateSceneStatus.mutate({ status_uid, book_uid, changeset })
+
+    const deleteSceneStatus = (book_uid: Book['id'], status_uid: SceneStatus['id']) => {
+        api.delete_scene_status(status_uid).then(() => {
+            queryClient
+                .invalidateQueries({
+                    queryKey: ['book', book_uid, 'sceneStatuses'],
+                    exact: true,
+                    refetchType: 'active'
+                })
+                .then()
+        })
+    }
+
     const editorContextValue = useMemo<EditorContextValue>(
         () => ({
             index,
@@ -625,7 +767,13 @@ export const Editor: React.FC = () => {
             assignCharacter2Scene,
             createNewCharacterAndAdd2Scene,
             listCharactersByScene,
-            listAllCharacters
+            listAllCharacters,
+            fetchAllSceneStatuses,
+            fetchSceneStatus,
+            createSceneStatus,
+            updateSceneStatus,
+            deleteSceneStatus,
+            attachSceneStatus2Scene
         }),
         [
             index,
@@ -634,9 +782,9 @@ export const Editor: React.FC = () => {
             fetchChapter,
             addChapter,
             updateChapter,
+            reorderChapter,
             editMode,
             api,
-            reorderChapter,
             reorderScene,
             setActiveChapter,
             setActiveScene,
@@ -653,7 +801,13 @@ export const Editor: React.FC = () => {
             assignCharacter2Scene,
             createNewCharacterAndAdd2Scene,
             listCharactersByScene,
-            listAllCharacters
+            listAllCharacters,
+            fetchAllSceneStatuses,
+            fetchSceneStatus,
+            createSceneStatus,
+            updateSceneStatus,
+            deleteSceneStatus,
+            attachSceneStatus2Scene
         ]
     )
 
