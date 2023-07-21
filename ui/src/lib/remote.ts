@@ -170,15 +170,21 @@ class APIBridge {
     }
     
     
-    async list_all_characters(book_uid:string) {
+    async attach_scene_status2scene(scene_uid:any, status_uid:any) {
+        
+        return await this.boundary.remote("attach_scene_status2scene", scene_uid, status_uid);
+    }
+    
+    
+    async list_all_characters(book_uid:any) {
         
         return await this.boundary.remote("list_all_characters", book_uid);
     }
     
     
-    async list_characters_by_scene(scene_id:any) {
+    async list_characters_by_scene(scene_uid:any) {
         
-        return await this.boundary.remote("list_characters_by_scene", scene_id);
+        return await this.boundary.remote("list_characters_by_scene", scene_uid);
     }
     
     
@@ -251,6 +257,36 @@ class APIBridge {
     async setDefaultSetting(name:any, val:any, type:any) {
         
         return await this.boundary.remote("setDefaultSetting", name, val, type);
+    }
+    
+    
+    async fetch_all_scene_statuses(book_uid:any) {
+        
+        return await this.boundary.remote("fetch_all_scene_statuses", book_uid);
+    }
+    
+    
+    async fetch_scene_status(status_uid:any) {
+        
+        return await this.boundary.remote("fetch_scene_status", status_uid);
+    }
+    
+    
+    async create_scene_status(scene_name:string, book_uid:any, scene_uid:any = None) {
+        
+        return await this.boundary.remote("create_scene_status", scene_name, book_uid, scene_uid);
+    }
+    
+    
+    async update_scene_status(status_uid:any, changeset:any) {
+        
+        return await this.boundary.remote("update_scene_status", status_uid, changeset);
+    }
+    
+    
+    async delete_scene_status(status_uid:any) {
+        
+        return await this.boundary.remote("delete_scene_status", status_uid);
     }
     
 
