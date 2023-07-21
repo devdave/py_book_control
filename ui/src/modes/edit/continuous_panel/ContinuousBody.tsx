@@ -4,17 +4,65 @@ import { useForm } from '@mantine/form'
 import { useAppContext } from '@src/App.context'
 import { Chapter, type Scene } from '@src/types'
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
+import { find } from 'lodash'
+import { useHotkeys } from '@mantine/hooks'
 import { useEditorContext } from '../Editor.context'
 import { SceneText } from './SceneText'
 
 export const ContinuousBody: React.FC = () => {
-    const { api, activeBook, debounceTime } = useAppContext()
-    const { activeChapter, activeScene, addScene, fetchChapter, updateChapter } = useEditorContext()
+    const { api, activeBook, settings } = useAppContext()
+    const {
+        activeChapter,
+        activeScene,
+        addScene,
+        fetchChapter,
+        updateChapter,
+        setActiveChapter,
+        setActiveScene
+    } = useEditorContext()
     const paperRefs = useRef<Record<string, HTMLDivElement>>({})
+
+    const [debounceTime, debounceIsloading, setDebounceTime] = settings.makeState('debounceTime')
 
     if (activeChapter === undefined) {
         throw Error('Data integrity issue, activechapter is not defined')
     }
+
+    const prevScene = () => {
+        if (activeScene && activeScene.order > 0) {
+            const prior = find(activeChapter?.scenes, { order: activeScene.order - 1 })
+            prior && setActiveScene(activeChapter, prior)
+        } else if (activeChapter && activeChapter.order > 0) {
+            const prior_order = activeChapter.order - 1
+            const prior = find(activeBook.chapters, { order: prior_order })
+            if (prior) {
+                const last_scene = prior.scenes[prior.scenes.length - 1]
+                last_scene && setActiveScene(prior, last_scene)
+            }
+        }
+    }
+    const nextScene = () => {
+        if (activeScene && activeScene.order + 1 < activeChapter!.scenes.length) {
+            const next_order = activeScene.order + 1
+            const next = find(activeChapter!.scenes, { order: next_order })
+            next && setActiveScene(activeChapter, next)
+        } else if (activeChapter.order < activeBook.chapters.length - 1) {
+            const next_order = activeChapter.order + 1
+            const next_chapter = find(activeBook.chapters, { order: next_order })
+            if (next_chapter) {
+                const first_scene = next_chapter.scenes[0]
+                first_scene && setActiveScene(next_chapter, first_scene)
+            }
+        }
+    }
+
+    useHotkeys(
+        [
+            ['ctrl+PageUp', () => prevScene()],
+            ['ctrl+PageDown', () => nextScene()]
+        ],
+        []
+    )
 
     const { data: chapter, isLoading: chapterIsLoading } = fetchChapter(activeBook.id, activeChapter.id)
 
@@ -49,7 +97,7 @@ export const ContinuousBody: React.FC = () => {
             }
         },
         [form.values],
-        { delay: debounceTime, runOnInitialize: false }
+        { delay: debounceTime || 900, runOnInitialize: false }
     )
 
     useEffect(() => {
