@@ -13,6 +13,8 @@ import { modals } from '@mantine/modals'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { useAppContext } from '@src/App.context'
+import { useHotkeys } from '@mantine/hooks'
+import { find } from 'lodash'
 import { useEditorContext } from '../Editor.context'
 
 interface SceneTextProps {
@@ -30,7 +32,8 @@ const compile_scene2md = (scene: Scene) => {
 export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
     const { api, activeBook } = useAppContext()
 
-    const { activeScene, activeChapter, setActiveScene, updateScene, deleteScene } = useEditorContext()
+    const { activeScene, activeChapter, setActiveScene, setActiveChapter, updateScene, deleteScene } =
+        useEditorContext()
 
     const [sceneMD, setSceneMD] = useState('')
     const queryClient = useQueryClient()
@@ -284,12 +287,12 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                     <summary>Characters</summary>
                 </details>
 
-                <Button
-                    style={{ position: 'absolute', bottom: '0px' }}
-                    onClick={() => deleteScene(scene.chapterId, scene.id)}
-                >
-                    Delete Scene
-                </Button>
+                {/*<Button*/}
+                {/*    style={{ position: 'absolute', bottom: '0px' }}*/}
+                {/*    onClick={() => deleteScene(scene.chapterId, scene.id)}*/}
+                {/*>*/}
+                {/*    Delete Scene*/}
+                {/*</Button>*/}
             </Flex>
         </ResizeablePanels>
     )
