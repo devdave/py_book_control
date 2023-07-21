@@ -85,33 +85,17 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                 ]}
             />
 
-            <Divider
-                color={
-                    theme.colorScheme === 'light'
-                        ? theme.colors.gray[3]
-                        : theme.colors.dark[4]
-                }
-            />
+            <Divider color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]} />
             <Button
                 size='xs'
-                color={
-                    theme.colorScheme === 'light'
-                        ? theme.colors.gray[3]
-                        : theme.colors.dark[4]
-                }
+                color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]}
                 onClick={() => addChapter()}
             >
                 <IconPlus />
                 Create new chapter
             </Button>
 
-            <Divider
-                color={
-                    theme.colorScheme === 'light'
-                        ? theme.colors.gray[3]
-                        : theme.colors.dark[4]
-                }
-            />
+            <Divider color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]} />
             <ScrollArea>
                 {/*Book link*/}
                 <NavLink
@@ -163,8 +147,7 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                     ref={droppable.innerRef}
                                 >
                                     {map(index, (chapter, chapterIdx) => {
-                                        const isChapterActive =
-                                            activeElement.isThisChapter(chapter)
+                                        const isChapterActive = activeElement.isThisChapter(chapter)
                                         // const isChapterActive = chapter.id === activeChapter?.id
 
                                         return (
@@ -178,9 +161,7 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                                         active={isChapterActive}
                                                         childrenOffset={1}
                                                         icon={
-                                                            <Center
-                                                                {...draggable.dragHandleProps}
-                                                            >
+                                                            <Center {...draggable.dragHandleProps}>
                                                                 <IconGripVertical size='0.75rem' />
                                                             </Center>
                                                         }
@@ -189,14 +170,10 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                                                 <Text weight='bold'>
                                                                     {chapter.order + 1}.
                                                                 </Text>
-                                                                <Text>
-                                                                    {chapter.title}
-                                                                </Text>
+                                                                <Text>{chapter.title}</Text>
                                                             </Group>
                                                         }
-                                                        onClick={() =>
-                                                            onChapterClick(chapter)
-                                                        }
+                                                        onClick={() => onChapterClick(chapter)}
                                                         opened={isChapterActive}
                                                         ref={draggable.innerRef}
                                                         rightSection={
@@ -209,22 +186,15 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                                         {...draggable.draggableProps}
                                                     >
                                                         {chapter.scenes
-                                                            .sort(
-                                                                (a, b) =>
-                                                                    a.order - b.order
-                                                            )
+                                                            .sort((a, b) => a.order - b.order)
                                                             .map((scene) => {
                                                                 const isSceneActive =
-                                                                    activeElement.isThisScene(
-                                                                        scene
-                                                                    )
+                                                                    activeElement.isThisScene(scene)
                                                                 // const isSceneActive = scene.id === activeScene?.id
 
                                                                 return (
                                                                     <NavLink
-                                                                        active={
-                                                                            isSceneActive
-                                                                        }
+                                                                        active={isSceneActive}
                                                                         key={`${scene.id} ${scene.updated_on}`}
                                                                         label={
                                                                             <Group
@@ -233,27 +203,20 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                                                                 pl='xl'
                                                                             >
                                                                                 <Text weight='bold'>
-                                                                                    {chapter.order +
-                                                                                        1}
-                                                                                    .
-                                                                                    {scene.order +
-                                                                                        1}
-                                                                                    .
+                                                                                    {chapter.order + 1}.
+                                                                                    {scene.order + 1}.
                                                                                 </Text>
-                                                                                <Text>
-                                                                                    {
-                                                                                        scene.title
-                                                                                    }
-                                                                                </Text>
+                                                                                <Text>{scene.title}</Text>
                                                                             </Group>
                                                                         }
                                                                         onClick={() =>
-                                                                            setActiveScene(
-                                                                                chapter,
-                                                                                scene
-                                                                            )
+                                                                            setActiveScene(chapter, scene)
                                                                         }
-                                                                    />
+                                                                    >
+                                                                        {scene.notes && (
+                                                                            <NavLink>Notes</NavLink>
+                                                                        )}
+                                                                    </NavLink>
                                                                 )
                                                             })}
                                                     </NavLink>
