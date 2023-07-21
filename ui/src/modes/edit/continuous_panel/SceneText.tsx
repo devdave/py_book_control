@@ -1,10 +1,10 @@
 import { useForm } from '@mantine/form'
 import React, { useCallback, useState } from 'react'
-import { Button, Flex, Indicator, Skeleton, Text, Textarea } from '@mantine/core'
+import { Flex, Indicator, Select, Skeleton, Text, Textarea } from '@mantine/core'
 
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 
-import { type Scene } from '@src/types'
+import { type Scene, SceneStatus } from '@src/types'
 import { ResizeablePanels } from '@src/widget/ResizeablePanels'
 import { IndicatedTextarea } from '@src/widget/IndicatedTextarea'
 
@@ -33,8 +33,26 @@ const compile_scene2md = (scene: Scene) => {
 export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
     const { api, activeBook, settings } = useAppContext()
 
-    const { activeScene, activeChapter, setActiveScene, setActiveChapter, updateScene, deleteScene } =
-        useEditorContext()
+    const {
+        activeScene,
+        activeChapter,
+        setActiveScene,
+        setActiveChapter,
+        updateScene,
+        deleteScene,
+        fetchAllSceneStatuses
+    } = useEditorContext()
+
+    const {
+        data: sceneStatuses,
+        isLoading: sceneStatusesIsLoading,
+        status: sceneStatusesStatus
+    } = fetchAllSceneStatuses(activeBook.id)
+
+    const select_statuses =
+        sceneStatuses === undefined
+            ? []
+            : sceneStatuses.map((status: SceneStatus) => ({ label: status.name, value: status.id }))
 
     const [debounceTime, debounceIsloading] = settings.makeState('debounceTime')
     const [dontask2delete, dontask2deleteIsLoadibng] = settings.makeState('dontAskOnClear2Delete')
@@ -127,6 +145,11 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                 const response = await api.process_scene_markdown(scene.id, form.values.content as string)
 
                 if (response.status === 'empty') {
+                    if (dontask2delete === true) {
+                        deleteScene(scene.chapterId, scene.id)
+                        return null
+                    }
+
                     console.log(`Got empty: ${form.values.content} - ${form.values.content?.length}`)
                     form.resetDirty()
                     modals.openConfirmModal({
@@ -151,6 +174,13 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                 if (response.status === 'split') {
                     console.log('Split!')
                     console.log(response)
+
+                    if (dontask2split === true) {
+                        doSplit(response).then(() => {
+                            form.resetDirty()
+                        })
+                        return null
+                    }
 
                     modals.openConfirmModal({
                         modalId: 'splitModal',
@@ -201,7 +231,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
             }
         },
         [form.values],
-        { delay: 1000, runOnInitialize: false }
+        { delay: debounceTime || 1000, runOnInitialize: false }
     )
 
     if (scene === undefined) {
@@ -262,6 +292,14 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                     minWidth: '8rem'
                 }}
             >
+                <Select
+                    data={select_statuses}
+                    label={<Text>Status</Text>}
+                    searchable
+                    creatable
+                    getCreateLabel={(query) => <Text>{`Create new status ${query}`}</Text>}
+                    onCreate={(query) => ({ value: query, label: query })}
+                />
                 <details open>
                     <summary>Location</summary>
                     <IndicatedTextarea
