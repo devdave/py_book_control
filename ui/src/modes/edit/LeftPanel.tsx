@@ -50,7 +50,9 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
 
     const onChapterClick = (chapter: ChapterIndex) => {
         console.log('Changing chapters!')
-        setActiveChapter(chapter)
+        activeElement.clearSubType()
+        activeElement.setChapter(chapter)
+        // setActiveChapter(chapter)
     }
 
     const isThisBookActive = activeElement.isThisBook(activeBook)
@@ -190,6 +192,7 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                                             .map((scene) => {
                                                                 const isSceneActive =
                                                                     activeElement.isThisScene(scene)
+
                                                                 // const isSceneActive = scene.id === activeScene?.id
 
                                                                 return (
@@ -212,11 +215,7 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                                                         onClick={() =>
                                                                             setActiveScene(chapter, scene)
                                                                         }
-                                                                    >
-                                                                        {scene.notes && (
-                                                                            <NavLink>Notes</NavLink>
-                                                                        )}
-                                                                    </NavLink>
+                                                                    />
                                                                 )
                                                             })}
                                                     </NavLink>
