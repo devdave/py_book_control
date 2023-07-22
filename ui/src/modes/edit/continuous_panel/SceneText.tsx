@@ -4,7 +4,7 @@ import { Flex, Indicator, Select, Skeleton, Text, Textarea } from '@mantine/core
 
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 
-import { type Scene, SceneStatus } from '@src/types'
+import { type Scene, type SceneStatus } from '@src/types'
 import { ResizeablePanels } from '@src/widget/ResizeablePanels'
 import { IndicatedTextarea } from '@src/widget/IndicatedTextarea'
 
@@ -13,9 +13,7 @@ import { modals } from '@mantine/modals'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { useAppContext } from '@src/App.context'
-import { useHotkeys } from '@mantine/hooks'
-import { find } from 'lodash'
-import { modifySelection } from '@testing-library/user-event/event/selection/modifySelection'
+
 import { useEditorContext } from '../Editor.context'
 
 interface SceneTextProps {
@@ -36,18 +34,18 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
     const {
         activeScene,
         activeChapter,
-        setActiveScene,
         setActiveChapter,
+        setActiveScene,
         updateScene,
         deleteScene,
-        fetchAllSceneStatuses
+        sceneStatusBroker
     } = useEditorContext()
 
     const {
         data: sceneStatuses,
         isLoading: sceneStatusesIsLoading,
         status: sceneStatusesStatus
-    } = fetchAllSceneStatuses(activeBook.id)
+    } = sceneStatusBroker.fetchAllSceneStatuses(activeBook.id)
 
     const select_statuses =
         sceneStatuses === undefined

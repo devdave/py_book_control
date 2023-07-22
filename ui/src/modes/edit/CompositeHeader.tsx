@@ -33,7 +33,7 @@ const useStyles = createStyles((styles_theme) => ({
 }))
 
 export const CompositeHeader: React.FC = () => {
-    const { activeBook, updateBook, setAppMode, activeFont, setActiveFont, fonts } = useAppContext()
+    const { activeBook, updateBook, setAppMode } = useAppContext()
 
     const { theme } = useStyles()
     const { colorScheme, toggleColorScheme } = useMantineColorScheme()
