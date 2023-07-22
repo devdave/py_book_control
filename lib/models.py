@@ -198,6 +198,7 @@ class Chapter(Base):
     def asdict(self, stripped=False):
         data = dict(
             id=self.uid,
+            book_id=self.book_id,
             type="chapter",
             title=self.title,
             order=self.order,
@@ -205,6 +206,7 @@ class Chapter(Base):
             created_on=str(self.created_on),
             updated_on=str(self.updated_on),
         )
+
         if stripped is False:
             data["notes"] = self.notes
             data["summary"] = self.summary

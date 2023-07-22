@@ -1,6 +1,8 @@
 export type UniqueId = string
 export type UID = UniqueId
 
+export type Setter<TTarget> = (val: TTarget | undefined | ((update: TTarget) => void)) => void
+
 export interface Base {
     [key: string]: any
 
@@ -39,6 +41,7 @@ export interface Scene extends SceneIndex {
 }
 
 export interface ChapterIndex extends Base {
+    book_id: Book['id']
     title: string
     scenes: SceneIndex[]
     order: number
