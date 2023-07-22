@@ -106,10 +106,10 @@ class BCAPI:
             session.commit()
             return chapter.asdict()
 
-    def reorder_chapter(self, from_pos, to_pos):
+    def reorder_chapter(self, book_uid: UniqueID, from_pos: int, to_pos: int):
         if self.app.has_active_book:
             with self.app.get_db() as session:
-                book = self.app.get_book(session)
+                book = models.Book.Fetch_by_UID(session, book_uid)
                 floating = book.chapters.pop(from_pos)
                 book.chapters.insert(to_pos, floating)
                 book.chapters.reorder()
@@ -286,6 +286,14 @@ class BCAPI:
             scene.touch()
             session.commit()
             return scene.asdict()
+
+    def remove_character_from_scene(self, character_uid: UniqueID, scene_uid: UniqueID):
+        with self.app.get_db() as session:
+            scene = models.Scene.Fetch_by_uid(session, scene_uid)
+            toon = models.Character.Fetch_by_Uid(session, character_uid)
+            scene.characters.remove(toon)
+            session.commit()
+            return True
 
     def create_new_character_to_scene(
         self, book_uid: UniqueID, scene_uid: UniqueID, new_name: str
