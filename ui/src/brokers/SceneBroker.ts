@@ -6,8 +6,7 @@ import {
     type ChapterIndex,
     type Scene,
     type SceneIndex,
-    type SceneStatus,
-    type UniqueId
+    type SceneStatus
 } from '@src/types'
 import { QueryClient, useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanstack/react-query'
 import { PromptModal } from '@src/widget/input_modal'
@@ -19,7 +18,6 @@ import { ChapterBrokerFunctions } from '@src/brokers/ChapterBroker'
 export interface SceneBrokerProps {
     api: APIBridge
     activeElement: ActiveElementHelper
-    activeBook: Book
     activeChapter: Chapter | ChapterIndex | undefined
     activeScene: Scene | SceneIndex | undefined
 
@@ -35,8 +33,12 @@ export interface SceneBrokerProps {
 export interface SceneBrokerFunctions {
     add: (chapterId: string | undefined) => Promise<void | Scene>
     attachSceneStatus2Scene: (book_uid: Book['id'], scene: Scene, status: SceneStatus) => void
-    change: UseMutationResult<[Scene, Chapter], unknown, Scene, unknown>
-    fetch: (chapter_id: Scene['chapterId'], scene_id: Scene['id']) => UseQueryResult<Scene, Error>
+    change: UseMutationResult<[Scene, Chapter], unknown, Scene>
+    fetch: (
+        book_id: Book['id'],
+        chapter_id: Scene['chapterId'],
+        scene_id: Scene['id']
+    ) => UseQueryResult<Scene, Error>
     update: (scene: Scene) => Promise<void>
     create: (
         chapterId: Scene['chapterId'],
@@ -44,14 +46,13 @@ export interface SceneBrokerFunctions {
         position: Scene['order'],
         content: Scene['content']
     ) => Promise<void>
-    reorder: (chapterId: Scene['chapterId'], from: number, to: number) => Promise<void>
-    delete: (chapterId: Scene['chapterId'], sceneId: Scene['id']) => Promise<void>
+    reorder: (chapter: Chapter, from: number, to: number) => Promise<void>
+    delete: (bookId: Book['id'], chapterId: Scene['chapterId'], sceneId: Scene['id']) => Promise<void>
 }
 
 export const SceneBroker = ({
     api,
     activeElement,
-    activeBook,
     activeScene,
     activeChapter,
     _setActiveChapter,
@@ -60,13 +61,13 @@ export const SceneBroker = ({
     queryClient
 }: SceneBrokerProps): SceneBrokerFunctions => {
     const fetchScene = useCallback(
-        (chapter_id: UniqueId, scene_id: UniqueId) =>
+        (book_id: Book['id'], chapter_id: Chapter['id'], scene_id: Scene['id']) =>
             // eslint-disable-next-line react-hooks/rules-of-hooks
             useQuery<Scene, Error>({
                 queryFn: () => api.fetch_scene(scene_id),
-                queryKey: ['book', activeBook.id, 'chapter', chapter_id, 'scene', scene_id]
+                queryKey: ['book', book_id, 'chapter', chapter_id, 'scene', scene_id]
             }),
-        [activeBook.id, api]
+        [api]
     )
 
     const _addScene = useMutation({
@@ -79,7 +80,7 @@ export const SceneBroker = ({
 
             queryClient
                 .invalidateQueries({
-                    queryKey: ['book', activeBook.id, 'chapter', newSceneParts.chapterId],
+                    queryKey: ['book', chapter.book_id, 'chapter', newSceneParts.chapterId],
                     exact: true,
                     refetchType: 'active'
                 })
@@ -87,7 +88,7 @@ export const SceneBroker = ({
 
             queryClient
                 .invalidateQueries({
-                    queryKey: ['book', activeBook.id, 'index'],
+                    queryKey: ['book', chapter.book_id, 'index'],
                     exact: true,
                     refetchType: 'active'
                 })
@@ -114,7 +115,7 @@ export const SceneBroker = ({
             if (chapterId === undefined) {
                 console.log("Tried to add a scene when there isn't an activeChapter")
                 await api.alert('There was a problem creating a new scene!')
-                return
+                return undefined
             }
             console.log('addScene chapter.id=', chapterId)
 
@@ -123,17 +124,17 @@ export const SceneBroker = ({
                 alert('A scene must have a title longer than 2 characters.')
             }
 
-            _addScene.mutate({ chapterId, title: sceneTitle })
+            return _addScene.mutate({ chapterId, title: sceneTitle })
         },
         [_addScene, api]
     )
 
     const reorderScene = useCallback(
-        async (chapterId: string, from: number, to: number) => {
-            await api.reorder_scene(chapterId, from, to)
-            await queryClient.invalidateQueries(['book', activeBook.id, 'chapter'])
+        async (chapter: Chapter, from: number, to: number) => {
+            await api.reorder_scene(chapter.id, from, to)
+            await queryClient.invalidateQueries(['book', chapter.book_id, 'chapter'])
         },
-        [activeBook.id, api, queryClient]
+        [api, queryClient]
     )
 
     const changeScene = useMutation({
@@ -152,7 +153,7 @@ export const SceneBroker = ({
             }
 
             queryClient.setQueryData(
-                ['book', activeBook.id, 'chapter', chapter.id, 'scene', scene.id],
+                ['book', chapter.book_id, 'chapter', chapter.id, 'scene', scene.id],
                 (prior: Scene | undefined): Scene => {
                     if (prior === undefined) {
                         return scene
@@ -165,11 +166,27 @@ export const SceneBroker = ({
                 }
             )
 
-            queryClient.invalidateQueries(['book', activeBook.id, 'chapter', chapter.id]).then()
             queryClient
-                .invalidateQueries(['book', activeBook.id, 'chapter', chapter.id, 'scene', scene.id])
+                .invalidateQueries({
+                    queryKey: ['book', chapter.book_id, 'chapter', chapter.id],
+                    exact: true,
+                    refetchType: 'active'
+                })
                 .then()
-            queryClient.invalidateQueries(['book', activeBook.id, 'index']).then()
+            queryClient
+                .invalidateQueries({
+                    queryKey: ['book', chapter.book_id, 'chapter', chapter.id, 'scene', scene.id],
+                    exact: true,
+                    refetchType: 'active'
+                })
+                .then()
+            queryClient
+                .invalidateQueries({
+                    queryKey: ['book', chapter.book_id, 'index'],
+                    exact: true,
+                    refetchType: 'active'
+                })
+                .then()
         }
     })
 
@@ -177,9 +194,9 @@ export const SceneBroker = ({
         mutationKey: ['scene', 'status_update'],
         mutationFn: (changeset: attachSceneStatus2SceneProps) =>
             api.attach_scene_status2scene(changeset.scene_uid, changeset.status_uid),
-        onSuccess: (updated_scene: Scene) => {
+        onSuccess: (updated_scene: Scene, changeset) => {
             queryClient.setQueryData(
-                ['book', activeBook.id, 'chapter', updated_scene.chapterId, 'scene', updated_scene.id],
+                ['book', changeset.book_id, 'chapter', updated_scene.chapterId, 'scene', updated_scene.id],
                 () => updated_scene
             )
 
@@ -187,7 +204,7 @@ export const SceneBroker = ({
                 .invalidateQueries({
                     queryKey: [
                         'book',
-                        activeBook.id,
+                        changeset.book_id,
                         'chapter',
                         updated_scene.chapterId,
                         'scene',
@@ -199,7 +216,7 @@ export const SceneBroker = ({
                 .then()
             queryClient
                 .invalidateQueries({
-                    queryKey: ['book', activeBook.id, 'sceneStatuses'],
+                    queryKey: ['book', changeset.book_id, 'sceneStatuses'],
                     exact: true,
                     refetchType: 'active'
                 })
@@ -207,22 +224,27 @@ export const SceneBroker = ({
         }
     })
 
-    const attachSceneStatus2Scene = useCallback((book_uid: Book['id'], scene: Scene, status: SceneStatus) => {
-        api.attach_scene_status2scene(scene.id, status.id).then(() => {
-            queryClient
-                .invalidateQueries({
-                    queryKey: ['book', book_uid, 'chapter', scene.chapterId, 'scene', scene.id],
-                    exact: true,
-                    refetchType: 'active'
-                })
-                .then()
-            queryClient.invalidateQueries({
-                queryKey: ['book', book_uid, 'sceneStatuses'],
-                exact: true,
-                refetchType: 'active'
+    const attachSceneStatus2Scene = useCallback(
+        (book_uid: Book['id'], scene: Scene, status: SceneStatus) => {
+            api.attach_scene_status2scene(scene.id, status.id).then(() => {
+                queryClient
+                    .invalidateQueries({
+                        queryKey: ['book', book_uid, 'chapter', scene.chapterId, 'scene', scene.id],
+                        exact: true,
+                        refetchType: 'active'
+                    })
+                    .then()
+                queryClient
+                    .invalidateQueries({
+                        queryKey: ['book', book_uid, 'sceneStatuses'],
+                        exact: true,
+                        refetchType: 'active'
+                    })
+                    .then()
             })
-        })
-    }, [])
+        },
+        [api, queryClient]
+    )
 
     const updateScene = useCallback(
         async (scene: Scene) => {
@@ -236,12 +258,19 @@ export const SceneBroker = ({
     )
 
     const _deleteScene = useMutation({
-        mutationFn: ({ chapterId, sceneId }: { chapterId: string; sceneId: string }) =>
-            api.delete_scene(chapterId, sceneId),
-        onSuccess: async (data, { chapterId, sceneId }, context) => {
+        mutationFn: ({
+            bookId,
+            chapterId,
+            sceneId
+        }: {
+            bookId: Book['id']
+            chapterId: Chapter['id']
+            sceneId: Scene['id']
+        }) => api.delete_scene(chapterId, sceneId),
+        onSuccess: async (data, { bookId, chapterId, sceneId }, context) => {
             console.log('Deleted scene', data, chapterId, sceneId, context)
-            await queryClient.invalidateQueries(['book', activeBook.id, 'chapter', chapterId])
-            await queryClient.invalidateQueries(['book', activeBook.id, 'index'])
+            await queryClient.invalidateQueries(['book', bookId, 'chapter', chapterId]).then()
+            await queryClient.invalidateQueries(['book', bookId, 'index']).then()
 
             _setActiveChapter((prior): Chapter | ChapterIndex | undefined => {
                 if (prior === undefined) {
@@ -260,7 +289,7 @@ export const SceneBroker = ({
         }
     })
 
-    const deleteScene = async (chapterId: string, sceneId: string) => {
+    const deleteScene = async (bookId: Book['id'], chapterId: Chapter['id'], sceneId: Scene['id']) => {
         console.log('Deleting scene: ', chapterId, sceneId)
         const chapter: Chapter = await getChapter(chapterId)
 
@@ -271,7 +300,7 @@ export const SceneBroker = ({
             ? find(chapter.scenes, { order: target.order - 1 })
             : undefined
 
-        _deleteScene.mutate({ chapterId, sceneId })
+        _deleteScene.mutate({ bookId, chapterId, sceneId })
 
         if (newActiveScene) {
             activeElement.setScene(chapter, newActiveScene as Scene)
