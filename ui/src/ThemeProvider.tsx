@@ -2,7 +2,6 @@ import { ColorScheme, ColorSchemeProvider, MantineProvider } from '@mantine/core
 import { useColorScheme, useHotkeys, useLocalStorage } from '@mantine/hooks'
 import { ReactNode } from 'react'
 import { ModalsProvider } from '@mantine/modals'
-import APIBridge from '@src/lib/remote'
 import { useAppContext } from '@src/App.context'
 
 interface ThemeProviderProps {
