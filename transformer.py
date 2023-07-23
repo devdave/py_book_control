@@ -11,7 +11,7 @@ import tap
 template_body = """
 
 interface Boundary {
-    remote: (method_name:string, ...args:any)=>any
+    remote: (method_name:string, ...args:any)=> Promise<any>
 }
 
 class APIBridge {
@@ -24,9 +24,8 @@ class APIBridge {
 
     {% for func_name, func_def in functions|items() %}
     {%if func_def.doc %}/* {{func_def.doc}} */{% endif%}
-    async {{ func_name }}({{func_def.compiled|join(', ')}}) {
-        
-        return await this.boundary.remote("{{ func_name }}", {{func_def.arg_names|join(', ')}});
+    async {{ func_name }}({{func_def.compiled|join(', ')}}) {        
+        return this.boundary.remote("{{ func_name }}", {{func_def.arg_names|join(', ')}});
     }
     {% endfor %}
 
@@ -37,7 +36,7 @@ export default APIBridge;
 
 
 class FuncArg(T.NamedTuple):
-    name: T.Optional[str]
+    name: T.Optional[ast.expr]
     annotype: T.Optional[str] = None
 
 
@@ -88,6 +87,13 @@ def py2ts_value(something):
         return "true" if something is True else "false"
     else:
         return repr(something)
+
+
+def sanitize_defaults(def_type):
+    if def_type in [None, "None"]:
+        return "null"
+
+    return def_type
 
 
 def process_function(func_elm: ast.FunctionDef):
@@ -153,7 +159,7 @@ def process_function(func_elm: ast.FunctionDef):
         if arg.arg not in mapped_defaults:
             arg_body = f"{arg.arg}:{func_type}"
         else:
-            arg_body = f"{arg.arg}:{func_type} = {mapped_defaults[arg.arg]}".replace(
+            arg_body = f"{arg.arg}:{func_type} = {sanitize_defaults(mapped_defaults[arg.arg])}".replace(
                 "'", ""
             )
 
@@ -202,7 +208,7 @@ def process_args(func_args: T.List[ast.arg]):
     }
 
 
-def transform(payload: [str, set[str]]):
+def transform(payload: T.Tuple[str, set[str]]):
     cls_name, functions = payload
 
     template = jinja2.Template(
@@ -217,7 +223,9 @@ class MainArgs(tap.Tap):
     """
 
     source: pathlib.Path  # Source Python file to transform into quasi js/ts
-    dest: pathlib.Path = None  # optional file to write to instead of printing to stdout
+    dest: T.Optional[
+        pathlib.Path
+    ] = None  # optional file to write to instead of printing to stdout
 
     def configure(self) -> None:
         self.add_argument("source", type=pathlib.Path)
