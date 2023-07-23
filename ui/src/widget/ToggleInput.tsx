@@ -1,4 +1,4 @@
-import { Indicator, Text, TextInput, Title } from '@mantine/core'
+import { Indicator, TextInput, Title } from '@mantine/core'
 import { useState } from 'react'
 import { useToggle } from '@mantine/hooks'
 import { useForm } from '@mantine/form'

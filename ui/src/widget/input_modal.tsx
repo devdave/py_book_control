@@ -157,5 +157,3 @@ class InputModal {
         })
     }
 }
-
-export default InputModal
