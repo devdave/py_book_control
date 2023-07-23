@@ -131,4 +131,5 @@ export interface attachSceneStatus2SceneProps {
     scene_uid?: Scene['id']
     status_uid?: SceneStatus['id']
     status_name?: string
+    book_id: Book['id']
 }
