@@ -11,7 +11,7 @@ import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-import { LoadingOverlay, TabsValue, Text } from '@mantine/core'
+import { LoadingOverlay, Text } from '@mantine/core'
 import { AppModes, AppSettingValues, type Book, type UID } from '@src/types'
 
 import { Manifest } from '@src/modes/manifest/Manifest'
@@ -88,7 +88,7 @@ const App: React.FC = () => {
 
     const reconcileSettings = (values: ApplicationSetting<AppSettingValues>[]) => {
         console.log(`Got bulk settings ${JSON.stringify(values)}`)
-        forEach(values, (setting, idx) => {
+        forEach(values, (setting) => {
             queryClient.setQueryData(['setting', setting.name], () => setting.value)
         })
     }
