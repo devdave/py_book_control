@@ -10,7 +10,7 @@ import { ChapterPanel } from '@src/modes/edit/chapter_panel/ChapterPanel'
 
 export const Body = () => {
     const { activeBook } = useAppContext()
-    const { editMode, fetchChapter, activeChapter, activeScene, activeElement } = useEditorContext()
+    const { editMode, chapterBroker, activeChapter, activeScene, activeElement } = useEditorContext()
 
     if (activeElement.type === ActiveElementTypes.BOOK) {
         return <BookPanel />
@@ -29,10 +29,11 @@ export const Body = () => {
                         />
                     )
                 }
-                const { data: fullChapter, isLoading: fullChapterIsLoading } = fetchChapter(
+                const { data: fullChapter, isLoading: fullChapterIsLoading } = chapterBroker.fetch(
                     activeBook.id,
                     activeChapter.id
                 )
+
                 if (fullChapter && !fullChapterIsLoading) {
                     return <ChapterPanel chapter={fullChapter} />
                 }
@@ -40,7 +41,6 @@ export const Body = () => {
             }
             return <h2>Create a new chapter!</h2>
 
-            break
         case EditModes.FLOW:
             if (activeChapter !== undefined) {
                 return <ContinuousBody key={`${activeChapter.updated_on} ${activeChapter.id}`} />
