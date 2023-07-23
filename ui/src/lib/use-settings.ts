@@ -1,7 +1,5 @@
-import { map, Dictionary } from 'lodash'
 import { UseMutationResult, UseQueryResult } from '@tanstack/react-query'
 import { useCallback } from 'react'
-import { useImmer } from 'use-immer'
 
 type GenericTypes<TContainer> = TContainer[keyof TContainer]
 
@@ -30,7 +28,7 @@ export function useSettings<TValues extends object = Record<string, unknown>>({
 }: {
     defaultSettings: TValues
     bulkFetchSettings: () => Promise<ApplicationSetting<TValues>[]>
-    setter: UseMutationResult<undefined, unknown, { name: string; value: string }, unknown>
+    setter: UseMutationResult<undefined, unknown, { name: string; value: string }>
     getter: (<Field extends keyof TValues>(name: string) => UseQueryResult<TValues[Field]>) | undefined
     bulkDefaultSetter: (changeset: ApplicationSetting<TValues>[]) => Promise<object>
 }): SettingsManagerReturn<TValues> {
