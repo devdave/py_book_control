@@ -61,13 +61,13 @@ class Boundary {
     public request(remoteName: string, ...args: any[]): Deferred {
         const d = new Deferred()
         const id = this.switch.register(d)
-        this.remote(remoteName, [...args, id])
+        this.remote(remoteName, [...args, id]).then()
         return d
     }
 
     public info(...message: any[]): void {
         console.log(...message)
-        this._remote('info', message)
+        this._remote('info', message).then()
     }
 }
 
