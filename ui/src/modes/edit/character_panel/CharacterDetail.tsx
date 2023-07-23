@@ -1,29 +1,16 @@
-import React, { KeyboardEventHandler, MouseEventHandler, useCallback, useEffect, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import React, { KeyboardEventHandler, useCallback } from 'react'
 import { useAppContext } from '@src/App.context'
 import { Character } from '@src/types'
-import {
-    Box,
-    createStyles,
-    LoadingOverlay,
-    Skeleton,
-    Tabs,
-    Textarea,
-    TextInput,
-    Text,
-    Button,
-    Table
-} from '@mantine/core'
+import { createStyles, Tabs, Text, Button, Table } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { IndicatedTextInput } from '@src/widget/IndicatedTextInput'
 import { IndicatedTextarea } from '@src/widget/IndicatedTextarea'
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 import { useEditorContext } from '@src/modes/edit/Editor.context'
-import { getChangedRanges } from '@tiptap/react'
-import { useHotkeys, useToggle } from '@mantine/hooks'
+import { useHotkeys } from '@mantine/hooks'
 import { useRotate } from '@src/lib/use-rotate'
 
-const useStyle = createStyles((theme) => ({
+const useStyle = createStyles(() => ({
     filled_textarea: {
         height: '100%',
         width: '100%',
@@ -41,11 +28,11 @@ interface CharacterDetailProps {
 }
 
 export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) => {
-    const { api, activeBook, settings } = useAppContext()
+    const { settings } = useAppContext()
 
-    const [debounceTime, debounceTimeIsLoading, setDebounceTime] = settings.makeState('debounceTime')
+    const [debounceTime] = settings.makeState('debounceTime')
 
-    const { activeElement, updateCharacter, deleteCharacter } = useEditorContext()
+    const { activeElement, characterBroker } = useEditorContext()
 
     const { classes } = useStyle()
 
@@ -66,7 +53,7 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
                     name: form.values.name,
                     notes: form.values.notes
                 }
-                updateCharacter(changeset as Character)
+                characterBroker.update(changeset as Character)
                 form.resetDirty()
             }
         },
@@ -76,7 +63,7 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
 
     const onDeleteClick = useCallback(() => {
         activeElement.clearSubType()
-        deleteCharacter(character.id)
+        characterBroker.delete(character.id)
     }, ['deleteCharacter'])
 
     console.log(character)
@@ -161,7 +148,7 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
                             character.locations.map(([chapter_name, chapter_id, scene_name, scene_id]) => (
                                 <tr
                                     key={`${chapter_id}-${scene_id}`}
-                                    onClick={(evt) => activeElement.setSceneById(chapter_id, scene_id)}
+                                    onClick={() => activeElement.setSceneById(chapter_id, scene_id)}
                                 >
                                     <td>{chapter_name}</td>
                                     <td>{scene_name}</td>
