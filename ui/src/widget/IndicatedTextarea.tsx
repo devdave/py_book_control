@@ -1,5 +1,4 @@
 import { UseFormReturnType } from '@mantine/form'
-import { Scene } from '@src/types'
 import React from 'react'
 import { Indicator, Textarea } from '@mantine/core'
 import { TextareaProps } from '@mantine/core/lib/Textarea/Textarea'
