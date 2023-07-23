@@ -12,9 +12,9 @@ export const SceneCharacters: React.FC<SceneCharactersProps> = ({ scene }) => {
     return (
         <>
             <Text>Character</Text>
-            {map(scene.characters, (toon) => {
-                ;<Text key={toon.id}>{toon.name}</Text>
-            })}
+            {map(scene.characters, (toon) => (
+                <Text key={toon.id}>{toon.name}</Text>
+            ))}
         </>
     )
 }

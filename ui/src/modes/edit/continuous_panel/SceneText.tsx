@@ -1,5 +1,5 @@
 import { useForm } from '@mantine/form'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback } from 'react'
 import { Flex, Indicator, Select, Skeleton, Text, Textarea } from '@mantine/core'
 
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
@@ -31,15 +31,8 @@ const compile_scene2md = (scene: Scene) => {
 export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
     const { api, activeBook, settings } = useAppContext()
 
-    const {
-        activeScene,
-        activeChapter,
-        setActiveChapter,
-        setActiveScene,
-        updateScene,
-        deleteScene,
-        sceneStatusBroker
-    } = useEditorContext()
+    const { activeScene, activeChapter, setActiveChapter, setActiveScene, sceneBroker, sceneStatusBroker } =
+        useEditorContext()
 
     const {
         data: sceneStatuses,
@@ -134,7 +127,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                             cancel: 'Do not delete scene!'
                         },
                         onConfirm: () => {
-                            deleteScene(scene.chapterId, scene.id)
+                            sceneBroker.delete(scene.chapterId, scene.id)
                         }
                     })
                     return null
@@ -144,7 +137,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
 
                 if (response.status === 'empty') {
                     if (dontask2delete === true) {
-                        deleteScene(scene.chapterId, scene.id)
+                        await sceneBroker.delete(activeBook.id, scene.chapterId, scene.id)
                         return null
                     }
 
@@ -155,7 +148,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                         children: <Text size='sm'>The scene body is empty, do you want to delete it?</Text>,
                         labels: { confirm: 'Delete', cancel: 'Cancel' },
                         onConfirm: () => {
-                            deleteScene(scene.chapterId, scene.id)
+                            sceneBroker.delete(activeBook.id, scene.chapterId, scene.id).then()
                         }
                     })
                     return null
@@ -216,7 +209,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                     location: form.values.location ? form.values.location : ''
                 }
 
-                updateScene(new_scene as Scene)
+                await sceneBroker.update(new_scene as Scene)
 
                 form.resetDirty()
                 return null

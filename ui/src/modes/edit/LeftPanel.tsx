@@ -25,8 +25,8 @@ import { type FC, useCallback } from 'react'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 
 import { useAppContext } from '@src/App.context'
+import { ActiveElementTypes, ChapterIndex, EditModes } from '@src/types'
 import { useEditorContext } from './Editor.context'
-import { ActiveElementTypes, ChapterIndex, EditModes } from '../../types'
 
 interface LeftPanelProps {
     index: ChapterIndex[]
@@ -34,17 +34,7 @@ interface LeftPanelProps {
 
 export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
     const theme = useMantineTheme()
-    const {
-        activeChapter,
-        activeScene,
-        addChapter,
-        reorderChapter,
-        setActiveChapter,
-        setActiveScene,
-        setEditMode,
-        editMode,
-        activeElement
-    } = useEditorContext()
+    const { chapterBroker, setActiveScene, setEditMode, editMode, activeElement } = useEditorContext()
 
     const { activeBook } = useAppContext()
 
@@ -91,7 +81,7 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
             <Button
                 size='xs'
                 color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]}
-                onClick={() => addChapter()}
+                onClick={() => chapterBroker.add(activeBook)}
             >
                 <IconPlus />
                 Create new chapter
@@ -136,10 +126,10 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                         onDragEnd={useCallback(
                             ({ destination, source }) => {
                                 if (destination && destination.index !== source.index) {
-                                    reorderChapter(source.index, destination.index)
+                                    chapterBroker.reorder(activeBook.id, source.index, destination.index)
                                 }
                             },
-                            [reorderChapter]
+                            [activeBook.id, chapterBroker]
                         )}
                     >
                         <Droppable droppableId='chapter-list'>

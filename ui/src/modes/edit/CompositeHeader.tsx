@@ -1,20 +1,4 @@
-import {
-    ActionIcon,
-    Checkbox,
-    createStyles,
-    Drawer,
-    Group,
-    Header,
-    NumberInput,
-    Select,
-    Stack,
-    Switch,
-    Text,
-    Textarea,
-    TextInput,
-    Title,
-    useMantineColorScheme
-} from '@mantine/core'
+import { ActionIcon, createStyles, Group, Header, Stack, Switch, useMantineColorScheme } from '@mantine/core'
 import { useAppContext } from '@src/App.context'
 import { AppModes } from '@src/types'
 import { IconArrowBack, IconMoonStars, IconSettings, IconSun } from '@tabler/icons-react'

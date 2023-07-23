@@ -1,4 +1,4 @@
-import { Accordion, Button, Center, createStyles, Group, Text, Title } from '@mantine/core'
+import { Accordion, Button, Center, createStyles, Group, Text } from '@mantine/core'
 import { useCallback, useEffect, useRef } from 'react'
 import { IconGripVertical } from '@tabler/icons-react'
 import { find, map } from 'lodash'
@@ -16,7 +16,7 @@ const useStyles = createStyles((theme) => ({
 }))
 
 const SceneList = () => {
-    const { activeChapter, activeScene, addScene, reorderScene, setActiveScene } = useEditorContext()
+    const { activeChapter, activeScene, sceneBroker, setActiveScene } = useEditorContext()
     const { classes } = useStyles()
     const accordionRefs = useRef<Record<string, HTMLDivElement>>({})
 
@@ -47,18 +47,18 @@ const SceneList = () => {
         ({ destination, source }: { destination: any; source: any }) => {
             if (destination && destination.index !== source.index) {
                 if (activeChapter) {
-                    reorderScene(activeChapter.id, source.index, destination.index)
+                    sceneBroker.reorder(activeChapter.id, source.index, destination.index).then()
                 }
             }
         },
-        [activeChapter?.id, reorderScene]
+        [activeChapter, sceneBroker]
     )
 
     const addNewScene = useCallback(() => {
         if (activeChapter) {
-            addScene(activeChapter.id), [activeChapter, addScene]
+            sceneBroker.add(activeChapter.id).then()
         }
-    }, [activeChapter])
+    }, [activeChapter, sceneBroker])
 
     const goPriorScene = useCallback(() => {
         if (activeScene && activeScene.order > 0 && activeChapter) {

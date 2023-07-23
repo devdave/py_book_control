@@ -1,13 +1,11 @@
-import { ActionIcon, Button, Group, Paper, Textarea, TextInput } from '@mantine/core'
+import { Textarea, TextInput } from '@mantine/core'
 import { useForm, zodResolver } from '@mantine/form'
-import { type FC, useCallback } from 'react'
+import { type FC } from 'react'
 import z from 'zod'
 
-import { iconSizes } from '@mantine/core/lib/Stepper/Step/Step.styles'
-import { IconPlus } from '@tabler/icons-react'
+import { type Chapter } from '@src/types'
+import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 import { useEditorContext } from '../Editor.context'
-import { type Chapter } from '../../../types'
-import { useDebouncedEffect } from '../../../lib/useDebouncedEffect'
 
 const formSchema = z.object({
     title: z.string().trim().nonempty('Cannot be empty').min(3, 'Must be at least 3 characters')
@@ -18,7 +16,7 @@ export interface ChapterFormProps {
 }
 
 export const ChapterForm: FC<ChapterFormProps> = ({ chapter }) => {
-    const { updateChapter } = useEditorContext()
+    const { chapterBroker } = useEditorContext()
     const form = useForm({
         initialValues: {
             summary: chapter.summary,
@@ -32,7 +30,7 @@ export const ChapterForm: FC<ChapterFormProps> = ({ chapter }) => {
     useDebouncedEffect(
         () => {
             if (form.isDirty() && form.isValid()) {
-                updateChapter({
+                chapterBroker.update({
                     ...chapter,
                     ...form.values
                 })

@@ -66,7 +66,7 @@ export const Manifest = () => {
         }
 
         console.log('Clicked on', bookId)
-        const response = await api.set_current_book(bookId)
+        await api.set_current_book(bookId)
         const book = await api.fetch_book_simple(bookId)
         setActiveBook(book)
         setAppMode(AppModes.EDITOR)

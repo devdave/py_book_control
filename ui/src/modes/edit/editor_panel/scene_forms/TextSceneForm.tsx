@@ -1,11 +1,10 @@
-import { Anchor, Textarea, TextInput } from '@mantine/core'
-import { useForm, zodResolver } from '@mantine/form'
-import { type FC, KeyboardEventHandler, MouseEventHandler } from 'react'
-import z from 'zod'
+import { Textarea } from '@mantine/core'
+import { useForm } from '@mantine/form'
+import { KeyboardEventHandler } from 'react'
 
+import { type Scene } from '@src/types'
+import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 import { useEditorContext } from '../../Editor.context'
-import { type Scene } from '../../../../types'
-import { useDebouncedEffect } from '../../../../lib/useDebouncedEffect'
 
 interface TextSceneFormProps {
     scene: Scene
@@ -15,7 +14,7 @@ interface TextSceneFormProps {
 }
 
 const TextSceneForm: React.FC<TextSceneFormProps> = ({ scene, field, label, onKeyUp }) => {
-    const { updateScene } = useEditorContext()
+    const { sceneBroker } = useEditorContext()
 
     const form = useForm({
         initialValues: {
@@ -26,10 +25,12 @@ const TextSceneForm: React.FC<TextSceneFormProps> = ({ scene, field, label, onKe
     useDebouncedEffect(
         () => {
             if (form.isDirty() && form.isValid()) {
-                updateScene({
-                    ...scene,
-                    ...form.values
-                })
+                sceneBroker
+                    .update({
+                        ...scene,
+                        ...form.values
+                    })
+                    .then()
             }
         },
         [form.values],

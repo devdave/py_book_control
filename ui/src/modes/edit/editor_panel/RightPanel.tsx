@@ -9,9 +9,12 @@ import { ChapterForm } from './ChapterForm'
 import SceneList from './SceneList'
 
 export const RightPanel: FC = () => {
-    const { activeChapter, activeScene, addScene, reorderScene, setActiveScene } = useEditorContext()
+    const { activeChapter, sceneBroker } = useEditorContext()
 
-    const onClickAddScene = useCallback(() => activeChapter && addScene(activeChapter.id), [activeChapter, addScene])
+    const onClickAddScene = useCallback(
+        () => activeChapter && sceneBroker.add(activeChapter.id),
+        [activeChapter, sceneBroker]
+    )
 
     if (activeChapter === undefined) {
         return <>No active chapter</>

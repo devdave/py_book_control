@@ -1,5 +1,5 @@
-import { Button, Center, Paper, TextInput, Text, Title, Group, Stack } from '@mantine/core'
-import { Ref, useEffect, useRef, useState } from 'react'
+import { Button, Center, Paper, TextInput, Text, Title, Stack } from '@mantine/core'
+import { useEffect, useRef } from 'react'
 import { useForm } from '@mantine/form'
 import { useAppContext } from '@src/App.context'
 import { Chapter, type Scene } from '@src/types'
@@ -10,19 +10,18 @@ import { useEditorContext } from '../Editor.context'
 import { SceneText } from './SceneText'
 
 export const ContinuousBody: React.FC = () => {
-    const { api, activeBook, settings } = useAppContext()
+    const { activeBook, settings } = useAppContext()
     const {
         activeChapter,
         activeScene,
-        addScene,
-        fetchChapter,
-        updateChapter,
-        setActiveChapter,
+
+        sceneBroker,
+        chapterBroker,
         setActiveScene
     } = useEditorContext()
     const paperRefs = useRef<Record<string, HTMLDivElement>>({})
 
-    const [debounceTime, debounceIsloading, setDebounceTime] = settings.makeState('debounceTime')
+    const [debounceTime] = settings.makeState('debounceTime')
 
     if (activeChapter === undefined) {
         throw Error('Data integrity issue, activechapter is not defined')
@@ -64,7 +63,10 @@ export const ContinuousBody: React.FC = () => {
         []
     )
 
-    const { data: chapter, isLoading: chapterIsLoading } = fetchChapter(activeBook.id, activeChapter.id)
+    const { data: chapter, isLoading: chapterIsLoading } = chapterBroker.fetch(
+        activeBook.id,
+        activeChapter.id
+    )
 
     const form = useForm({
         initialValues: {
@@ -86,7 +88,7 @@ export const ContinuousBody: React.FC = () => {
                         ...(activeChapter as Chapter),
                         title: form.values.title || 'Missing chapter'
                     }
-                    updateChapter(new_chapter)
+                    chapterBroker.update(new_chapter)
                 } else {
                     alert('Full stop! Data integrity issue.  activeChapter is not defined.')
                 }
@@ -162,7 +164,7 @@ export const ContinuousBody: React.FC = () => {
             ))}
             {activeChapter?.scenes.length === 0 && (
                 <Center>
-                    <Button onClick={() => addScene(activeChapter.id)}>Create a scene</Button>
+                    <Button onClick={() => sceneBroker.add(activeChapter.id)}>Create a scene</Button>
                 </Center>
             )}
         </Stack>

@@ -1,12 +1,12 @@
 import { createStyles, Skeleton, Tabs, Text } from '@mantine/core'
 import { type FC, KeyboardEventHandler, useCallback } from 'react'
 import { IconId, IconMapPin, IconNote, IconUsers, IconVocabulary } from '@tabler/icons-react'
-import { type Scene, type UID } from '@src/types'
+import { type Scene } from '@src/types'
 import { useAppContext } from '@src/App.context'
 
 import { CharactersSceneForm } from '@src/modes/edit/common/CharactersSceneForm'
 import { useEditorContext } from '@src/modes/edit/Editor.context'
-import { useHotkeys, useToggle } from '@mantine/hooks'
+import { useHotkeys } from '@mantine/hooks'
 import { find } from 'lodash'
 import { useRotate } from '@src/lib/use-rotate'
 import TextSceneForm from './scene_forms/TextSceneForm'
@@ -24,8 +24,8 @@ export interface ScenePanelProps {
 }
 
 export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
-    const { api, activeBook } = useAppContext()
-    const { activeElement, fetchScene, activeScene, setActiveScene, activeChapter } = useEditorContext()
+    const { activeBook } = useAppContext()
+    const { activeElement, sceneBroker, activeScene, setActiveScene, activeChapter } = useEditorContext()
     const { classes } = useStyles()
 
     const {
@@ -33,7 +33,7 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
         isLoading: sceneIsLoading,
         status: sceneLoadStatus,
         error: sceneLoadError
-    } = fetchScene(indexedScene.chapterId as UID, indexedScene.id as UID)
+    } = sceneBroker.fetch(activeBook.id, indexedScene.chapterId, indexedScene.id)
 
     const [activeTab, nextTab] = useRotate(['content', 'summary', 'notes', 'location', 'characters'])
     useHotkeys(
@@ -188,7 +188,6 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
             <Tabs.Panel value='characters'>
                 <CharactersSceneForm
                     scene={scene}
-                    onKeyUp={handleCtrlKey}
                     key={scene.characters.length}
                 />
             </Tabs.Panel>

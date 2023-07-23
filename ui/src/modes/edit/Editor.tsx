@@ -1,28 +1,19 @@
 import { AppShell, Box, LoadingOverlay } from '@mantine/core'
 
-import { clone, find } from 'lodash'
-
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-
-import { PromptModal } from '@src/widget/input_modal'
 
 import { Body } from '@src/modes/edit/Body'
 import { CompositeHeader } from '@src/modes/edit/CompositeHeader'
 
 import {
     type ActiveElement,
-    type attachSceneStatus2SceneProps,
-    type Book,
     type Chapter,
     type ChapterIndex,
-    type Character,
     EditModes,
     type Scene,
-    type SceneIndex,
-    type SceneStatus,
-    type UID
+    type SceneIndex
 } from '@src/types'
-import { useMutation, useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useAppContext } from '@src/App.context'
 import { useImmer } from 'use-immer'
@@ -141,14 +132,10 @@ export const Editor: React.FC = () => {
         [activeChapter, activeElement]
     )
 
-    const chapterBroker: ChapterBrokerFunctions = useMemo(
-        () =>
-            ChapterBroker({
-                api,
-                queryClient
-            }),
-        []
-    )
+    const chapterBroker: ChapterBrokerFunctions = ChapterBroker({
+        api,
+        queryClient
+    })
 
     /**
      * Scene stuff
@@ -173,21 +160,16 @@ export const Editor: React.FC = () => {
         [activeElement]
     )
 
-    const sceneBroker = useMemo(
-        () =>
-            SceneBroker({
-                api,
-                activeElement,
-                activeBook,
-                activeScene,
-                activeChapter,
-                _setActiveScene,
-                _setActiveChapter,
-                getChapter: chapterBroker.get,
-                queryClient
-            }),
-        [activeBook, activeChapter, activeElement, activeScene, api, chapterBroker.get, queryClient]
-    )
+    const sceneBroker = SceneBroker({
+        api,
+        activeElement,
+        activeScene,
+        activeChapter,
+        _setActiveScene,
+        _setActiveChapter,
+        getChapter: chapterBroker.get,
+        queryClient
+    })
 
     /**
      * Character stuff
@@ -227,7 +209,7 @@ export const Editor: React.FC = () => {
     /**
      * Packaged everything to do with Scene Status into one portable thing
      */
-    const sceneStatusBroker = useMemo(() => SceneStatusBroker({ api, queryClient }), [api, queryClient])
+    const sceneStatusBroker = SceneStatusBroker({ api, queryClient })
 
     const editorContextValue = useMemo<EditorContextValue>(
         () => ({

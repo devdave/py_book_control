@@ -1,11 +1,11 @@
-import { Anchor, Textarea, TextInput } from '@mantine/core'
+import { Textarea, TextInput } from '@mantine/core'
 import { useForm, zodResolver } from '@mantine/form'
 import { type FC, KeyboardEventHandler } from 'react'
 import z from 'zod'
 
+import { type Scene } from '@src/types'
+import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 import { useEditorContext } from '../../Editor.context'
-import { type Scene } from '../../../../types'
-import { useDebouncedEffect } from '../../../../lib/useDebouncedEffect'
 
 const formSchema = z.object({
     title: z.string().trim().nonempty('Cannot be empty').min(3, 'Must be at least 3 characters')
@@ -17,7 +17,7 @@ export interface SceneFormProps {
 }
 
 export const MainSceneForm: FC<SceneFormProps> = ({ scene, onKeyUp }) => {
-    const { updateScene } = useEditorContext()
+    const { sceneBroker } = useEditorContext()
     const form = useForm<Partial<Scene>>({
         initialValues: {
             content: scene.content,
@@ -30,10 +30,12 @@ export const MainSceneForm: FC<SceneFormProps> = ({ scene, onKeyUp }) => {
     useDebouncedEffect(
         () => {
             if (form.isDirty() && form.isValid()) {
-                updateScene({
-                    ...scene,
-                    ...form.values
-                })
+                sceneBroker
+                    .update({
+                        ...scene,
+                        ...form.values
+                    })
+                    .then()
             }
         },
         [form.values],

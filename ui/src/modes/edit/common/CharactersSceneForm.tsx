@@ -1,25 +1,17 @@
-import React, { KeyboardEventHandler, useState } from 'react'
+import React, { useState } from 'react'
 import { LoadingOverlay, Select, Text, Title } from '@mantine/core'
 import { useAppContext } from '@src/App.context'
-import { useQueryClient } from '@tanstack/react-query'
 import { useEditorContext } from '@src/modes/edit/Editor.context'
 import { ActiveElementSubTypes, ActiveElementTypes, Character, type Scene } from '@src/types'
 
 interface CharactersSceneFormProps {
     scene: Scene
-    onKeyUp: KeyboardEventHandler<HTMLTextAreaElement>
 }
-export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene, onKeyUp }) => {
-    const { api, activeBook } = useAppContext()
-    const {
-        activeElement,
-        assignCharacter2Scene,
-        createNewCharacterAndAdd2Scene,
-        listAllCharacters,
-        listCharactersByScene
-    } = useEditorContext()
+export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene }) => {
+    const { activeBook } = useAppContext()
+    const { activeElement, characterBroker } = useEditorContext()
 
-    const { data: toons, isLoading: toonsIsLoading, status: toonStatus } = listAllCharacters(activeBook)
+    const { data: toons, isLoading: toonsIsLoading, status: toonStatus } = characterBroker.list(activeBook)
 
     const [query, setQuery] = useState('')
 
@@ -27,7 +19,7 @@ export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene,
         data: sceneCharacters,
         isLoading: sceneCharactersIsLoading,
         status: sceneCharactersStatus
-    } = listCharactersByScene(scene)
+    } = characterBroker.listByScene(scene)
 
     if (toonsIsLoading || sceneCharactersIsLoading) {
         return <LoadingOverlay visible />
@@ -55,12 +47,12 @@ export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene,
                 placeholder={query}
                 data={mappedToons}
                 onChange={(char_id) => {
-                    char_id && assignCharacter2Scene(scene, char_id)
+                    char_id && characterBroker.assign2Scene(scene, char_id)
                     setQuery('')
                 }}
                 getCreateLabel={(create_name) => `+ Create new character ${create_name}?`}
                 onCreate={(new_name) => {
-                    createNewCharacterAndAdd2Scene(scene, new_name)
+                    characterBroker.createAndAdd2Scene(scene, new_name)
                     setQuery('')
                     return ''
                 }}
@@ -73,7 +65,7 @@ export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene,
                     style={{
                         cursor: 'pointer'
                     }}
-                    onClick={(evt) =>
+                    onClick={() =>
                         activeElement.setTypeAndSubtype(
                             ActiveElementTypes.CHARACTERS,
                             undefined,
