@@ -9,7 +9,6 @@ import {
     type SceneStatus
 } from '@src/types'
 import { QueryClient, useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanstack/react-query'
-import { PromptModal } from '@src/widget/input_modal'
 import { clone, find } from 'lodash'
 import APIBridge from '@src/lib/remote'
 import { ActiveElementHelper } from '@src/lib/ActiveElementHelper'
@@ -31,7 +30,7 @@ export interface SceneBrokerProps {
 }
 
 export interface SceneBrokerFunctions {
-    add: (chapterId: string | undefined) => Promise<void | Scene>
+    // add: (chapterId: string | undefined) => Promise<void | Scene>
     attachSceneStatus2Scene: (book_uid: Book['id'], scene: Scene, status: SceneStatus) => void
     change: UseMutationResult<[Scene, Chapter], unknown, Scene>
     fetch: (
@@ -110,24 +109,24 @@ export const SceneBroker = ({
         })
     }
 
-    const addScene = useCallback(
-        async (chapterId: string | undefined): Promise<void | Scene> => {
-            if (chapterId === undefined) {
-                console.log("Tried to add a scene when there isn't an activeChapter")
-                await api.alert('There was a problem creating a new scene!')
-                return undefined
-            }
-            console.log('addScene chapter.id=', chapterId)
-
-            const sceneTitle: string = await PromptModal('New scene title')
-            if (sceneTitle.trim().length <= 2) {
-                alert('A scene must have a title longer than 2 characters.')
-            }
-
-            return _addScene.mutate({ chapterId, title: sceneTitle })
-        },
-        [_addScene, api]
-    )
+    // const addScene = useCallback(
+    //     async (chapterId: string | undefined): Promise<void | Scene> => {
+    //         if (chapterId === undefined) {
+    //             console.log("Tried to add a scene when there isn't an activeChapter")
+    //             await api.alert('There was a problem creating a new scene!')
+    //             return undefined
+    //         }
+    //         console.log('addScene chapter.id=', chapterId)
+    //
+    //         const sceneTitle: string = await PromptModal('New scene title')
+    //         if (sceneTitle.trim().length <= 2) {
+    //             alert('A scene must have a title longer than 2 characters.')
+    //         }
+    //
+    //         return _addScene.mutate({ chapterId, title: sceneTitle })
+    //     },
+    //     [_addScene, api]
+    // )
 
     const reorderScene = useCallback(
         async (chapter: Chapter, from: number, to: number) => {
@@ -248,11 +247,12 @@ export const SceneBroker = ({
 
     const updateScene = useCallback(
         async (scene: Scene) => {
-            changeScene.mutate(scene)
+            const mutation = await changeScene.mutate(scene)
             if (scene.id === activeScene?.id) {
                 activeElement.setSceneById(scene.chapterId, scene.id)
                 _setActiveScene((prior) => ({ ...prior, ...scene }))
             }
+            return mutation
         },
         [_setActiveScene, activeElement, activeScene?.id, changeScene]
     )
@@ -318,7 +318,6 @@ export const SceneBroker = ({
         create: createScene,
         fetch: fetchScene,
         reorder: reorderScene,
-        add: addScene,
         attachSceneStatus2Scene
     }
 }
