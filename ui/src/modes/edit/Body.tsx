@@ -1,4 +1,4 @@
-import { ActiveElementTypes, EditModes } from '@src/types'
+import { ActiveElementSubTypes, ActiveElementTypes, EditModes } from '@src/types'
 import { RightPanel } from '@src/modes/edit/editor_panel/RightPanel'
 import { ContinuousBody } from '@src/modes/edit/continuous_panel'
 import { useEditorContext } from '@src/modes/edit/Editor.context'
@@ -12,6 +12,12 @@ export const Body = () => {
     const { activeBook } = useAppContext()
     const { editMode, chapterBroker, activeChapter, activeScene, activeElement } = useEditorContext()
 
+    const { data: fullChapter, isLoading: fullChapterIsLoading } = chapterBroker.fetch(
+        activeBook.id,
+        activeChapter?.id,
+        activeChapter !== undefined
+    )
+
     if (activeElement.type === ActiveElementTypes.BOOK) {
         return <BookPanel />
     }
@@ -19,31 +25,37 @@ export const Body = () => {
         return <CharacterPanel />
     }
 
+    if (activeElement.type === ActiveElementTypes.CHAPTER && activeElement.subType === undefined) {
+        if (fullChapter) {
+            return <ChapterPanel chapter={fullChapter} />
+        }
+
+        return <LoadingOverlay visible />
+    }
+
     switch (editMode) {
         case EditModes.LIST:
             if (activeChapter !== undefined) {
-                if (activeElement.subType === 'scene') {
+                if (activeElement.subType === ActiveElementSubTypes.SCENE) {
                     return (
                         <RightPanel
                             key={`${activeChapter.updated_on} ${activeChapter.id}-${activeScene?.id}`}
                         />
                     )
                 }
-                const { data: fullChapter, isLoading: fullChapterIsLoading } = chapterBroker.fetch(
-                    activeBook.id,
-                    activeChapter.id
-                )
 
-                if (fullChapter && !fullChapterIsLoading) {
-                    return <ChapterPanel chapter={fullChapter} />
-                }
                 return <LoadingOverlay visible />
             }
             return <h2>Create a new chapter!</h2>
 
         case EditModes.FLOW:
-            if (activeChapter !== undefined) {
-                return <ContinuousBody key={`${activeChapter.updated_on} ${activeChapter.id}`} />
+            if (fullChapter !== undefined) {
+                return (
+                    <ContinuousBody
+                        chapter={fullChapter}
+                        key={`${activeChapter?.updated_on} ${activeChapter?.id}-${activeScene?.id}`}
+                    />
+                )
             }
             return <h2>Create a new chapter!</h2>
 
