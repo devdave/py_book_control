@@ -124,7 +124,13 @@ export class ActiveElementHelper {
     }
 
     public setCharacterById(character_id: string) {
-        return this.assignSubType(ActiveElementSubTypes.CHARACTER, character_id)
+        return this.setTypeAndSubtype(
+            ActiveElementTypes.CHARACTERS,
+            undefined,
+            ActiveElementSubTypes.CHARACTER,
+            character_id
+        )
+        // return this.assignSubType(ActiveElementSubTypes.CHARACTER, character_id)
     }
 
     public setFocus(name: string, id: string | undefined = undefined) {
