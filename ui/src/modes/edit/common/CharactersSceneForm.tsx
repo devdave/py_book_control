@@ -11,7 +11,7 @@ export const CharactersSceneForm: React.FC<CharactersSceneFormProps> = ({ scene 
     const { activeBook } = useAppContext()
     const { activeElement, characterBroker } = useEditorContext()
 
-    const { data: toons, isLoading: toonsIsLoading, status: toonStatus } = characterBroker.list(activeBook)
+    const { data: toons, isLoading: toonsIsLoading, status: toonStatus } = characterBroker.list(activeBook.id)
 
     const [query, setQuery] = useState('')
 
