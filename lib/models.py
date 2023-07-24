@@ -288,7 +288,7 @@ class Scene(Base):
     chapter_id: Mapped[int] = mapped_column(ForeignKey("Chapter.id"))
     chapter: Mapped["Chapter"] = relationship(back_populates="scenes")
 
-    SAFE_KEY = [
+    SAFE_KEYS = [
         "title",
         "order",
         "summary",
@@ -357,7 +357,7 @@ class Character(Base):
         secondary=Scenes2Characters, back_populates="characters"
     )
 
-    SAFE_KEY = ["name", "notes"]
+    SAFE_KEYS = ["name", "notes"]
 
     @classmethod
     def Get_All(cls, session):
@@ -425,7 +425,27 @@ class Setting(Base):
     val: Mapped[str]
     type: Mapped[str]
 
-    SAFE_KEY = ["val"]
+    SAFE_KEYS = ["val"]
+
+    @classmethod
+    def _CastVal2Type(cls, type_name, value):
+        match type_name:
+            case "string":
+                return value
+            case "number":
+                return int(value)
+            case "boolean":
+                try:
+                    return bool(int(value))
+                except ValueError:
+                    if str(value).lower() == "true":
+                        return True
+                    elif str(value).lower() == "false":
+                        return False
+
+                    raise
+            case _:
+                return value
 
     @classmethod
     def Get(cls, session: Session, val_name: str) -> common_setting_type:
@@ -436,15 +456,7 @@ class Setting(Base):
             log.error(f"Failed to fetch: {val_name}")
             raise
 
-        match rec.type:
-            case "string":
-                return rec.val
-            case "number":
-                return int(rec.val)
-            case "boolean":
-                return bool(int(rec.val))
-            case _:
-                return rec.val
+        return cls._CastVal2Type(rec.type, rec.val)
 
     @classmethod
     def Set(cls, session: Session, val_name: str, value: common_setting_type):
@@ -475,17 +487,10 @@ class Setting(Base):
 
     def asdict(self) -> T.Mapping[str, common_setting_type]:
         data = dict(
-            name=self.name, type=self.type
+            name=self.name,
+            type=self.type,
+            value=self._CastVal2Type(self.type, self.val),
         )  # type: T.Dict[str, common_setting_type]
-        match self.type:
-            case "number":
-                data["value"] = int(self.val)
-            case "boolean" | "bool":
-                data["value"] = bool(int(self.val))
-            case "string":
-                data["value"] = self.val
-            case _:
-                data["value"] = self.val
 
         return data
 
