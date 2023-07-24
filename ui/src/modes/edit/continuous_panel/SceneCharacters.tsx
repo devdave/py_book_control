@@ -13,12 +13,16 @@ export const SceneCharacters: React.FC<SceneCharactersProps> = ({ scene }) => {
     const { activeBook } = useAppContext()
     const { characterBroker, activeElement } = useEditorContext()
 
-    const { data: sceneCharacters } = characterBroker.list(activeBook.id)
+    const { data: allCharacters } = characterBroker.list(activeBook.id)
+
+    const sceneToonIdSet = new Set(scene.characters.map((toon) => toon.id))
 
     const toons_list =
-        sceneCharacters === undefined
+        allCharacters === undefined
             ? []
-            : sceneCharacters.map((toon: Character) => ({ label: toon.name, value: toon.id }))
+            : allCharacters
+                  .filter((toon) => !sceneToonIdSet.has(toon.id))
+                  .map((toon: Character) => ({ label: toon.name, value: toon.id }))
 
     const inspectOnClick: React.MouseEventHandler<HTMLButtonElement> = (evt) => {
         const toon_id = evt.currentTarget.dataset.toonId
