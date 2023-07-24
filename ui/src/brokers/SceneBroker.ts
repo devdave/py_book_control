@@ -44,7 +44,7 @@ export interface SceneBrokerFunctions {
         sceneTitle: Scene['title'],
         position?: Scene['order'],
         content?: Scene['content']
-    ) => Promise<void>
+    ) => Promise<[Scene, Chapter]>
     reorder: (chapter: Chapter | ChapterIndex, from: number, to: number) => Promise<void>
     delete: (bookId: Book['id'], chapterId: Scene['chapterId'], sceneId: Scene['id']) => Promise<void>
 }
@@ -71,11 +71,15 @@ export const SceneBroker = ({
 
     const _addScene = useMutation({
         mutationFn: (newScene: { [key: string]: string | number }) =>
-            api.create_scene(newScene.chapterId, newScene.title),
+            api.create_scene(newScene.chapterId, newScene.title, newScene.position),
         onSuccess: ([scene, chapter]: [Scene, Chapter], newSceneParts: Partial<Scene>) => {
-            console.log('Added a new scene: ', scene, chapter)
-            _setActiveScene(scene)
-            _setActiveChapter(chapter)
+            queryClient
+                .invalidateQueries({
+                    queryKey: ['book', chapter.book_id, 'chapter', chapter.id, 'scene', scene.id],
+                    exact: true,
+                    refetchType: 'active'
+                })
+                .then(() => console.log('AddScene - invalidated scene'))
 
             queryClient
                 .invalidateQueries({
@@ -83,7 +87,7 @@ export const SceneBroker = ({
                     exact: true,
                     refetchType: 'active'
                 })
-                .then()
+                .then(() => console.log('AddScene - invalidated chapter'))
 
             queryClient
                 .invalidateQueries({
@@ -91,7 +95,7 @@ export const SceneBroker = ({
                     exact: true,
                     refetchType: 'active'
                 })
-                .then()
+                .then(() => console.log('Add scene - invalidated index'))
         }
     })
 
@@ -100,14 +104,25 @@ export const SceneBroker = ({
         sceneTitle: string,
         position?: number,
         content?: string
-    ) => Promise<void> = async (chapterId: string, sceneTitle: string, position = -1, content = '') => {
-        _addScene.mutate({
-            chapterId,
-            title: sceneTitle,
-            position,
-            content
+    ) => Promise<[Scene, Chapter]> = async (
+        chapterId: string,
+        sceneTitle: string,
+        position = -1,
+        content = ''
+    ) =>
+        new Promise((resolve) => {
+            _addScene.mutate(
+                {
+                    chapterId,
+                    title: sceneTitle,
+                    position,
+                    content
+                },
+                {
+                    onSuccess: (response) => resolve(response)
+                }
+            )
         })
-    }
 
     const reorderScene = useCallback(
         async (chapter: Chapter | ChapterIndex, from: number, to: number) => {
