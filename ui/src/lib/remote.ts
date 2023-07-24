@@ -69,8 +69,8 @@ class APIBridge {
     }
     
     
-    async fetch_chapter(chapter_id:string) {        
-        return this.boundary.remote("fetch_chapter", chapter_id);
+    async fetch_chapter(chapter_id:string, stripped:boolean = false) {        
+        return this.boundary.remote("fetch_chapter", chapter_id, stripped);
     }
     
     

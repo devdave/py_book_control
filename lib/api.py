@@ -91,9 +91,9 @@ class BCAPI:
 
         return []
 
-    def fetch_chapter(self, chapter_id: str):
+    def fetch_chapter(self, chapter_id: str, stripped: bool = False):
         with self.app.get_db() as session:
-            return models.Chapter.Fetch_by_uid(session, chapter_id).asdict()
+            return models.Chapter.Fetch_by_uid(session, chapter_id).asdict(stripped)
 
     def fetch_chapter_index(self, chapter_id: str):
         with self.app.get_db() as session:
