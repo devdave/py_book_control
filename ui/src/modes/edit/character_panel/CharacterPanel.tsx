@@ -40,7 +40,7 @@ const useStyle = createStyles((theme) => ({
 export const CharacterPanel = () => {
     const { activeBook } = useAppContext()
 
-    const { activeElement, fetchCharacter, listAllCharacters } = useEditorContext()
+    const { activeElement, characterBroker } = useEditorContext()
 
     const { classes } = useStyle()
 
@@ -49,7 +49,7 @@ export const CharacterPanel = () => {
         isLoading: charactersIsLoading,
         status: charactersStatus,
         failureReason: charactersLoadFailureReason
-    } = listAllCharacters(activeBook)
+    } = characterBroker.list(activeBook)
 
     const enabledCurrentToonQuery =
         activeElement.subType === 'character' && activeElement.subDetail !== undefined
@@ -58,7 +58,7 @@ export const CharacterPanel = () => {
         data: currentToon,
         isFetched: currentToonFetched,
         isLoading: currentToonIsLoading
-    } = fetchCharacter(activeBook.id, activeElement.subDetail as string, enabledCurrentToonQuery)
+    } = characterBroker.get(activeBook.id, activeElement.subDetail as string, enabledCurrentToonQuery)
 
     if (charactersIsLoading || !characters) {
         return (
@@ -84,7 +84,7 @@ export const CharacterPanel = () => {
         )
     }
 
-    const handleClick: MouseEventHandler<HTMLTableRowElement> = (evt) => {
+    const handleCharacterListClick: MouseEventHandler<HTMLTableRowElement> = (evt) => {
         console.log(evt.currentTarget.dataset.id)
         activeElement.setCharacterById(evt.currentTarget.dataset.id as string)
         // setSelectedToonId(evt.currentTarget.dataset.id)
@@ -95,7 +95,7 @@ export const CharacterPanel = () => {
             className={classes.active_style}
             key={`${character.id}-${character.updated_on}`}
             data-id={character.id}
-            onClick={handleClick}
+            onClick={handleCharacterListClick}
         >
             <td>{character.name}</td>
             <td>{character.scene_count}</td>
