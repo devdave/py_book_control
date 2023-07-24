@@ -4,7 +4,7 @@ import { Flex, Indicator, Select, Skeleton, Text, Textarea } from '@mantine/core
 
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 
-import { type Scene, type SceneStatus } from '@src/types'
+import { type Scene, type SceneStatus, UniqueId } from '@src/types'
 import { ResizeablePanels } from '@src/widget/ResizeablePanels'
 import { IndicatedTextarea } from '@src/widget/IndicatedTextarea'
 
@@ -14,6 +14,7 @@ import { useQueryClient } from '@tanstack/react-query'
 
 import { useAppContext } from '@src/App.context'
 
+import { SceneCharacters } from '@src/modes/edit/continuous_panel/SceneCharacters'
 import { useEditorContext } from '../Editor.context'
 
 interface SceneTextProps {
@@ -34,11 +35,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
     const { activeScene, activeChapter, setActiveChapter, setActiveScene, sceneBroker, sceneStatusBroker } =
         useEditorContext()
 
-    const {
-        data: sceneStatuses,
-        isLoading: sceneStatusesIsLoading,
-        status: sceneStatusesStatus
-    } = sceneStatusBroker.fetchAllSceneStatuses(activeBook.id)
+    const { data: sceneStatuses } = sceneStatusBroker.fetchAllSceneStatuses(activeBook.id)
 
     const select_statuses =
         sceneStatuses === undefined
@@ -77,80 +74,67 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
 
             const activeSceneId = activeScene.id
             const activeChapId = activeChapter.id
+            const newOrder = activeScene.order + 1
 
             activeScene.content = response.content
             await api.update_scene(activeSceneId, activeScene)
 
-            const [newScene, newChapter] = await api.create_scene(
-                activeChapId,
-                response.split_title,
-                activeScene.order + 1
-            )
+            console.log('Calling broker to create with ', newOrder)
+            sceneBroker
+                .create(activeChapId, response.split_title, newOrder)
+                .then(([new_scene, new_chapter]) => {
+                    form.resetDirty()
+                    setActiveScene(new_chapter, new_scene)
+                })
 
-            await queryClient.invalidateQueries({
-                queryKey: ['book', activeBook.id, 'index'],
-                exact: true,
-                refetchType: 'active'
-            })
-            await queryClient.invalidateQueries({
-                queryKey: ['book', activeBook.id, 'chapter', activeChapId],
-                exact: true,
-                refetchType: 'active'
-            })
-            await queryClient.invalidateQueries({
-                queryKey: ['book', activeBook.id, 'chapter', activeChapId, 'scene', activeSceneId],
-                exact: true,
-                refetchType: 'active'
-            })
+            // const [newScene, newChapter] = await api.create_scene(
+            //     activeChapId,
+            //     response.split_title,
+            //     activeScene.order + 1
+            // )
 
-            form.resetDirty()
-            setActiveScene(newChapter, newScene)
             console.groupEnd()
         },
         [activeBook.id, activeChapter, activeScene, api, form, queryClient, setActiveScene]
     )
 
+    const handleDeleteResponse = useCallback((bookId: UniqueId, chapterId: UniqueId, sceneId: UniqueId) => {
+        if (dontask2delete === true) {
+            sceneBroker.delete(bookId, chapterId, sceneId)
+        } else {
+            modals.openConfirmModal({
+                modalId: 'shouldDeleteScene',
+                title: 'Scene body empty',
+                children: (
+                    <Text size='sm'>
+                        The scene@apos;s content body is empty, do you want to delete this scene?
+                    </Text>
+                ),
+                labels: {
+                    confirm: 'Delete scene!',
+                    cancel: 'Do not delete scene!'
+                },
+                onConfirm: () => {
+                    sceneBroker.delete(activeBook.id, scene.chapterId, scene.id)
+                }
+            })
+        }
+    }, [])
+
     useDebouncedEffect(
         () => {
             async function reprocessMDnSave(): Promise<null | undefined> {
-                if (form.values.content && form.values.content.trim().length === 0) {
-                    modals.openConfirmModal({
-                        modalId: 'shouldDeleteScene',
-                        title: 'Scene body empty',
-                        children: (
-                            <Text size='sm'>
-                                The scene@apos;s content body is empty, do you want to delete this scene?
-                            </Text>
-                        ),
-                        labels: {
-                            confirm: 'Delete scene!',
-                            cancel: 'Do not delete scene!'
-                        },
-                        onConfirm: () => {
-                            sceneBroker.delete(scene.chapterId, scene.id)
-                        }
-                    })
-                    return null
-                }
-
                 const response = await api.process_scene_markdown(scene.id, form.values.content as string)
 
-                if (response.status === 'empty') {
-                    if (dontask2delete === true) {
-                        await sceneBroker.delete(activeBook.id, scene.chapterId, scene.id)
+                if (
+                    (form.values.content && form.values.content.trim().length === 0) ||
+                    response.status === 'empty'
+                ) {
+                    if (activeChapter === undefined || activeScene === undefined) {
+                        alert('Integrity error, active chapter or scene are not set.  How did we get here?')
                         return null
                     }
-
-                    console.log(`Got empty: ${form.values.content} - ${form.values.content?.length}`)
-                    form.resetDirty()
-                    modals.openConfirmModal({
-                        title: 'Empty scene',
-                        children: <Text size='sm'>The scene body is empty, do you want to delete it?</Text>,
-                        labels: { confirm: 'Delete', cancel: 'Cancel' },
-                        onConfirm: () => {
-                            sceneBroker.delete(activeBook.id, scene.chapterId, scene.id).then()
-                        }
-                    })
+                    handleDeleteResponse(activeBook.id, activeChapter.id, activeScene.id)
                     return null
                 }
 
@@ -159,6 +143,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                     // form.setValues({ content: sceneMD })
                     form.resetDirty()
                     form.setFieldError('content', response.message)
+                    return null
                     // throw new Error(response.message)
                 }
 
@@ -264,7 +249,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                             boxSizing: 'border-box'
                         },
                         input: {
-                            height: '100%',
+                            minHeight: '80vh',
                             width: '100%',
                             boxSizing: 'border-box'
                         }
@@ -318,6 +303,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                 </details>
                 <details open>
                     <summary>Characters</summary>
+                    <SceneCharacters scene={scene} />
                 </details>
 
                 {/*<Button*/}
