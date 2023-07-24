@@ -167,12 +167,14 @@ const App: React.FC = () => {
         }
     })
 
-    const updateBook = useCallback(
-        (book: Partial<Book>) => {
-            if (book.id) {
-                _changeBook.mutate(book as Book)
-            }
-        },
+    const updateBook: (book: Partial<Book>) => Promise<Book> = useCallback(
+        (book: Partial<Book>) =>
+            new Promise((resolve, reject) => {
+                if (book.id) {
+                    _changeBook.mutate(book as Book, { onSuccess: resolve, onError: reject })
+                }
+                reject()
+            }),
         [_changeBook]
     )
 

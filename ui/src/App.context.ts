@@ -14,7 +14,7 @@ export interface AppContextValue {
     activeBook: Book
     setActiveBook: (val: Book) => void
 
-    updateBook: (val: Partial<Book>) => void
+    updateBook: (val: Partial<Book>) => Promise<Book>
     fetchStrippedBook: (book_id: UID) => UseQueryResult<Book, Error>
     fetchStrippedBooks: () => UseQueryResult<Book[], Error>
 
