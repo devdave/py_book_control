@@ -1,11 +1,12 @@
 import { Button, Center, Paper, TextInput, Text, Title, Stack } from '@mantine/core'
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useForm } from '@mantine/form'
 import { useAppContext } from '@src/App.context'
-import { Chapter, type Scene } from '@src/types'
+import { Chapter, type Scene, UniqueId } from '@src/types'
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 import { find } from 'lodash'
 import { useHotkeys } from '@mantine/hooks'
+import { InputModal } from '@src/widget/input_modal'
 import { useEditorContext } from '../Editor.context'
 import { SceneText } from './SceneText'
 
@@ -26,6 +27,21 @@ export const ContinuousBody: React.FC = () => {
     if (activeChapter === undefined) {
         throw Error('Data integrity issue, activechapter is not defined')
     }
+
+    const addScene = useCallback(
+        (chapterId: Chapter['id']) => {
+            new InputModal().arun('Provide a scene name').then((new_name) => {
+                if (new_name.length < 3) {
+                    alert('New scene names must be atleast 3 characters long')
+                } else {
+                    sceneBroker.create(chapterId, new_name).then((detail) => {
+                        console.log('create returned ', detail)
+                    })
+                }
+            })
+        },
+        [sceneBroker]
+    )
 
     const prevScene = () => {
         if (activeScene && activeScene.order > 0) {
@@ -147,7 +163,7 @@ export const ContinuousBody: React.FC = () => {
                     shadow='xl'
                     p='xs'
                     withBorder
-                    style={{ height: '80vh', marginBottom: '2em' }}
+                    style={{ minHeight: '80vh', marginBottom: '2em' }}
                     ref={(ref: HTMLDivElement) => {
                         if (ref) {
                             paperRefs.current[scene.id] = ref
@@ -162,11 +178,9 @@ export const ContinuousBody: React.FC = () => {
                     )}
                 </Paper>
             ))}
-            {activeChapter?.scenes.length === 0 && (
-                <Center>
-                    <Button onClick={() => sceneBroker.add(activeChapter.id)}>Create a scene</Button>
-                </Center>
-            )}
+            <Center>
+                <Button onClick={() => addScene(activeChapter.id)}>Create a new scene</Button>
+            </Center>
         </Stack>
     )
 }
