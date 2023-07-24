@@ -49,7 +49,7 @@ export const CharacterPanel = () => {
         isLoading: charactersIsLoading,
         status: charactersStatus,
         failureReason: charactersLoadFailureReason
-    } = characterBroker.list(activeBook)
+    } = characterBroker.list(activeBook.id)
 
     const enabledCurrentToonQuery =
         activeElement.subType === 'character' && activeElement.subDetail !== undefined
