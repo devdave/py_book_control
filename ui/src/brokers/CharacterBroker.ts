@@ -18,7 +18,7 @@ export interface CharacterBrokerFunctions {
         character_id: Character['id'],
         enabled: boolean
     ) => UseQueryResult<Character, Error>
-    list: (book: Book) => UseQueryResult<Character[], Error>
+    list: (bookId: Book['id']) => UseQueryResult<Character[], Error>
     listByScene: (scene: Scene) => UseQueryResult<Character[], Error>
     update: (changeset: Character) => void
     delete: (character_id: Character['id']) => void
@@ -193,11 +193,11 @@ export const CharacterBroker = ({
     )
 
     const listAllCharacters = useCallback(
-        (book: Book): UseQueryResult<Character[], Error> =>
+        (bookId: Book['id']): UseQueryResult<Character[], Error> =>
             // eslint-disable-next-line react-hooks/rules-of-hooks
             useQuery({
-                queryKey: ['book', book.id, 'characters'],
-                queryFn: () => api.list_all_characters(book.id)
+                queryKey: ['book', bookId, 'characters'],
+                queryFn: () => api.list_all_characters(bookId)
             }),
         [api]
     )
