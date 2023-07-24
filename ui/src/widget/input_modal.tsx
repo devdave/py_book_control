@@ -70,6 +70,10 @@ export class InputModal {
         modals.close(this.modalId)
     }
 
+    static Show(prompt: string) {
+        return new InputModal().arun(prompt)
+    }
+
     async arun(prompt: string): Promise<string> {
         return new Promise((resolve) => {
             let textValue = ''
