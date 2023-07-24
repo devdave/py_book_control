@@ -5,27 +5,31 @@ import { useAppContext } from '@src/App.context'
 import { Chapter, type Scene, UniqueId } from '@src/types'
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 import { find } from 'lodash'
-import { useHotkeys } from '@mantine/hooks'
+import { useHotkeys, useLogger } from '@mantine/hooks'
 import { InputModal } from '@src/widget/input_modal'
 import { useEditorContext } from '../Editor.context'
 import { SceneText } from './SceneText'
 
-export const ContinuousBody: React.FC = () => {
+interface ContinuousBodyProps {
+    chapter: Chapter
+}
+
+export const ContinuousBody: React.FC<ContinuousBodyProps> = ({ chapter }) => {
     const { activeBook, settings } = useAppContext()
     const {
-        activeChapter,
         activeScene,
 
         sceneBroker,
         chapterBroker,
         setActiveScene
     } = useEditorContext()
+
     const paperRefs = useRef<Record<string, HTMLDivElement>>({})
 
     const [debounceTime] = settings.makeState('debounceTime')
 
-    if (activeChapter === undefined) {
-        throw Error('Data integrity issue, activechapter is not defined')
+    if (chapter === undefined) {
+        throw Error('Data integrity issue, body chapter is not defined')
     }
 
     const addScene = useCallback(
@@ -34,7 +38,11 @@ export const ContinuousBody: React.FC = () => {
                 if (new_name.length < 3) {
                     alert('New scene names must be atleast 3 characters long')
                 } else {
-                    sceneBroker.create(chapterId, new_name).then((detail) => {
+                    if (!activeScene) {
+                        alert('Attempting to split scenes without an activeScene')
+                        return
+                    }
+                    sceneBroker.create(chapterId, new_name, activeScene.order + 1 || -1).then((detail) => {
                         console.log('create returned ', detail)
                     })
                 }
@@ -45,10 +53,10 @@ export const ContinuousBody: React.FC = () => {
 
     const prevScene = () => {
         if (activeScene && activeScene.order > 0) {
-            const prior = find(activeChapter?.scenes, { order: activeScene.order - 1 })
-            prior && setActiveScene(activeChapter, prior)
-        } else if (activeChapter && activeChapter.order > 0) {
-            const prior_order = activeChapter.order - 1
+            const prior = find(chapter?.scenes, { order: activeScene.order - 1 })
+            prior && setActiveScene(chapter, prior)
+        } else if (chapter && chapter.order > 0) {
+            const prior_order = chapter.order - 1
             const prior = find(activeBook.chapters, { order: prior_order })
             if (prior) {
                 const last_scene = prior.scenes[prior.scenes.length - 1]
@@ -57,12 +65,13 @@ export const ContinuousBody: React.FC = () => {
         }
     }
     const nextScene = () => {
-        if (activeScene && activeScene.order + 1 < activeChapter!.scenes.length) {
+        console.log(chapter.scenes)
+        if (activeScene && activeScene.order + 1 < chapter!.scenes.length) {
             const next_order = activeScene.order + 1
-            const next = find(activeChapter!.scenes, { order: next_order })
-            next && setActiveScene(activeChapter, next)
-        } else if (activeChapter.order < activeBook.chapters.length - 1) {
-            const next_order = activeChapter.order + 1
+            const next = find(chapter.scenes || [], { order: next_order })
+            next && setActiveScene(chapter, next)
+        } else if (chapter.order < activeBook.chapters.length - 1) {
+            const next_order = chapter.order + 1
             const next_chapter = find(activeBook.chapters, { order: next_order })
             if (next_chapter) {
                 const first_scene = next_chapter.scenes[0]
@@ -79,14 +88,9 @@ export const ContinuousBody: React.FC = () => {
         []
     )
 
-    const { data: chapter, isLoading: chapterIsLoading } = chapterBroker.fetch(
-        activeBook.id,
-        activeChapter.id
-    )
-
     const form = useForm({
         initialValues: {
-            title: activeChapter?.title
+            title: chapter.title
         },
         validate: {
             title: (value: string | undefined) =>
@@ -99,9 +103,9 @@ export const ContinuousBody: React.FC = () => {
     useDebouncedEffect(
         () => {
             async function updateChapterTitle() {
-                if (activeChapter) {
+                if (chapter) {
                     const new_chapter: Chapter = {
-                        ...(activeChapter as Chapter),
+                        ...chapter,
                         title: form.values.title || 'Missing chapter'
                     }
                     chapterBroker.update(new_chapter)
@@ -128,26 +132,10 @@ export const ContinuousBody: React.FC = () => {
         }
     }, [activeScene?.id])
 
-    if (!activeChapter) {
-        return (
-            <>
-                <Title order={2}>Missing active chapter</Title>
-            </>
-        )
-    }
-
-    if (chapterIsLoading) {
-        return (
-            <>
-                <Text>Loading chapter...</Text>
-            </>
-        )
-    }
-
     if (!chapter) {
         return (
             <>
-                <Text>There was a problem loading the requested chapter.</Text>
+                <Title order={2}>Missing active chapter</Title>
             </>
         )
     }
@@ -179,7 +167,7 @@ export const ContinuousBody: React.FC = () => {
                 </Paper>
             ))}
             <Center>
-                <Button onClick={() => addScene(activeChapter.id)}>Create a new scene</Button>
+                <Button onClick={() => addScene(chapter.id)}>Create a new scene</Button>
             </Center>
         </Stack>
     )
