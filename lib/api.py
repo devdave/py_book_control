@@ -51,9 +51,9 @@ class BCAPI:
     def update_book(self, changed_book: dict[str, common_setting_type]):
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, changed_book["id"])  # type: ignore
-            updated = book.update(changed_book)
+            book.update(changed_book)
             session.commit()
-            return updated.asdict(True)
+            return book.asdict(True)
 
     def update_book_title(self, book_uid: UniqueID, new_title: str):
         with self.app.get_db() as session:
