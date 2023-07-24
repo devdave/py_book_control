@@ -42,27 +42,27 @@ class BCAPI:
 
         return None
 
-    def set_current_book(self, book_uid: str):
+    def set_current_book(self, book_uid: UniqueID):
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, book_uid)
             self.app.book_id = book.id
             return book.asdict()
 
-    def update_book(self, changed_book: dict[str, str]):
+    def update_book(self, changed_book: dict[str, common_setting_type]):
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, changed_book["id"])
             updated = book.update(changed_book)
             session.commit()
             return updated.asdict(True)
 
-    def update_book_title(self, book_uid: str, new_title: str):
+    def update_book_title(self, book_uid: UniqueID, new_title: str):
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, book_uid)
             book.title = new_title
             session.commit()
             return book.asdict(True)
 
-    def fetch_book_simple(self, book_uid: str):
+    def fetch_book_simple(self, book_uid: UniqueID):
         with self.app.get_db() as session:
             self.log.info("book_ui == `{}`", book_uid)
             book = models.Book.Fetch_by_UID(session, book_uid)
@@ -91,15 +91,15 @@ class BCAPI:
 
         return []
 
-    def fetch_chapter(self, chapter_id: str, stripped: bool = False):
+    def fetch_chapter(self, chapter_id: UniqueID, stripped: bool = False):
         with self.app.get_db() as session:
             return models.Chapter.Fetch_by_uid(session, chapter_id).asdict(stripped)
 
-    def fetch_chapter_index(self, chapter_id: str):
+    def fetch_chapter_index(self, chapter_id: UniqueID):
         with self.app.get_db() as session:
             return models.Chapter.Fetch_by_uid(session, chapter_id).asdict(True)
 
-    def update_chapter(self, chapter_id: str, chapter_data: dict[str, str]):
+    def update_chapter(self, chapter_id: UniqueID, chapter_data: dict[str, str]):
         with self.app.get_db() as session:
             chapter = models.Chapter.Fetch_by_uid(session, chapter_id)
             chapter.update(chapter_data)
@@ -139,23 +139,25 @@ class BCAPI:
             else:
                 return None
 
-    def save_reordered_chapters(self, chapters: T.List[T.Dict[str, str]]):
+    def save_reordered_chapters(
+        self, chapters: T.List[T.Dict[str, common_setting_type]]
+    ):
         with self.app.get_db() as session:
             return models.Chapter.Reorder(session, chapters)
 
-    def fetch_scene(self, scene_uid: str):
+    def fetch_scene(self, scene_uid: UniqueID):
         with self.app.get_db() as session:
             scene = models.Scene.Fetch_by_uid(session, scene_uid)
             return scene.asdict()
 
-    def fetch_scene_markedup(self, scene_uid: str):
+    def fetch_scene_markedup(self, scene_uid: UniqueID):
         with self.app.get_db() as session:
             scene = models.Scene.Fetch_by_uid(session, scene_uid)
 
             processor = SceneProcessor()
             return processor.compile(scene.title, scene.content)
 
-    def process_scene_markdown(self, scene_uid: str, raw_text: str):
+    def process_scene_markdown(self, scene_uid: UniqueID, raw_text: str):
         self.log.debug("`{}`, `{}`", scene_uid, raw_text)
 
         processor = SceneProcessor()
@@ -172,7 +174,7 @@ class BCAPI:
 
         return response
 
-    def update_scene(self, scene_uid: str, new_data: T.Dict[str, str]):
+    def update_scene(self, scene_uid: UniqueID, new_data: T.Dict[str, str]):
         with self.app.get_db() as session:
             scene = models.Scene.Fetch_by_uid(session, scene_uid)
             scene.update(new_data)
@@ -183,13 +185,13 @@ class BCAPI:
                 scene.chapter.asdict(),
             )
 
-    def create_scene(self, chapterId, title, position=-1):
+    def create_scene(self, chapter_id: UniqueID, title, position=-1):
         with self.app.get_db() as session:
-            chapter = models.Chapter.Fetch_by_uid(session, chapterId)
+            chapter = models.Chapter.Fetch_by_uid(session, chapter_id)
             scene = models.Scene(title=title)
             if position >= 0:
                 chapter.scenes.insert(position, scene)
-                chapter.scenes.reorder()
+                chapter.scenes.reorder()  # type: ignore
             else:
                 chapter.scenes.append(scene)
 
@@ -201,7 +203,7 @@ class BCAPI:
                 chapter.asdict(),
             )
 
-    def delete_scene(self, chapter_uid: str, scene_uid: str):
+    def delete_scene(self, chapter_uid: UniqueID, scene_uid: UniqueID):
         try:
             with self.app.get_db() as session:
                 scene = models.Scene.Fetch_by_uid(session, scene_uid)
@@ -349,7 +351,9 @@ class BCAPI:
             models.Setting.Set(session, name, value)
             session.commit()
 
-    def bulkUpdateSettings(self, changeset: T.List[dict[str, common_setting_type]]):
+    def bulkUpdateSettings(
+        self, changeset: T.Dict[str, T.Dict[str, common_setting_type]]
+    ):
         with self.app.get_db() as session:
             models.Setting.BulkSet(session, changeset)
             session.commit()
