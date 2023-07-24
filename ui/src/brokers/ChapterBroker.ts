@@ -8,7 +8,11 @@ export interface ChapterBrokerFunctions {
     create: (book_id: Book['id'], chapter_title: Chapter['title']) => void
     add: (book: Book) => void
     get: (chapterId: Chapter['id'], stripped: boolean) => Promise<Chapter>
-    fetch: (book_id: Book['id'], chapter_id: Chapter['id']) => UseQueryResult<Chapter, Error>
+    fetch: (
+        book_id: Book['id'],
+        chapter_id: Chapter['id'] | undefined,
+        enabled?: boolean
+    ) => UseQueryResult<Chapter, Error>
     update: (chapter: Chapter) => void
     reorder: (book_id: Book['id'], from: number, to: number) => void
 }
@@ -54,11 +58,12 @@ export const ChapterBroker = ({
     )
 
     const fetchChapter = useCallback(
-        (book_id: UID, chapter_id: UID) =>
+        (book_id: Book['id'], chapter_id: Chapter['id'] | undefined, enabled = true) =>
             // eslint-disable-next-line react-hooks/rules-of-hooks
             useQuery<Chapter, Error>({
                 queryFn: () => api.fetch_chapter(chapter_id),
-                queryKey: ['book', book_id, 'chapter', chapter_id]
+                queryKey: ['book', book_id, 'chapter', chapter_id],
+                enabled
             }),
         [api]
     )
