@@ -2,6 +2,7 @@ import { Indicator, Text, Textarea, TextInput } from '@mantine/core'
 import { useAppContext } from '@src/App.context'
 import { useForm } from '@mantine/form'
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
+import { Book } from '@src/types'
 
 export const BookPanel: React.FC = () => {
     const { activeBook, updateBook, settings } = useAppContext()
@@ -23,7 +24,10 @@ export const BookPanel: React.FC = () => {
                     notes: form.values.notes,
                     title: form.values.title
                 }
-                updateBook(book_changes)
+                updateBook(book_changes).then((updated_book: Book) => {
+                    console.log('Updated book ', updated_book)
+                    form.resetDirty()
+                })
             }
         },
         [form],
