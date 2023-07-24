@@ -59,7 +59,7 @@ export const PromptModal = (promptText: string): Promise<string> =>
         })
     })
 
-class InputModal {
+export class InputModal {
     modalId: string
 
     constructor() {
@@ -70,7 +70,7 @@ class InputModal {
         modals.close(this.modalId)
     }
 
-    async arun(prompt: string) {
+    async arun(prompt: string): Promise<string> {
         return new Promise((resolve) => {
             let textValue = ''
             const sendInput = () => {
