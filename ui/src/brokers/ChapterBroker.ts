@@ -1,5 +1,5 @@
 import { Book, Chapter, UID } from '@src/types'
-import { QueryClient, useMutation, useQuery, UseQueryResult } from '@tanstack/react-query'
+import { QueryClient, useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { PromptModal } from '@src/widget/input_modal'
 import APIBridge from '@src/lib/remote'
@@ -7,7 +7,7 @@ import APIBridge from '@src/lib/remote'
 export interface ChapterBrokerFunctions {
     create: (book_id: Book['id'], chapter_title: Chapter['title']) => void
     add: (book: Book) => void
-    get: (chapterId: Chapter['id']) => Promise<Chapter>
+    get: (chapterId: Chapter['id'], stripped: boolean) => Promise<Chapter>
     fetch: (book_id: Book['id'], chapter_id: Chapter['id']) => UseQueryResult<Chapter, Error>
     update: (chapter: Chapter) => void
     reorder: (book_id: Book['id'], from: number, to: number) => void
@@ -32,24 +32,24 @@ export const ChapterBroker = ({
         }
     })
 
-    const createChapter = (book_id: Book['id'], ChapterTitle: Chapter['title']) => {
+    const createChapter = (book_id: Book['id'], ChapterTitle: Chapter['title']) =>
         _createChapter.mutate({ book_id, title: ChapterTitle } as Partial<Chapter>)
-    }
 
     const addChapter = useCallback(
         async (book: Book) => {
+            console.log('addChapter is !DEPRECATED!')
             const chapterTitle: string = await PromptModal('New chapter title')
             if (chapterTitle.trim().length <= 2) {
                 alert("Chapter's must have a title longer than 2 characters.")
-                return
+                return undefined
             }
-            _createChapter.mutate({ book_id: book.id, title: chapterTitle } as Partial<Chapter>)
+            return _createChapter.mutate({ book_id: book.id, title: chapterTitle } as Partial<Chapter>)
         },
         [_createChapter]
     )
 
-    const getChapter: (chapterId: Chapter['id']) => Promise<Chapter> = useCallback(
-        async (chapterId: string) => api.fetch_chapter(chapterId),
+    const getChapter: (chapterId: Chapter['id'], stripped: boolean) => Promise<Chapter> = useCallback(
+        async (chapterId: Chapter['id'], stripped = false) => api.fetch_chapter(chapterId, stripped),
         [api]
     )
 
@@ -78,13 +78,17 @@ export const ChapterBroker = ({
         onSuccess: (chapter) => {
             queryClient
                 .invalidateQueries({
-                    queryKey: ['book', chapter.book_id, 'index']
+                    queryKey: ['book', chapter.book_id, 'index'],
+                    exact: true,
+                    refetchType: 'active'
                 })
                 .then()
             if (chapter) {
                 queryClient
                     .invalidateQueries({
-                        queryKey: ['book', chapter.book_id, 'chapter', chapter.id]
+                        queryKey: ['book', chapter.book_id, 'chapter', chapter.id],
+                        exact: true,
+                        refetchType: 'active'
                     })
                     .then()
             }
