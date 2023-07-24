@@ -22,6 +22,7 @@ import { SceneStatusBroker } from '@src/brokers/SceneStatusBroker'
 import { SceneBroker } from '@src/brokers/SceneBroker'
 import { CharacterBroker } from '@src/brokers/CharacterBroker'
 import { ChapterBroker, ChapterBrokerFunctions } from '@src/brokers/ChapterBroker'
+import { useLogger } from '@mantine/hooks'
 import { LeftPanel } from './LeftPanel'
 import { EditorContext, type EditorContextValue } from './Editor.context'
 
@@ -255,12 +256,14 @@ export const Editor: React.FC = () => {
 
     const sceneKeys = activeChapter ? activeChapter.scenes.map((scene) => scene.id) : []
 
-    const superKey = sceneKeys.join()
+    const superKey = `${activeChapter?.id} ${activeScene?.id}  ${
+        activeBook.updated_on
+    } ${indexUpdatedAt} ${sceneKeys.join()}`
 
     const leftPanel = (
         <LeftPanel
             index={index}
-            key={`${activeChapter?.id} ${activeScene?.id}  ${activeBook.updated_on} ${indexUpdatedAt} ${superKey}`}
+            key={superKey}
         />
     )
 
