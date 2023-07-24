@@ -35,7 +35,7 @@ from sqlalchemy.orm import (
 )
 
 from .log_helper import getLogger
-from .app_types import common_setting_type, UID, UniqueID
+from .app_types import common_setting_type, UID, UniqueID, ChapterDict
 
 log = getLogger(__name__)
 
@@ -195,23 +195,21 @@ class Chapter(Base):
 
     SAFE_KEYS = ["title", "order", "summary", "notes"]
 
-    def asdict(self, stripped=False):
-        data = dict(
+    def asdict(self, stripped=False) -> ChapterDict:
+        data: ChapterDict = dict(
             id=self.uid,
-            book_id=self.book_id,
+            book_id=self.book.uid,
             type="chapter",
             title=self.title,
             order=self.order,
             words=self.words,
             created_on=str(self.created_on),
             updated_on=str(self.updated_on),
-        )
+            notes=self.notes if stripped is False else "",
+            summary=self.summary if stripped is False else "",
+            scenes=[scene.asdict(stripped=stripped) for scene in self.scenes],
+        )  # type: ignore
 
-        if stripped is False:
-            data["notes"] = self.notes
-            data["summary"] = self.summary
-
-        data["scenes"] = [scene.asdict(stripped=stripped) for scene in self.scenes]
         return data
 
     @hybrid_property
@@ -229,7 +227,11 @@ class Chapter(Base):
         return session.scalars(stmt).one()
 
     @classmethod
-    def Reorder(cls, session: Session, chapters: T.List[T.Dict[str, str]]):
+    def Reorder(
+        cls,
+        session: Session,
+        chapters: T.List[ChapterDict],
+    ):
         for chapterData in chapters:
             record = cls.Fetch_by_uid(session, chapterData["id"])
             record.order = int(chapterData["order"])

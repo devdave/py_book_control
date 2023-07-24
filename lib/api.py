@@ -6,7 +6,7 @@ from .scene_processor import SceneProcessor2 as SceneProcessor
 from .application import BCApplication
 from . import models
 from .log_helper import getLogger
-from .app_types import common_setting_type, UniqueID
+from .app_types import common_setting_type, UniqueID, ChapterDict
 
 
 class BCAPI:
@@ -50,7 +50,7 @@ class BCAPI:
 
     def update_book(self, changed_book: dict[str, common_setting_type]):
         with self.app.get_db() as session:
-            book = models.Book.Fetch_by_UID(session, changed_book["id"])
+            book = models.Book.Fetch_by_UID(session, changed_book["id"])  # type: ignore
             updated = book.update(changed_book)
             session.commit()
             return updated.asdict(True)
@@ -82,7 +82,7 @@ class BCAPI:
                 "No file was loaded or created, a save dialog will appear the next time you try to save."
             )
 
-    def fetch_chapters(self):
+    def fetch_chapters(self) -> T.List[ChapterDict]:
         if self.app.has_active_book:
             with self.app.get_db() as session:
                 return [
@@ -96,10 +96,11 @@ class BCAPI:
             return models.Chapter.Fetch_by_uid(session, chapter_id).asdict(stripped)
 
     def fetch_chapter_index(self, chapter_id: UniqueID):
-        with self.app.get_db() as session:
-            return models.Chapter.Fetch_by_uid(session, chapter_id).asdict(True)
+        return self.fetch_chapter(chapter_id, stripped=True)
+        # with self.app.get_db() as session:
+        #     return models.Chapter.Fetch_by_uid(session, chapter_id).asdict(True)
 
-    def update_chapter(self, chapter_id: UniqueID, chapter_data: dict[str, str]):
+    def update_chapter(self, chapter_id: UniqueID, chapter_data: ChapterDict):
         with self.app.get_db() as session:
             chapter = models.Chapter.Fetch_by_uid(session, chapter_id)
             chapter.update(chapter_data)
@@ -127,9 +128,10 @@ class BCAPI:
         return []
 
     def create_chapter(self, new_chapter: dict):
-        chapter = models.Chapter(title=new_chapter["title"], uid=models.generate_id(12))
-
         with self.app.get_db() as session:
+            chapter = models.Chapter(
+                title=new_chapter["title"], uid=models.generate_id(12)
+            )
             book = self.app.get_book(session)
             if book is not None:
                 book.chapters.append(chapter)
@@ -139,9 +141,7 @@ class BCAPI:
             else:
                 return None
 
-    def save_reordered_chapters(
-        self, chapters: T.List[T.Dict[str, common_setting_type]]
-    ):
+    def save_reordered_chapters(self, chapters: T.List[ChapterDict]):
         with self.app.get_db() as session:
             return models.Chapter.Reorder(session, chapters)
 
