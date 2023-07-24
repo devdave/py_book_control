@@ -5,6 +5,7 @@ import { find, map } from 'lodash'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 import { Scene } from '@src/types'
 import { useHotkeys } from '@mantine/hooks'
+import { InputModal } from '@src/widget/input_modal'
 import { ScenePanel } from './ScenePanel'
 import { useEditorContext } from '../Editor.context'
 
@@ -47,7 +48,7 @@ const SceneList = () => {
         ({ destination, source }: { destination: any; source: any }) => {
             if (destination && destination.index !== source.index) {
                 if (activeChapter) {
-                    sceneBroker.reorder(activeChapter.id, source.index, destination.index).then()
+                    sceneBroker.reorder(activeChapter, source.index, destination.index).then()
                 }
             }
         },
@@ -56,7 +57,14 @@ const SceneList = () => {
 
     const addNewScene = useCallback(() => {
         if (activeChapter) {
-            sceneBroker.add(activeChapter.id).then()
+            new InputModal().arun('Provide a new scene name').then((scene_name) => {
+                if (scene_name && scene_name.length && scene_name.length > 2) {
+                    sceneBroker.create(activeChapter.id, scene_name)
+                } else {
+                    //TODO switch to notification
+                    alert('New scenes need to be 3 or more characters long.')
+                }
+            })
         }
     }, [activeChapter, sceneBroker])
 

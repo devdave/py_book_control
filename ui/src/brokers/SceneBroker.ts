@@ -42,10 +42,10 @@ export interface SceneBrokerFunctions {
     create: (
         chapterId: Scene['chapterId'],
         sceneTitle: Scene['title'],
-        position: Scene['order'],
-        content: Scene['content']
+        position?: Scene['order'],
+        content?: Scene['content']
     ) => Promise<void>
-    reorder: (chapter: Chapter, from: number, to: number) => Promise<void>
+    reorder: (chapter: Chapter | ChapterIndex, from: number, to: number) => Promise<void>
     delete: (bookId: Book['id'], chapterId: Scene['chapterId'], sceneId: Scene['id']) => Promise<void>
 }
 
@@ -98,8 +98,8 @@ export const SceneBroker = ({
     const createScene: (
         chapterId: string,
         sceneTitle: string,
-        position: number,
-        content: string
+        position?: number,
+        content?: string
     ) => Promise<void> = async (chapterId: string, sceneTitle: string, position = -1, content = '') => {
         _addScene.mutate({
             chapterId,
@@ -129,7 +129,7 @@ export const SceneBroker = ({
     // )
 
     const reorderScene = useCallback(
-        async (chapter: Chapter, from: number, to: number) => {
+        async (chapter: Chapter | ChapterIndex, from: number, to: number) => {
             await api.reorder_scene(chapter.id, from, to)
             await queryClient.invalidateQueries(['book', chapter.book_id, 'chapter'])
         },
@@ -291,7 +291,7 @@ export const SceneBroker = ({
 
     const deleteScene = async (bookId: Book['id'], chapterId: Chapter['id'], sceneId: Scene['id']) => {
         console.log('Deleting scene: ', chapterId, sceneId)
-        const chapter: Chapter = await getChapter(chapterId)
+        const chapter: Chapter = await getChapter(chapterId, false)
 
         const target: Scene | SceneIndex | undefined = find(chapter.scenes, { id: sceneId })
 
