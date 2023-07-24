@@ -109,25 +109,6 @@ export const SceneBroker = ({
         })
     }
 
-    // const addScene = useCallback(
-    //     async (chapterId: string | undefined): Promise<void | Scene> => {
-    //         if (chapterId === undefined) {
-    //             console.log("Tried to add a scene when there isn't an activeChapter")
-    //             await api.alert('There was a problem creating a new scene!')
-    //             return undefined
-    //         }
-    //         console.log('addScene chapter.id=', chapterId)
-    //
-    //         const sceneTitle: string = await PromptModal('New scene title')
-    //         if (sceneTitle.trim().length <= 2) {
-    //             alert('A scene must have a title longer than 2 characters.')
-    //         }
-    //
-    //         return _addScene.mutate({ chapterId, title: sceneTitle })
-    //     },
-    //     [_addScene, api]
-    // )
-
     const reorderScene = useCallback(
         async (chapter: Chapter | ChapterIndex, from: number, to: number) => {
             await api.reorder_scene(chapter.id, from, to)
