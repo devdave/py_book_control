@@ -8,26 +8,23 @@ import typing as T
 import jinja2
 import tap
 
-template_body = """
-
-interface Boundary {
+template_body = """interface Boundary {
     remote: (method_name:string, ...args:any)=> Promise<any>
 }
 
 class APIBridge {
-
     boundary:Boundary
-    
+
     constructor(boundary:Boundary) {
         this.boundary = boundary
     }
 
-    {% for func_name, func_def in functions|items() %}
-    {%if func_def.doc %}/* {{func_def.doc}} */{% endif%}
-    async {{ func_name }}({{func_def.compiled|join(', ')}}) {        
-        return this.boundary.remote("{{ func_name }}", {{func_def.arg_names|join(', ')}});
+{% for func_name, func_def in functions|items() -%}
+{%if func_def.doc %}/* {{func_def.doc}} */{% endif%}
+    async {{ func_name }}({{func_def.compiled|join(', ')}}) {
+        return this.boundary.remote('{{ func_name }}', {{func_def.arg_names|join(', ')}});
     }
-    {% endfor %}
+{% endfor %}
 
 }
 
@@ -90,7 +87,7 @@ def py2ts_value(something):
 
 
 def sanitize_defaults(def_type):
-    if def_type in [None, "None"]:
+    if def_type in [None, "None", "'None'"]:
         return "null"
 
     return def_type
@@ -211,9 +208,7 @@ def process_args(func_args: T.List[ast.arg]):
 def transform(payload: T.Tuple[str, set[str]]):
     cls_name, functions = payload
 
-    template = jinja2.Template(
-        template_body,
-    )
+    template = jinja2.Template(template_body, newline_sequence="\n")
     return template.render(cls_name=cls_name, functions=functions)
 
 
