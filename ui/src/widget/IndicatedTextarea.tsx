@@ -1,7 +1,14 @@
 import { UseFormReturnType } from '@mantine/form'
 import React from 'react'
-import { Indicator, Textarea } from '@mantine/core'
+import { createStyles, Indicator, Textarea } from '@mantine/core'
 import { TextareaProps } from '@mantine/core/lib/Textarea/Textarea'
+
+const useStyle = createStyles({
+    max_out: {
+        height: '100%',
+        boxSizing: 'border-box'
+    }
+})
 
 interface IndicatedTextAreaProps {
     form: UseFormReturnType<any>
@@ -19,20 +26,24 @@ export const IndicatedTextarea: React.FC<IndicatedTextAreaProps> = ({
     indicatorStyle,
     textStyle,
     onKeyUp
-}) => (
-    <Indicator
-        processing
-        color='red'
-        position='top-start'
-        disabled={!form.isDirty(formField)}
-        style={indicatorStyle}
-    >
-        <Textarea
-            autosize
-            minRows={5}
-            onKeyUp={onKeyUp}
-            {...form.getInputProps(formField)}
-            {...inputProps}
-        />
-    </Indicator>
-)
+}) => {
+    const { classes } = useStyle()
+    return (
+        <Indicator
+            processing
+            color='red'
+            position='top-start'
+            disabled={!form.isDirty(formField)}
+            style={{ height: '100%', boxSizing: 'border-box' }}
+        >
+            <Textarea
+                autosize
+                minRows={5}
+                onKeyUp={onKeyUp}
+                classNames={{ root: classes.max_out, wrapper: classes.max_out, input: classes.max_out }}
+                {...form.getInputProps(formField)}
+                {...inputProps}
+            />
+        </Indicator>
+    )
+}
