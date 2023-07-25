@@ -8,7 +8,7 @@ import typing as T
 import jinja2
 import tap
 
-template_body = """import {Book, Chapter, Character, Scene, common_setting_type} from '@src/types'
+template_body = """import {Book, Chapter, Character, Scene, Setting, common_setting_type, UniqueId} from '@src/types'
 
 interface Boundary {
     remote: (method_name:string, ...args:any)=> Promise<any>
@@ -142,7 +142,18 @@ def process_function(func_elm: ast.FunctionDef):
         func_type = "any"
         arg_def = func_elm
 
-        if isinstance(arg.annotation, ast.Subscript):
+        if isinstance(arg.annotation, ast.Name):
+            match arg.annotation.id:
+                case "bool":
+                    func_type = "boolean"
+                case "str":
+                    func_type = "string"
+                case "int":
+                    func_type = "number"
+                case _:
+                    func_type = arg.annotation.id
+
+        elif isinstance(arg.annotation, ast.Subscript):
             # fuck it
             func_type = "any"
 

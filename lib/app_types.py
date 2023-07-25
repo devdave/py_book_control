@@ -1,26 +1,27 @@
 import typing as T
 
 UID = str
-UniqueID = str
+UniqueId = str
 common_setting_type = T.Union[str, bool, int, None]
 
 
 class SettingType(T.TypedDict):
-    id: UniqueID
+    id: UniqueId
     name: str
     type: T.Literal["boolean", "string", "number"]
+    value: common_setting_type
 
 
 class CharacterType(T.TypedDict):
-    id: UniqueID
+    id: UniqueId
     name: str
     notes: str
-    book_id: UniqueID
+    book_id: UniqueId
 
 
 class SceneType(T.TypedDict):
-    id: UniqueID
-    chapterId: UniqueID
+    id: UniqueId
+    chapterId: UniqueId
     title: str
     notes: str
     type: T.Literal["scene"]
@@ -32,8 +33,8 @@ class SceneType(T.TypedDict):
 
 
 class ChapterDict(T.TypedDict):
-    id: UniqueID
-    book_id: UniqueID
+    id: UniqueId
+    book_id: UniqueId
     type: T.Literal["chapter"]
     title: str
     order: T.Union[str | int]
@@ -46,7 +47,7 @@ class ChapterDict(T.TypedDict):
 
 
 class BookType(T.TypedDict):
-    id: UniqueID
+    id: UniqueId
     title: str
     notes: str
 
