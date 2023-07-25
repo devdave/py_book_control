@@ -1,9 +1,11 @@
 import { ActionIcon, Group, Stack, Textarea, Title } from '@mantine/core'
-import { IconPlus } from '@tabler/icons-react'
+import { IconPlus, IconX } from '@tabler/icons-react'
 import { type FC, useCallback } from 'react'
 
 import { Chapter } from '@src/types'
 import { InputModal } from '@src/widget/input_modal'
+import { notifications } from '@mantine/notifications'
+import { ShowError } from '@src/widget/ShowErrorNotification'
 import { useEditorContext } from '../Editor.context'
 import { ChapterForm } from './ChapterForm'
 
@@ -14,12 +16,12 @@ export const RightPanel: FC = () => {
 
     const onClickAddScene = useCallback(() => {
         if (!activeChapter) {
-            alert('Cannot add scene, missing active chapter')
+            ShowError('Error', 'Cannot add scene, missing active chapter')
             return
         }
         InputModal.Show('A new scene title').then((new_title) => {
             if (new_title.length < 3) {
-                alert('A new scene needs to be atleast 3 characters wrong')
+                ShowError('Error', 'A new scene needs to be at least 3 characters wrong')
                 return
             }
             sceneBroker.create(activeChapter.id, new_title).then(([scene, chapter]) => {
