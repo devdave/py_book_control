@@ -6,17 +6,18 @@ import {
     type ChapterIndex,
     type Scene,
     type SceneIndex,
-    type SceneStatus
+    type SceneStatus,
+    UniqueId
 } from '@src/types'
 import { QueryClient, useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanstack/react-query'
 import { clone, find } from 'lodash'
 import APIBridge from '@src/lib/remote'
-import { ActiveElementHelper } from '@src/lib/use-active-element'
+import { useActiveElementReturn } from '@src/lib/use-active-element'
 import { ChapterBrokerFunctions } from '@src/brokers/ChapterBroker'
 
 export interface SceneBrokerProps {
     api: APIBridge
-    activeElement: ActiveElementHelper
+    activeElement: useActiveElementReturn
     activeChapter: Chapter | ChapterIndex | undefined
     activeScene: Scene | SceneIndex | undefined
 
@@ -71,7 +72,7 @@ export const SceneBroker = ({
 
     const _addScene = useMutation({
         mutationFn: (newScene: { [key: string]: string | number }) =>
-            api.create_scene(newScene.chapterId, newScene.title, newScene.position),
+            api.create_scene(newScene.chapterId as UniqueId, newScene.title as string, newScene.position),
         onSuccess: ([scene, chapter]: [Scene, Chapter], newSceneParts: Partial<Scene>) => {
             queryClient
                 .invalidateQueries({
@@ -188,7 +189,7 @@ export const SceneBroker = ({
     const _attachSceneStatus2Scene = useMutation<Scene, Error, attachSceneStatus2SceneProps>({
         mutationKey: ['scene', 'status_update'],
         mutationFn: (changeset: attachSceneStatus2SceneProps) =>
-            api.attach_scene_status2scene(changeset.scene_uid, changeset.status_uid),
+            api.attach_scene_status2scene(changeset.scene_uid as UniqueId, changeset.status_uid as UniqueId),
         onSuccess: (updated_scene: Scene, changeset) => {
             queryClient.setQueryData(
                 ['book', changeset.book_id, 'chapter', updated_scene.chapterId, 'scene', updated_scene.id],
