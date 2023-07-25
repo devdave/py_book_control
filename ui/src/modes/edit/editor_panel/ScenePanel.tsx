@@ -9,6 +9,7 @@ import { useEditorContext } from '@src/modes/edit/Editor.context'
 import { useHotkeys } from '@mantine/hooks'
 import { find } from 'lodash'
 import { useRotate } from '@src/lib/use-rotate'
+import { SceneCharacters } from '@src/modes/edit/common/SceneCharacters'
 import TextSceneForm from './scene_forms/TextSceneForm'
 
 import { MainSceneForm } from './scene_forms/MainSceneForm'
@@ -88,7 +89,7 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
         }
     }
 
-    if (sceneIsLoading) {
+    if (scene === undefined && sceneIsLoading) {
         return (
             <>
                 <h2>Loading scene</h2>
@@ -186,7 +187,7 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
                 />
             </Tabs.Panel>
             <Tabs.Panel value='characters'>
-                <CharactersSceneForm
+                <SceneCharacters
                     scene={scene}
                     key={scene.characters.length}
                 />
