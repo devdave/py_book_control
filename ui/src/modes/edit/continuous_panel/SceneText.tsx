@@ -32,7 +32,7 @@ const compile_scene2md = (scene: Scene) => {
 export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
     const { api, activeBook, settings } = useAppContext()
 
-    const { activeScene, activeChapter, setActiveChapter, setActiveScene, sceneBroker, sceneStatusBroker } =
+    const { activeScene, activeElement, activeChapter, setActiveScene, sceneBroker, sceneStatusBroker } =
         useEditorContext()
 
     const { data: sceneStatuses } = sceneStatusBroker.fetchAllSceneStatuses(activeBook.id)
@@ -194,7 +194,15 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                     location: form.values.location ? form.values.location : ''
                 }
 
-                await sceneBroker.update(new_scene as Scene)
+                await sceneBroker.update(new_scene as Scene).then((updateResponse) => {
+                    if (updateResponse) {
+                        const [updatedScene, updatedChapter] = updateResponse
+                        if (activeScene?.id === updatedScene.id) {
+                            activeElement.setSceneById(updatedScene.chapterId, updatedScene.id)
+                            setActiveScene(updatedChapter, updatedScene)
+                        }
+                    }
+                })
 
                 form.resetDirty()
                 return null

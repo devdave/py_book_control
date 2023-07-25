@@ -38,7 +38,7 @@ export interface SceneBrokerFunctions {
         chapter_id: Scene['chapterId'],
         scene_id: Scene['id']
     ) => UseQueryResult<Scene, Error>
-    update: (scene: Scene) => Promise<void>
+    update: (scene: Scene) => Promise<[Scene, Chapter] | undefined>
     create: (
         chapterId: Scene['chapterId'],
         sceneTitle: Scene['title'],
@@ -242,15 +242,12 @@ export const SceneBroker = ({
     )
 
     const updateScene = useCallback(
-        async (scene: Scene) => {
-            const mutation = await changeScene.mutate(scene)
-            if (scene.id === activeScene?.id) {
-                activeElement.setSceneById(scene.chapterId, scene.id)
-                _setActiveScene((prior) => ({ ...prior, ...scene }))
-            }
-            return mutation
-        },
-        [_setActiveScene, activeElement, activeScene?.id, changeScene]
+        async (scene: Scene) =>
+            new Promise<[Scene, Chapter] | undefined>((resolve, reject) => {
+                changeScene.mutate(scene, { onSuccess: resolve, onError: reject })
+            }),
+
+        [changeScene]
     )
 
     const _deleteScene = useMutation({
