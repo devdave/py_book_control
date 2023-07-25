@@ -3,6 +3,8 @@ export type UID = UniqueId
 
 export type Setter<TTarget> = (val: TTarget | undefined | ((update: TTarget) => void)) => void
 
+export type common_setting_type = number | string | boolean | undefined
+
 export interface Base {
     [key: string]: any
 

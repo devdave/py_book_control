@@ -7,6 +7,13 @@ from .application import BCApplication
 from . import models
 from .log_helper import getLogger
 from .app_types import common_setting_type, UniqueID, ChapterDict
+from .app_types import (
+    SettingType as Setting,
+    SceneType as Scene,
+    CharacterType as Character,
+    ChapterDict as Chapter,
+    BookType as Book,
+)
 
 
 class BCAPI:
@@ -27,7 +34,7 @@ class BCAPI:
     def alert(self, message: str):
         return self.app.main_window.create_confirmation_dialog("Problem", message)
 
-    def list_books(self, stripped: bool = True):
+    def list_books(self, stripped: bool = True) -> list[Book]:
         with self.app.get_db() as session:
             return [
                 book.asdict(stripped=stripped)
@@ -42,27 +49,27 @@ class BCAPI:
 
         return None
 
-    def set_current_book(self, book_uid: UniqueID):
+    def set_current_book(self, book_uid: UniqueID) -> Book:
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, book_uid)
             self.app.book_id = book.id
             return book.asdict()
 
-    def update_book(self, changed_book: dict[str, common_setting_type]):
+    def update_book(self, changed_book: dict[str, common_setting_type]) -> Book:
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, changed_book["id"])  # type: ignore
             book.update(changed_book)
             session.commit()
             return book.asdict(True)
 
-    def update_book_title(self, book_uid: UniqueID, new_title: str):
+    def update_book_title(self, book_uid: UniqueID, new_title: str) -> Book:
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, book_uid)
             book.title = new_title
             session.commit()
             return book.asdict(True)
 
-    def fetch_book_simple(self, book_uid: UniqueID):
+    def fetch_book_simple(self, book_uid: UniqueID) -> Book:
         with self.app.get_db() as session:
             self.log.info("book_ui == `{}`", book_uid)
             book = models.Book.Fetch_by_UID(session, book_uid)
@@ -82,7 +89,7 @@ class BCAPI:
                 "No file was loaded or created, a save dialog will appear the next time you try to save."
             )
 
-    def fetch_chapters(self) -> T.List[ChapterDict]:
+    def fetch_chapters(self) -> list[Chapter]:
         if self.app.has_active_book:
             with self.app.get_db() as session:
                 return [
@@ -91,23 +98,23 @@ class BCAPI:
 
         return []
 
-    def fetch_chapter(self, chapter_id: UniqueID, stripped: bool = False):
+    def fetch_chapter(self, chapter_id: UniqueID, stripped: bool = False) -> Chapter:
         with self.app.get_db() as session:
             return models.Chapter.Fetch_by_uid(session, chapter_id).asdict(stripped)
 
     def fetch_chapter_index(self, chapter_id: UniqueID):
         return self.fetch_chapter(chapter_id, stripped=True)
-        # with self.app.get_db() as session:
-        #     return models.Chapter.Fetch_by_uid(session, chapter_id).asdict(True)
 
-    def update_chapter(self, chapter_id: UniqueID, chapter_data: ChapterDict):
+    def update_chapter(
+        self, chapter_id: UniqueID, chapter_data: ChapterDict
+    ) -> Chapter:
         with self.app.get_db() as session:
             chapter = models.Chapter.Fetch_by_uid(session, chapter_id)
             chapter.update(chapter_data)
             session.commit()
             return chapter.asdict()
 
-    def reorder_chapter(self, book_uid: UniqueID, from_pos: int, to_pos: int):
+    def reorder_chapter(self, book_uid: UniqueID, from_pos: int, to_pos: int) -> bool:
         if self.app.has_active_book:
             with self.app.get_db() as session:
                 book = models.Book.Fetch_by_UID(session, book_uid)
@@ -119,7 +126,7 @@ class BCAPI:
 
         return False
 
-    def fetch_stripped_chapters(self, book_uid: UniqueID):
+    def fetch_stripped_chapters(self, book_uid: UniqueID) -> list[Chapter]:
         if self.app.has_active_book:
             with self.app.get_db() as session:
                 book = models.Book.Fetch_by_UID(session, book_uid)
@@ -127,7 +134,7 @@ class BCAPI:
 
         return []
 
-    def create_chapter(self, new_chapter: dict):
+    def create_chapter(self, new_chapter: dict) -> T.Optional[Chapter]:
         with self.app.get_db() as session:
             chapter = models.Chapter(
                 title=new_chapter["title"], uid=models.generate_id(12)
@@ -145,12 +152,12 @@ class BCAPI:
         with self.app.get_db() as session:
             return models.Chapter.Reorder(session, chapters)
 
-    def fetch_scene(self, scene_uid: UniqueID):
+    def fetch_scene(self, scene_uid: UniqueID) -> Scene:
         with self.app.get_db() as session:
             scene = models.Scene.Fetch_by_uid(session, scene_uid)
             return scene.asdict()
 
-    def fetch_scene_markedup(self, scene_uid: UniqueID):
+    def fetch_scene_markedup(self, scene_uid: UniqueID) -> str:
         with self.app.get_db() as session:
             scene = models.Scene.Fetch_by_uid(session, scene_uid)
 
@@ -174,7 +181,9 @@ class BCAPI:
 
         return response
 
-    def update_scene(self, scene_uid: UniqueID, new_data: T.Dict[str, str]):
+    def update_scene(
+        self, scene_uid: UniqueID, new_data: T.Dict[str, str]
+    ) -> T.Tuple[Scene, Chapter]:
         with self.app.get_db() as session:
             scene = models.Scene.Fetch_by_uid(session, scene_uid)
             scene.update(new_data)
@@ -185,7 +194,9 @@ class BCAPI:
                 scene.chapter.asdict(),
             )
 
-    def create_scene(self, chapter_id: UniqueID, title, position=-1):
+    def create_scene(
+        self, chapter_id: UniqueID, title, position=-1
+    ) -> T.Tuple[Scene, Chapter]:
         with self.app.get_db() as session:
             chapter = models.Chapter.Fetch_by_uid(session, chapter_id)
             scene = models.Scene(title=title)
@@ -203,7 +214,7 @@ class BCAPI:
                 chapter.asdict(),
             )
 
-    def delete_scene(self, chapter_uid: UniqueID, scene_uid: UniqueID):
+    def delete_scene(self, chapter_uid: UniqueID, scene_uid: UniqueID) -> bool:
         try:
             with self.app.get_db() as session:
                 scene = models.Scene.Fetch_by_uid(session, scene_uid)
@@ -224,7 +235,7 @@ class BCAPI:
             chapter.scenes.insert(to_pos, floating)
             session.commit()
 
-    def reorder_scenes(self, new_order: T.List[dict[str, str]]):
+    def reorder_scenes(self, new_order: T.List[dict[str, str]]) -> Chapter:
         with self.app.get_db() as session:
             self.log.info("Reordering scenes: {}", new_order)
 
@@ -238,11 +249,11 @@ class BCAPI:
             models.Chapter.Touch(session, chapterId)
             session.commit()
 
-            data = models.Chapter.Fetch_by_Id(session, chapterId).asdict()
+            return models.Chapter.Fetch_by_Id(session, chapterId).asdict()
 
-        return data["scenes"]
-
-    def attach_scene_status2scene(self, scene_uid: UniqueID, status_uid: UniqueID):
+    def attach_scene_status2scene(
+        self, scene_uid: UniqueID, status_uid: UniqueID
+    ) -> Scene:
         with self.app.get_db() as session:
             scene_status = models.SceneStatus.Fetch_by_Uid(session, status_uid)
 
@@ -257,12 +268,12 @@ class BCAPI:
         Character
     """
 
-    def list_all_characters(self, book_uid: UniqueID) -> list[dict[str, str]]:
+    def list_all_characters(self, book_uid: UniqueID) -> list[Character]:
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, book_uid)
             return [toon.asdict() for toon in book.characters]
 
-    def list_characters_by_scene(self, scene_uid: UniqueID):
+    def list_characters_by_scene(self, scene_uid: UniqueID) -> list[Character]:
         with self.app.get_db() as session:
             toons = models.Scene.List_all_characters_by_Uid(
                 session, scene_uid
@@ -272,15 +283,15 @@ class BCAPI:
             else:
                 return []
 
-    def search_characters(self, query):
+    def search_characters(self, query) -> list[Character]:
         with self.app.get_db() as session:
             result = models.Character.Search(session, query)
             if result is not None:
-                return [toon.asdict for toon in result]
+                return [toon.asdict() for toon in result]
 
         return []
 
-    def add_character_to_scene(self, scene_uid: UniqueID, toon_uid: UniqueID):
+    def add_character_to_scene(self, scene_uid: UniqueID, toon_uid: UniqueID) -> Scene:
         with self.app.get_db() as session:
             scene = models.Scene.Fetch_by_uid(session, scene_uid)
             toon = models.Character.Fetch_by_Uid(session, toon_uid)
@@ -289,7 +300,9 @@ class BCAPI:
             session.commit()
             return scene.asdict()
 
-    def remove_character_from_scene(self, character_uid: UniqueID, scene_uid: UniqueID):
+    def remove_character_from_scene(
+        self, character_uid: UniqueID, scene_uid: UniqueID
+    ) -> bool:
         with self.app.get_db() as session:
             scene = models.Scene.Fetch_by_uid(session, scene_uid)
             toon = models.Character.Fetch_by_Uid(session, character_uid)
@@ -299,7 +312,7 @@ class BCAPI:
 
     def create_new_character_to_scene(
         self, book_uid: UniqueID, scene_uid: UniqueID, new_name: str
-    ):
+    ) -> Scene:
         self.log.info(f"Looking for or add {book_uid=}, {scene_uid=}, {new_name=}")
         with self.app.get_db() as session:
             scene = models.Scene.Fetch_by_uid(session, scene_uid)
@@ -312,13 +325,15 @@ class BCAPI:
             session.commit()
             return scene.asdict()
 
-    def fetch_character(self, book_uid: UniqueID, character_uid: UniqueID):
+    def fetch_character(self, book_uid: UniqueID, character_uid: UniqueID) -> Character:
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, book_uid)  # type: models.Book
             toon = models.Character.Fetch_by_Uid_and_Book(session, book, character_uid)
             return toon.asdict(extended=True)
 
-    def update_character(self, changed_character: dict[str, str | UniqueID]):
+    def update_character(
+        self, changed_character: dict[str, str | UniqueID]
+    ) -> Character:
         with self.app.get_db() as session:
             character = models.Character.Fetch_by_Uid(
                 session, changed_character["id"]
@@ -327,7 +342,7 @@ class BCAPI:
             session.commit()
             return character.asdict(extended=True)
 
-    def delete_character(self, character_uid: UniqueID):
+    def delete_character(self, character_uid: UniqueID) -> bool:
         with self.app.get_db() as session:
             models.Character.Delete_by_Uid(session, character_uid)
             session.commit()
@@ -337,7 +352,7 @@ class BCAPI:
         Settings
     """
 
-    def fetchAllSettings(self) -> T.List[T.Mapping[str, common_setting_type]]:
+    def fetchAllSettings(self) -> T.List[Setting]:
         with self.app.get_db() as session:
             return [setting.asdict() for setting in models.Setting.All(session)]
 

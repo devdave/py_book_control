@@ -8,7 +8,9 @@ import typing as T
 import jinja2
 import tap
 
-template_body = """interface Boundary {
+template_body = """import {Book, Chapter, Character, Scene, common_setting_type} from '@src/types'
+
+interface Boundary {
     remote: (method_name:string, ...args:any)=> Promise<any>
 }
 
@@ -21,7 +23,7 @@ class APIBridge {
 
 {% for func_name, func_def in functions|items() -%}
 {%if func_def.doc %}/* {{func_def.doc}} */{% endif%}
-    async {{ func_name }}({{func_def.compiled|join(', ')}}) {
+    async {{ func_name }}({{func_def.compiled|join(', ')}}){%if func_def.return_type %}:Promise<{{func_def.return_type}}>{% endif %} {
         return this.boundary.remote('{{ func_name }}', {{func_def.arg_names|join(', ')}});
     }
 {% endfor %}
@@ -42,6 +44,7 @@ class FuncDef(T.NamedTuple):
     doc: T.Optional[str]
     compiled: T.List[str]
     arg_names: T.List[str]
+    return_type: T.Optional[str]
 
 
 def process_source(src_file: pathlib.Path, dest: pathlib.Path | None = None):
@@ -50,7 +53,7 @@ def process_source(src_file: pathlib.Path, dest: pathlib.Path | None = None):
     body = []
 
     for element in module.body:
-        if isinstance(element, ast.ClassDef):
+        if isinstance(element, ast.ClassDef) and element.name == "BCAPI":
             payload = process_class(element)
             clsbody = transform(payload)
             body.append(clsbody)
@@ -100,11 +103,16 @@ def process_function(func_elm: ast.FunctionDef):
     arg_map = dict()
 
     definition = FuncDef(
-        process_args(func_elm.args.args), ast.get_docstring(func_elm), [], []
+        process_args(func_elm.args.args),
+        ast.get_docstring(func_elm),
+        [],
+        [],
+        process_returntype(func_elm),
     )
 
     mapped_defaults = dict()
 
+    # does the function have default arguments?
     if len(func_elm.args.defaults) > 0:
         names = [arg.arg for arg in func_elm.args.args]
         names.reverse()
@@ -203,6 +211,34 @@ def process_args(func_args: T.List[ast.arg]):
         for arg_elm in func_args
         if arg_elm.arg != "self"
     }
+
+
+def process_returntype(func_elm: ast.FunctionDef):
+    if isinstance(func_elm.returns, ast.Subscript):
+        if (
+            isinstance(func_elm.returns.value, ast.Name)
+            and func_elm.returns.value.id == "list"
+        ):
+            name_elm = func_elm.returns.value  # type: ast.Name
+            slice = func_elm.returns.slice  # type: ast.Name
+            if name_elm.id == "list" and isinstance(slice, ast.Name):
+                return f"{slice.id}[]"
+        elif isinstance(func_elm.returns.value, ast.Attribute):
+            if func_elm.returns.value.attr == "Optional":
+                if isinstance(func_elm.returns.slice, ast.Attribute):
+                    return f"{func_elm.returns.slice.attr} | undefined"
+                elif isinstance(func_elm.returns.slice, ast.Name):
+                    return f"{func_elm.returns.slice.id} | undefined "
+
+    if isinstance(func_elm.returns, ast.Name):
+        match func_elm.returns.id:
+            case "str":
+                return "string"
+            case "bool":
+                return "boolean"
+            case _:
+                return func_elm.returns.id
+    return None
 
 
 def transform(payload: T.Tuple[str, set[str]]):
