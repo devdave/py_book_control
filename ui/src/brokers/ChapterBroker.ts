@@ -6,7 +6,7 @@ import APIBridge from '@src/lib/remote'
 import { ShowError } from '@src/widget/ShowErrorNotification'
 
 export interface ChapterBrokerFunctions {
-    create: (book_id: Book['id'], chapter_title: Chapter['title']) => void
+    create: (book_id: Book['id'], chapter_title: Chapter['title']) => Promise<Chapter | undefined>
     // add: (book: Book) => void
     get: (chapterId: Chapter['id'], stripped: boolean) => Promise<Chapter>
     fetch: (
@@ -14,7 +14,7 @@ export interface ChapterBrokerFunctions {
         chapter_id: Chapter['id'] | undefined,
         enabled?: boolean
     ) => UseQueryResult<Chapter, Error>
-    update: (chapter: Chapter) => void
+    update: (chapter: Chapter) => Promise<Chapter | undefined>
     reorder: (book_id: Book['id'], from: number, to: number) => void
 }
 
@@ -31,12 +31,12 @@ export const ChapterBroker = ({
 }: ChapterBrokerProps): ChapterBrokerFunctions => {
     const _createChapter = useMutation<Chapter | undefined, Error, Partial<Chapter>>({
         mutationFn: (newChapter: object) => api.create_chapter(newChapter),
-        onSuccess: (response, newChapter) => {
+        onSuccess: (response) => {
             console.log(response)
             if (response) {
                 queryClient
                     .invalidateQueries({
-                        queryKey: ['book', newChapter.book_id, 'index'],
+                        queryKey: ['book', response.book_id, 'index'],
                         exact: true,
                         refetchType: 'active'
                     })
@@ -46,7 +46,12 @@ export const ChapterBroker = ({
     })
 
     const createChapter = (book_id: Book['id'], ChapterTitle: Chapter['title']) =>
-        _createChapter.mutate({ book_id, title: ChapterTitle } as Partial<Chapter>)
+        new Promise<Chapter | undefined>((resolve, reject) => {
+            _createChapter.mutate({ book_id, title: ChapterTitle } as Partial<Chapter>, {
+                onSuccess: resolve,
+                onError: reject
+            })
+        })
 
     const addChapter = useCallback(
         async (book: Book) => {
@@ -109,10 +114,11 @@ export const ChapterBroker = ({
         }
     })
 
-    const updateChapter = useCallback<(chapter: Chapter) => Promise<void>>(
-        async (chapter: Chapter) => {
-            await changeChapter.mutate(chapter)
-        },
+    const updateChapter = useCallback<(chapter: Chapter) => Promise<Chapter>>(
+        (chapter: Chapter) =>
+            new Promise<Chapter>((resolve, reject) => {
+                changeChapter.mutate(chapter, { onSuccess: resolve, onError: reject })
+            }),
         [changeChapter]
     )
 
