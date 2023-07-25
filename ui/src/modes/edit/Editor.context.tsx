@@ -11,7 +11,7 @@ import { ChapterBrokerFunctions } from '@src/brokers/ChapterBroker'
 export interface EditorContextValue {
     api: APIBridge
 
-    index: Chapter[]
+    index: Chapter[] | undefined
     activeElement: ActiveElementHelper
     activeChapter: Chapter | ChapterIndex | undefined
     activeScene: Scene | SceneIndex | undefined

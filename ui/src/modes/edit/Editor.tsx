@@ -1,4 +1,4 @@
-import { AppShell, Box, LoadingOverlay } from '@mantine/core'
+import { AppShell, Box, LoadingOverlay, Text } from '@mantine/core'
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -7,6 +7,7 @@ import { CompositeHeader } from '@src/modes/edit/CompositeHeader'
 
 import {
     type ActiveElement,
+    AppModes,
     type Chapter,
     type ChapterIndex,
     EditModes,
@@ -23,11 +24,12 @@ import { SceneBroker } from '@src/brokers/SceneBroker'
 import { CharacterBroker } from '@src/brokers/CharacterBroker'
 import { ChapterBroker, ChapterBrokerFunctions } from '@src/brokers/ChapterBroker'
 import { useLogger } from '@mantine/hooks'
+import { ShowError } from '@src/widget/ShowErrorNotification'
 import { LeftPanel } from './LeftPanel'
 import { EditorContext, type EditorContextValue } from './Editor.context'
 
 export const Editor: React.FC = () => {
-    const { api, activeBook } = useAppContext()
+    const { api, activeBook, setAppMode } = useAppContext()
 
     // const [chapters, _setChapters] = useState<ChapterIndex[]>([])
 
@@ -250,8 +252,14 @@ export const Editor: React.FC = () => {
         ]
     )
 
-    if (indexIsLoading) {
-        return <LoadingOverlay visible />
+    if (index === undefined) {
+        if (indexIsLoading) {
+            return <LoadingOverlay visible />
+        }
+
+        ShowError('Error', 'Failed to retrieve the index for the selected book')
+        activeElement.clear()
+        setAppMode(AppModes.MANIFEST)
     }
 
     const sceneKeys = activeChapter ? activeChapter.scenes.map((scene) => scene.id) : []
@@ -262,7 +270,7 @@ export const Editor: React.FC = () => {
 
     const leftPanel = (
         <LeftPanel
-            index={index}
+            index={index as Chapter[]}
             key={superKey}
         />
     )
