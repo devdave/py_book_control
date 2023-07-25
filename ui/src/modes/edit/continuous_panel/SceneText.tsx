@@ -14,7 +14,7 @@ import { useQueryClient } from '@tanstack/react-query'
 
 import { useAppContext } from '@src/App.context'
 
-import { SceneCharacters } from '@src/modes/edit/continuous_panel/SceneCharacters'
+import { SceneCharacters } from '@src/modes/edit/common/SceneCharacters'
 import { useEditorContext } from '../Editor.context'
 
 interface SceneTextProps {
