@@ -4,7 +4,6 @@ import { IconId, IconMapPin, IconNote, IconUsers, IconVocabulary } from '@tabler
 import { type Scene } from '@src/types'
 import { useAppContext } from '@src/App.context'
 
-import { CharactersSceneForm } from '@src/modes/edit/common/CharactersSceneForm'
 import { useEditorContext } from '@src/modes/edit/Editor.context'
 import { useHotkeys } from '@mantine/hooks'
 import { find } from 'lodash'
