@@ -18,6 +18,7 @@ import { Manifest } from '@src/modes/manifest/Manifest'
 import { useImmer } from 'use-immer'
 import { ApplicationSetting, useSettings } from '@src/lib/use-settings'
 import { forEach } from 'lodash'
+import { Notifications } from '@mantine/notifications'
 
 interface AppWrapperProps {
     value: AppContextValue
@@ -30,6 +31,7 @@ const AppWrapper: FC<AppWrapperProps> = ({ value, children, safeToProceed }) => 
         {!safeToProceed && <LoadingOverlay visible />}
         {safeToProceed && (
             <ThemeProvider>
+                <Notifications />
                 {children}
                 <ReactQueryDevtools initialIsOpen={false} />
             </ThemeProvider>
