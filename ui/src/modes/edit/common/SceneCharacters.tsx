@@ -32,9 +32,9 @@ export const SceneCharacters: React.FC<SceneCharactersProps> = ({ scene }) => {
         }
     }
 
-    const disconnectOnClick: React.MouseEventHandler<HTMLButtonElement> = (evt){
+    const disconnectOnClick: React.MouseEventHandler<HTMLButtonElement> = (evt) => {
         const toon_id = evt.currentTarget.dataset.toonId
-        if(toon_id) {
+        if (toon_id) {
             characterBroker.removeFromScene(toon_id, scene.id)
         }
     }
@@ -73,8 +73,9 @@ export const SceneCharacters: React.FC<SceneCharactersProps> = ({ scene }) => {
                                 </td>
                                 <td>{toon.name}</td>
                                 <td>
-                                    <ActionIcon data-toon-id={toon.id}
-                                                onClick={disconnectOnClick}
+                                    <ActionIcon
+                                        data-toon-id={toon.id}
+                                        onClick={disconnectOnClick}
                                     >
                                         <IconX />
                                     </ActionIcon>
