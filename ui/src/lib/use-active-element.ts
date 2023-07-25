@@ -13,7 +13,34 @@ import {
 import { useState } from 'react'
 import { clone } from 'lodash'
 
-export function useActiveElement() {
+export interface useActiveElementReturn {
+    setChapter: (chapter: Chapter | ChapterIndex) => void
+    get_subDetail: () => string | undefined
+    isThisScene: (scene: Scene | SceneIndex) => boolean
+    get_subType: () => ActiveElementSubTypes | undefined
+    assignChapter: (chapter: Chapter) => void
+    setBook: (book: Book) => void
+    setActiveScene: (chapter: Chapter | ChapterIndex, scene: Scene | SceneIndex) => void
+    setScene: (chapter: Chapter | ChapterIndex, scene: Scene | SceneIndex) => void
+    assignScene: (scene: SceneIndex) => void
+    clear: () => void
+    clearSubType: () => void
+    assignType: (type_name: ActiveElementTypes | undefined, type_detail: string) => void
+    get_focus_id: () => string | number | undefined
+    setFocus: (name: string, id?: string | undefined) => void
+    isThisChapter: (chapter: Chapter | ChapterIndex) => boolean
+    setPosition: (value: ((prevState: ActiveElement[]) => ActiveElement[]) | ActiveElement[]) => void
+    get_focus: () => string | undefined
+    pop: () => void
+    get_type: () => ActiveElementTypes | undefined
+    get_detail: () => string | undefined
+    isThisBook: (book: Book) => boolean
+    position: ActiveElement[]
+    setCharacter: (character: Character) => void
+    isFocussed: (name: string, id?: string) => boolean | boolean
+}
+
+export function useActiveElement(): useActiveElementReturn {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const [state, updater] = useImmer<ActiveElement>({
         type: undefined,
@@ -193,7 +220,6 @@ export function useActiveElement() {
     }
 
     return {
-        useActiveElement,
         position,
         setPosition,
         setActiveScene,
@@ -218,6 +244,7 @@ export function useActiveElement() {
         isFocussed,
         setFocus,
         clear,
+        clearSubType,
         pop
     }
 }
