@@ -32,6 +32,7 @@ export const CompositeHeader: React.FC = () => {
             zIndex={150}
         >
             <SettingsDrawer
+                key={opened ? 'true' : 'false'}
                 opened={opened}
                 close={close}
             />

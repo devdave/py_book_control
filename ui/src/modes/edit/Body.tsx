@@ -18,14 +18,17 @@ export const Body = () => {
         activeChapter !== undefined
     )
 
-    if (activeElement.type === ActiveElementTypes.BOOK) {
+    if (activeElement.get_type() === ActiveElementTypes.BOOK) {
         return <BookPanel />
     }
-    if (activeElement.type === ActiveElementTypes.CHARACTERS) {
+    if (activeElement.get_type() === ActiveElementTypes.CHARACTERS) {
         return <CharacterPanel />
     }
 
-    if (activeElement.type === ActiveElementTypes.CHAPTER && activeElement.subType === undefined) {
+    if (
+        activeElement.get_type() === ActiveElementTypes.CHAPTER &&
+        activeElement.get_subType() === undefined
+    ) {
         if (fullChapter) {
             return <ChapterPanel chapter={fullChapter} />
         }
@@ -36,7 +39,7 @@ export const Body = () => {
     switch (editMode) {
         case EditModes.LIST:
             if (activeChapter !== undefined) {
-                if (activeElement.subType === ActiveElementSubTypes.SCENE) {
+                if (activeElement.get_subType() === ActiveElementSubTypes.SCENE) {
                     return (
                         <RightPanel
                             key={`${activeChapter.updated_on} ${activeChapter.id}-${activeScene?.id}`}

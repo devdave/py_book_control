@@ -69,7 +69,7 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
     }
 
     const isThisBookActive = activeElement.isThisBook(activeBook)
-    const isThisCharacterActive = activeElement.type === ActiveElementTypes.CHARACTERS
+    const isCharactersActive = activeElement.isCharactersActive()
 
     return (
         <Navbar width={{ base: 300 }}>
@@ -129,15 +129,8 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                     <NavLink
                         childrenOffset={1}
                         label='Characters'
-                        active={isThisCharacterActive}
-                        onClick={() =>
-                            activeElement.setTypeAndSubtype(
-                                ActiveElementTypes.CHARACTERS,
-                                undefined,
-                                undefined,
-                                undefined
-                            )
-                        }
+                        active={isCharactersActive}
+                        onClick={() => activeElement.setTypeToCharacters()}
                         icon={
                             <Center>
                                 <IconUsers />

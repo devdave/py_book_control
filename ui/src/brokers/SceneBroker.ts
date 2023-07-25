@@ -253,7 +253,6 @@ export const SceneBroker = ({
 
     const _deleteScene = useMutation({
         mutationFn: ({
-            bookId,
             chapterId,
             sceneId
         }: {
@@ -263,23 +262,9 @@ export const SceneBroker = ({
         }) => api.delete_scene(chapterId, sceneId),
         onSuccess: async (data, { bookId, chapterId, sceneId }, context) => {
             console.log('Deleted scene', data, chapterId, sceneId, context)
+
             await queryClient.invalidateQueries(['book', bookId, 'chapter', chapterId])
             await queryClient.invalidateQueries(['book', bookId, 'index'])
-
-            _setActiveChapter((prior): Chapter | ChapterIndex | undefined => {
-                if (prior === undefined) {
-                    console.log(
-                        'Error: somehow the user deleted a scene without there being an active chapter'
-                    )
-                    throw Error('Integrity issue: Deleted a scene without an active scene')
-                }
-                const updated: ChapterIndex | Chapter = clone(prior)
-                updated.scenes = prior.scenes.filter((scene) => scene.id !== sceneId)
-                updated.updated_on = new Date(Date.now()).toUTCString()
-
-                // eslint-disable-next-line consistent-return
-                return updated
-            })
         }
     })
 
@@ -289,12 +274,28 @@ export const SceneBroker = ({
 
         const target: Scene | SceneIndex | undefined = find(chapter.scenes, { id: sceneId })
 
+        //TODO if I delete the first scene in a chapter where target.order === 0, it should
+        // jump to scene.order == 1
+
         // eslint-disable-next-line consistent-return
         const newActiveScene: Scene | SceneIndex | undefined = target
-            ? find(chapter.scenes, { order: target.order - 1 })
+            ? find(chapter.scenes, { order: Math.max(0, target.order - 1) })
             : undefined
 
         _deleteScene.mutate({ bookId, chapterId, sceneId })
+
+        _setActiveChapter((prior): Chapter | ChapterIndex | undefined => {
+            if (prior === undefined) {
+                console.log('Error: somehow the user deleted a scene without there being an active chapter')
+                throw Error('Integrity issue: Deleted a scene without an active scene')
+            }
+            const updated: ChapterIndex | Chapter = clone(prior)
+            updated.scenes = prior.scenes.filter((scene) => scene.id !== sceneId)
+            updated.updated_on = new Date(Date.now()).toUTCString()
+
+            // eslint-disable-next-line consistent-return
+            return updated
+        })
 
         if (newActiveScene) {
             activeElement.setScene(chapter, newActiveScene as Scene)

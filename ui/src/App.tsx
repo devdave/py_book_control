@@ -14,7 +14,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { LoadingOverlay, Text } from '@mantine/core'
-import { AppModes, AppSettingValues, type Book, type UID, UniqueId } from '@src/types'
+import { AppModes, AppSettingValues, type Book, UniqueId } from '@src/types'
 
 import { Manifest } from '@src/modes/manifest/Manifest'
 import { useImmer } from 'use-immer'
@@ -90,12 +90,15 @@ const App: React.FC = () => {
 
     const bulkFetchSettings = (): Promise<ApplicationSetting<AppSettingValues>[]> => api.fetchAllSettings()
 
-    const reconcileSettings = (values: ApplicationSetting<AppSettingValues>[]) => {
-        console.log(`Got bulk settings ${JSON.stringify(values)}`)
-        forEach(values, (setting) => {
-            queryClient.setQueryData(['setting', setting.name], () => setting.value)
-        })
-    }
+    const reconcileSettings = useCallback(
+        (values: ApplicationSetting<AppSettingValues>[]) => {
+            console.log(`Got bulk settings ${JSON.stringify(values)}`)
+            forEach(values, (setting) => {
+                queryClient.setQueryData(['setting', setting.name], () => setting.value)
+            })
+        },
+        [queryClient]
+    )
 
     const settings = useSettings<AppSettingValues>({
         bulkFetchSettings,
@@ -130,7 +133,7 @@ const App: React.FC = () => {
         }
 
         setIsReady(() => true)
-    }, [defaultsDone, activeBook.title, settings, api, setActiveBook])
+    }, [defaultsDone, activeBook.title, settings, reconcileSettings, api, setActiveBook])
 
     const checkFonts = useCallback(() => {
         const fontAvailable = new Set<string>()

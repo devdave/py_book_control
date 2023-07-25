@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react'
 
 import { type Chapter, type ChapterIndex, EditModes, type Scene, type SceneIndex } from '@src/types'
 import APIBridge from '@src/lib/remote'
-import { ActiveElementHelper } from '@src/lib/use-active-element'
+import { useActiveElementReturn } from '@src/lib/use-active-element'
 import { SceneStatusBrokerFunctions } from '@src/brokers/SceneStatusBroker'
 import { SceneBrokerFunctions } from '@src/brokers/SceneBroker'
 import { CharacterBrokerFunctions } from '@src/brokers/CharacterBroker'
@@ -12,7 +12,7 @@ export interface EditorContextValue {
     api: APIBridge
 
     index: Chapter[] | undefined
-    activeElement: ActiveElementHelper
+    activeElement: useActiveElementReturn
     activeChapter: Chapter | ChapterIndex | undefined
     activeScene: Scene | SceneIndex | undefined
 

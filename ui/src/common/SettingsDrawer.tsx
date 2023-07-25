@@ -1,16 +1,22 @@
 import { Checkbox, Drawer, NumberInput, Select, Text, Textarea, TextInput, Title } from '@mantine/core'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { map } from 'lodash'
 import { useAppContext } from '@src/App.context'
+import { useLogger } from '@mantine/hooks'
 
 interface SettingsDrawerProps {
     opened: boolean
     close: () => void
 }
 export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close }) => {
+    useLogger('SettingsDrawer', [])
+
     const { fonts, settings } = useAppContext()
 
-    const select_fonts = map([...fonts], (fontName: string) => ({ value: fontName, label: fontName }))
+    const select_fonts = useMemo(
+        () => map([...fonts], (fontName: string) => ({ value: fontName, label: fontName })),
+        [fonts]
+    )
     const example_ipsum =
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et' +
         ' dolore magna aliqua. Fermentum iaculis eu non diam phasellus vestibulum lorem. Consequat ac felis ' +
@@ -23,8 +29,6 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close })
     const [debounceDelay, , setDebounceDelay] = settings.makeState('debounceTime')
     const [dontAskSplit, , setDontAskSplit] = settings.makeState('dontAskOnSplit')
     const [dontAskClear, , setDontAskClear] = settings.makeState('dontAskOnClear2Delete')
-
-    console.log('SD', dontAskSplit, dontAskClear)
 
     return (
         <Drawer

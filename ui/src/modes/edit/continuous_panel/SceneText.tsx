@@ -15,6 +15,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useAppContext } from '@src/App.context'
 
 import { SceneCharacters } from '@src/modes/edit/common/SceneCharacters'
+import { ShowError } from '@src/widget/ShowErrorNotification'
 import { useEditorContext } from '../Editor.context'
 
 interface SceneTextProps {
@@ -45,8 +46,6 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
     const [debounceTime] = settings.makeState('debounceTime')
     const [dontask2delete] = settings.makeState('dontAskOnClear2Delete')
     const [dontask2split] = settings.makeState('dontAskOnSplit')
-
-    const queryClient = useQueryClient()
 
     const form = useForm<Partial<Scene>>({
         initialValues: {
@@ -101,28 +100,31 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
         [activeChapter, activeScene, api, form, sceneBroker, setActiveScene]
     )
 
-    const handleDeleteResponse = useCallback((bookId: UniqueId, chapterId: UniqueId, sceneId: UniqueId) => {
-        if (dontask2delete === true) {
-            sceneBroker.delete(bookId, chapterId, sceneId).then()
-        } else {
-            modals.openConfirmModal({
-                modalId: 'shouldDeleteScene',
-                title: 'Scene body empty',
-                children: (
-                    <Text size='sm'>
-                        The scene@apos;s content body is empty, do you want to delete this scene?
-                    </Text>
-                ),
-                labels: {
-                    confirm: 'Delete scene!',
-                    cancel: 'Do not delete scene!'
-                },
-                onConfirm: () => {
-                    sceneBroker.delete(activeBook.id, scene.chapterId, scene.id).then()
-                }
-            })
-        }
-    }, [])
+    const handleDeleteResponse = useCallback(
+        (bookId: UniqueId, chapterId: UniqueId, sceneId: UniqueId) => {
+            if (dontask2delete === true) {
+                sceneBroker.delete(bookId, chapterId, sceneId).then()
+            } else {
+                modals.openConfirmModal({
+                    modalId: 'shouldDeleteScene',
+                    title: 'Scene body empty',
+                    children: (
+                        <Text size='sm'>
+                            The scene@apos;s content body is empty, do you want to delete this scene?
+                        </Text>
+                    ),
+                    labels: {
+                        confirm: 'Delete scene!',
+                        cancel: 'Do not delete scene!'
+                    },
+                    onConfirm: () => {
+                        sceneBroker.delete(activeBook.id, scene.chapterId, scene.id).then()
+                    }
+                })
+            }
+        },
+        [activeBook.id, dontask2delete, scene.chapterId, scene.id, sceneBroker]
+    )
 
     useDebouncedEffect(
         () => {
@@ -134,7 +136,10 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                     response.status === 'empty'
                 ) {
                     if (activeChapter === undefined || activeScene === undefined) {
-                        alert('Integrity error, active chapter or scene are not set.  How did we get here?')
+                        ShowError('Integrity error', 'Active chapter or scene is not set')
+                        console.error(
+                            'Integrity error, active chapter or scene are not set.  How did we get here?'
+                        )
                         return null
                     }
                     handleDeleteResponse(activeBook.id, activeChapter.id, activeScene.id)
@@ -152,7 +157,6 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
 
                 if (response.status === 'split') {
                     console.log('Split!')
-                    console.log(response)
 
                     if (dontask2split === true) {
                         doSplit(response).then(() => {
@@ -213,7 +217,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
 
             if (form.isDirty()) {
                 reprocessMDnSave().catch((reason) => {
-                    alert(`Failed to reprocess markdown to content: ${reason}`)
+                    ShowError('Fatal error', `Failed to reprocess markdown content: ${reason}`)
                 })
             }
         },
