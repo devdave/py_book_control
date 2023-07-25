@@ -1,7 +1,7 @@
 import APIBridge from '@src/lib/remote'
 import { useCallback } from 'react'
 import { QueryClient, useMutation, useQuery, UseQueryResult } from '@tanstack/react-query'
-import { Book, Chapter, ChapterIndex, Character, Scene } from '@src/types'
+import { Book, Chapter, ChapterIndex, Character, Scene, UniqueId } from '@src/types'
 
 export interface CharacterBrokerProps {
     api: APIBridge
@@ -23,7 +23,7 @@ export interface CharacterBrokerFunctions {
     update: (changeset: Character) => void
     delete: (character_id: Character['id']) => void
     assign2Scene: (scene: Scene, char_id: Character['id']) => string
-    removeFromScene: (characterId: Character['id'], sceneId: Scene['id']) => Promise<unknown>
+    removeFromScene: (characterId: Character['id'], sceneId: Scene['id']) => Promise<boolean>
 }
 
 export const CharacterBroker = ({
@@ -202,11 +202,12 @@ export const CharacterBroker = ({
         [api]
     )
 
-    const removeCharacterFromScene: Promise<Character> = useCallback(
-        async (characterId: Character['id'], sceneId: Scene['id']) =>
-            api.remove_character_from_scene(characterId, sceneId),
-        [api]
-    )
+    const removeCharacterFromScene: (characterId: Character['id'], sceneId: Scene['id']) => Promise<boolean> =
+        useCallback(
+            async (characterId: Character['id'], sceneId: Scene['id']) =>
+                api.remove_character_from_scene(characterId, sceneId),
+            [api]
+        )
 
     return {
         createAndAdd2Scene: createNewCharacterAndAdd2Scene,
