@@ -26,6 +26,8 @@ import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 
 import { useAppContext } from '@src/App.context'
 import { ActiveElementTypes, ChapterIndex, EditModes } from '@src/types'
+import { InputModal } from '@src/widget/input_modal'
+import { ShowError } from '@src/widget/ShowErrorNotification'
 import { useEditorContext } from './Editor.context'
 
 interface LeftPanelProps {
@@ -43,6 +45,27 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
         activeElement.clearSubType()
         activeElement.setChapter(chapter)
         // setActiveChapter(chapter)
+    }
+
+    const handleCreateChapter = () => {
+        InputModal.Show('Provide a chapter name').then((new_title) => {
+            if (new_title.length < 3) {
+                ShowError('Error', "A new chapter's title needs to be 3 characters long.")
+                return
+            }
+            chapterBroker
+                .create(activeBook.id, new_title)
+                .then((new_chapter) => {
+                    if (new_chapter) {
+                        console.log('Got a new chapter', new_chapter)
+                    } else {
+                        ShowError('Error', 'There was an unexpected problem creating a new chapter.')
+                    }
+                })
+                .catch((error) => {
+                    ShowError('Error', `Got the following when attempting to create a new chapter: ${error}`)
+                })
+        })
     }
 
     const isThisBookActive = activeElement.isThisBook(activeBook)
@@ -81,7 +104,7 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
             <Button
                 size='xs'
                 color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]}
-                onClick={() => chapterBroker.add(activeBook)}
+                onClick={handleCreateChapter}
             >
                 <IconPlus />
                 Create new chapter
