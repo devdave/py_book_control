@@ -31,6 +31,8 @@ export const Editor: React.FC = () => {
     const [editMode, _setEditMode] = useState<EditModes>(EditModes.LIST)
     const queryClient = useQueryClient()
 
+    const [selectedScene, setSelectedScene] = useState(false)
+
     const setEditMode = (val: EditModes) => {
         _setEditMode(val)
     }
@@ -50,7 +52,8 @@ export const Editor: React.FC = () => {
             return
         }
 
-        if (!indexIsLoading && indexIsSuccess) {
+        if (!indexIsLoading && indexIsSuccess && !selectedScene) {
+            setSelectedScene(true)
             if (activeChapter === undefined) {
                 if (index.length > 0) {
                     if (index[0].scenes.length > 0) {
