@@ -2,7 +2,7 @@ import { Accordion, Button, Center, createStyles, Group, Text } from '@mantine/c
 import { useCallback, useEffect, useRef } from 'react'
 import { IconGripVertical } from '@tabler/icons-react'
 import { find, map } from 'lodash'
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
+import { DragDropContext, Draggable, DraggableLocation, Droppable } from 'react-beautiful-dnd'
 import { Scene } from '@src/types'
 import { useHotkeys } from '@mantine/hooks'
 import { InputModal } from '@src/widget/input_modal'
@@ -46,7 +46,13 @@ const SceneList = () => {
     )
 
     const onChapterDrop = useCallback(
-        ({ destination, source }: { destination: unknown; source: unknown }) => {
+        ({
+            destination,
+            source
+        }: {
+            destination: DraggableLocation | undefined | null
+            source: DraggableLocation
+        }) => {
             if (destination && destination.index !== source.index) {
                 if (activeChapter) {
                     sceneBroker.reorder(activeChapter, source.index, destination.index).then()

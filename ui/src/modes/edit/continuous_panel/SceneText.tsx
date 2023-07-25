@@ -58,7 +58,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
     })
 
     const doSplit = useCallback(
-        async (response: { [key: string]: unknown }) => {
+        async (response: { [key: string]: string }) => {
             console.group('doSplit')
 
             if (activeScene === undefined || activeChapter === undefined) {
@@ -76,8 +76,11 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
             const activeChapId = activeChapter.id
             const newOrder = activeScene.order + 1
 
-            activeScene.content = response.content
-            await api.update_scene(activeSceneId, activeScene)
+            if ('content' in activeScene) {
+                activeScene.content = response.content
+            }
+
+            await api.update_scene(activeSceneId, activeScene as Scene)
 
             console.log('Calling broker to create with ', newOrder)
             sceneBroker
@@ -95,7 +98,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
 
             console.groupEnd()
         },
-        [activeBook.id, activeChapter, activeScene, api, form, queryClient, setActiveScene]
+        [activeChapter, activeScene, api, form, sceneBroker, setActiveScene]
     )
 
     const handleDeleteResponse = useCallback((bookId: UniqueId, chapterId: UniqueId, sceneId: UniqueId) => {
@@ -313,13 +316,6 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                     <summary>Characters</summary>
                     <SceneCharacters scene={scene} />
                 </details>
-
-                {/*<Button*/}
-                {/*    style={{ position: 'absolute', bottom: '0px' }}*/}
-                {/*    onClick={() => deleteScene(scene.chapterId, scene.id)}*/}
-                {/*>*/}
-                {/*    Delete Scene*/}
-                {/*</Button>*/}
             </Flex>
         </ResizeablePanels>
     )

@@ -145,13 +145,13 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
                     </thead>
                     <tbody>
                         {character.locations &&
-                            character.locations.map(([chapter_name, chapter_id, scene_name, scene_id]) => (
+                            character.locations.map(([chapterName, chapterId, sceneName, sceneId]) => (
                                 <tr
-                                    key={`${chapter_id}-${scene_id}`}
-                                    onClick={() => activeElement.setSceneById(chapter_id, scene_id)}
+                                    key={`${chapterId}-${sceneId}`}
+                                    onClick={() => activeElement.setSceneById(chapterId, sceneId)}
                                 >
-                                    <td>{chapter_name}</td>
-                                    <td>{scene_name}</td>
+                                    <td>{chapterName}</td>
+                                    <td>{sceneName}</td>
                                 </tr>
                             ))}
                     </tbody>

@@ -2,6 +2,7 @@ export type UniqueId = string
 export type UID = UniqueId
 
 export type Setter<TTarget> = (val: TTarget | undefined | ((update: TTarget) => void)) => void
+export type CharacterLocation = [string, string, string, string]
 
 export type common_setting_type = number | string | boolean | undefined
 
@@ -14,16 +15,6 @@ export interface Setting {
 }
 
 export interface Base {
-    [key: string]:
-        | common_setting_type
-        | Chapter[]
-        | ChapterIndex[]
-        | SceneIndex[]
-        | Scene[]
-        | Scene
-        | Character[]
-        | Location
-
     id: UID
     created_on?: string
     updated_on?: string
@@ -75,14 +66,12 @@ export interface Chapter extends ChapterIndex {
     words: number
 }
 
-type CharacterLocation = [string, string, string, string]
-
 export interface Character extends Base {
     name: string
     notes: string
     book_id: UID
     scene_count?: number
-    location?: string
+    locations: CharacterLocation[]
 }
 
 export enum AppModes {
