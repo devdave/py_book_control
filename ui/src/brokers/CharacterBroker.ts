@@ -23,7 +23,7 @@ export interface CharacterBrokerFunctions {
     update: (changeset: Character) => void
     delete: (character_id: Character['id']) => void
     assign2Scene: (scene: Scene, char_id: Character['id']) => string
-    removeFromScene: (character: Character, scene: Scene) => Promise<unknown>
+    removeFromScene: (characterId: Character['id'], sceneId: Scene['id']) => Promise<unknown>
 }
 
 export const CharacterBroker = ({
@@ -122,7 +122,7 @@ export const CharacterBroker = ({
     )
 
     const assignCharacter2Scene = useCallback(
-        (scene: Scene, char_id: string) => {
+        (scene: Scene, char_id: Character['id']) => {
             api.add_character_to_scene(scene.id, char_id).then((new_scene) =>
                 setActiveScene(activeChapter as Chapter, new_scene as Scene)
             )
@@ -202,8 +202,9 @@ export const CharacterBroker = ({
         [api]
     )
 
-    const removeCharacterFromScene = useCallback(
-        async (character: Character, scene: Scene) => api.remove_character_from_scene(character.id, scene.id),
+    const removeCharacterFromScene: Promise<Character> = useCallback(
+        async (characterId: Character['id'], sceneId: Scene['id']) =>
+            api.remove_character_from_scene(characterId, sceneId),
         [api]
     )
 
