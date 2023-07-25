@@ -146,9 +146,9 @@ class BCAPI:
             else:
                 return None
 
-    def save_reordered_chapters(self, chapters: list[ChapterDict]):
-        with self.app.get_db() as session:
-            return models.Chapter.Reorder(session, chapters)
+    # def save_reordered_chapters(self, chapters: list[Chapter]):
+    #     with self.app.get_db() as session:
+    #         return models.Chapter.Reorder(session, chapters)
 
     def fetch_scene(self, scene_uid: UniqueId) -> Scene:
         with self.app.get_db() as session:
