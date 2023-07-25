@@ -1,12 +1,13 @@
-import { Book, Chapter, UID } from '@src/types'
-import { QueryClient, useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanstack/react-query'
+import { Book, Chapter } from '@src/types'
+import { QueryClient, useMutation, useQuery, UseQueryResult } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { PromptModal } from '@src/widget/input_modal'
 import APIBridge from '@src/lib/remote'
+import { ShowError } from '@src/widget/ShowErrorNotification'
 
 export interface ChapterBrokerFunctions {
     create: (book_id: Book['id'], chapter_title: Chapter['title']) => void
-    add: (book: Book) => void
+    // add: (book: Book) => void
     get: (chapterId: Chapter['id'], stripped: boolean) => Promise<Chapter>
     fetch: (
         book_id: Book['id'],
@@ -28,11 +29,19 @@ export const ChapterBroker = ({
 
     queryClient
 }: ChapterBrokerProps): ChapterBrokerFunctions => {
-    const _createChapter = useMutation<Chapter, Error, Partial<Chapter>>({
+    const _createChapter = useMutation<Chapter | undefined, Error, Partial<Chapter>>({
         mutationFn: (newChapter: object) => api.create_chapter(newChapter),
         onSuccess: (response, newChapter) => {
             console.log(response)
-            queryClient.invalidateQueries({ queryKey: ['book', newChapter.book_id] }).then()
+            if (response) {
+                queryClient
+                    .invalidateQueries({
+                        queryKey: ['book', newChapter.book_id, 'index'],
+                        exact: true,
+                        refetchType: 'active'
+                    })
+                    .then()
+            }
         }
     })
 
@@ -44,7 +53,7 @@ export const ChapterBroker = ({
             console.log('addChapter is !DEPRECATED!')
             const chapterTitle: string = await PromptModal('New chapter title')
             if (chapterTitle.trim().length <= 2) {
-                alert("Chapter's must have a title longer than 2 characters.")
+                ShowError('Error', "Chapter's must have a title longer than 2 characters.")
                 return undefined
             }
             return _createChapter.mutate({ book_id: book.id, title: chapterTitle } as Partial<Chapter>)
@@ -109,7 +118,7 @@ export const ChapterBroker = ({
 
     return {
         create: createChapter,
-        add: addChapter,
+        // add: addChapter,
         get: getChapter,
         fetch: fetchChapter,
         update: updateChapter,
