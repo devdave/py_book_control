@@ -1,9 +1,10 @@
 import { ActionIcon, List, Select, Text } from '@mantine/core'
 import { Character, Scene } from '@src/types'
 import { useAppContext } from '@src/App.context'
-import { map, values } from 'lodash'
+
 import { useEditorContext } from '@src/modes/edit/Editor.context'
-import { IconEye, IconX } from '@tabler/icons-react'
+import { IconUser, IconEye, IconX } from '@tabler/icons-react'
+import { map } from 'lodash'
 
 interface SceneCharactersProps {
     scene: Scene
@@ -31,6 +32,13 @@ export const SceneCharacters: React.FC<SceneCharactersProps> = ({ scene }) => {
         }
     }
 
+    const disconnectOnClick: React.MouseEventHandler<HTMLButtonElement> = (evt){
+        const toon_id = evt.currentTarget.dataset.toonId
+        if(toon_id) {
+            characterBroker.removeFromScene(toon_id, scene.id)
+        }
+    }
+
     console.log(scene.title)
     return (
         <>
@@ -38,7 +46,11 @@ export const SceneCharacters: React.FC<SceneCharactersProps> = ({ scene }) => {
                 data={toons_list}
                 searchable
                 creatable
+                icon={<IconUser />}
                 getCreateLabel={(query) => <Text>Create {query}?</Text>}
+                onChange={(toon_id) => {
+                    toon_id && characterBroker.assign2Scene(scene, toon_id)
+                }}
             />
             {scene.characters.length > 0 && (
                 <table style={{ textAlign: 'left' }}>
@@ -49,7 +61,7 @@ export const SceneCharacters: React.FC<SceneCharactersProps> = ({ scene }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {map(scene.characters, (toon) => (
+                        {map(scene.characters, (toon: Character) => (
                             <tr key={toon.id}>
                                 <td>
                                     <ActionIcon
@@ -61,7 +73,9 @@ export const SceneCharacters: React.FC<SceneCharactersProps> = ({ scene }) => {
                                 </td>
                                 <td>{toon.name}</td>
                                 <td>
-                                    <ActionIcon>
+                                    <ActionIcon data-toon-id={toon.id}
+                                                onClick={disconnectOnClick}
+                                    >
                                         <IconX />
                                     </ActionIcon>
                                 </td>
