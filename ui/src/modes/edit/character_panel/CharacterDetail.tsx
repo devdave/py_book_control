@@ -64,7 +64,7 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
     const onDeleteClick = useCallback(() => {
         activeElement.clearSubType()
         characterBroker.delete(character.id)
-    }, ['deleteCharacter'])
+    }, [activeElement, character.id, characterBroker])
 
     console.log(character)
 

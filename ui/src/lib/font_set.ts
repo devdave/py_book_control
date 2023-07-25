@@ -1,3 +1,5 @@
+// noinspection SpellCheckingInspection
+
 export const font_set = new Set(
     [
         // Windows 10

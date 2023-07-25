@@ -1,3 +1,5 @@
+// noinspection SpellCheckingInspection
+
 import Boundary, { PYWEBVIEWREADY } from '@src/lib/boundary'
 import APIBridge from '@src/lib/remote'
 import { font_set } from '@src/lib/font_set'
@@ -12,7 +14,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { LoadingOverlay, Text } from '@mantine/core'
-import { AppModes, AppSettingValues, type Book, type UID } from '@src/types'
+import { AppModes, AppSettingValues, type Book, type UID, UniqueId } from '@src/types'
 
 import { Manifest } from '@src/modes/manifest/Manifest'
 import { useImmer } from 'use-immer'
@@ -175,7 +177,7 @@ const App: React.FC = () => {
                 if (book.id) {
                     _changeBook.mutate(book as Book, { onSuccess: resolve, onError: reject })
                 }
-                reject()
+                reject(Error('Cannot update book without Id'))
             }),
         [_changeBook]
     )
@@ -191,7 +193,7 @@ const App: React.FC = () => {
     )
 
     const fetchStrippedBook = useCallback(
-        (book_id: UID) =>
+        (book_id: UniqueId) =>
             // eslint-disable-next-line react-hooks/rules-of-hooks
             useQuery<Book, Error>({
                 enabled: book_id !== undefined,

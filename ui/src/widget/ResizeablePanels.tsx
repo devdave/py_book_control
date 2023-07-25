@@ -20,7 +20,7 @@ const LeftPanel: FC<{
 
             leftRef.current.style.width = `${gatedWidth}px`
         }
-    }, [leftRef, leftWidth, setLeftWidth])
+    }, [leftRef, leftWidth, minWidth, setLeftWidth])
 
     return (
         <div
@@ -49,16 +49,36 @@ export const ResizeablePanels: FC<ResizeablePanelsProps> = ({ children }) => {
     const [separatorXPosition, setSeparatorXPosition] = useState<undefined | number>(undefined)
     // const { width: vpWidth } = useViewportSize()
 
-    //@ts-ignore No seriously, shut the fuck up
+    const onMouseDown: MouseEventHandler = (evt) => {
+        setDragging(true)
+        setSeparatorXPosition(evt.clientX)
+    }
+
+    const onMouseUp = () => {
+        setDragging(false)
+    }
+
+    const onMouseMove: MouseEventHandler = (evt) => {
+        if (dragging && leftWidth && separatorXPosition) {
+            const newLeftWidth = leftWidth + evt.clientX - separatorXPosition
+            setSeparatorXPosition(evt.clientX)
+            setLeftWidth(newLeftWidth)
+        }
+    }
+
+    const onDocumentMouseMove = (evt: MouseEvent) => {
+        if (dragging && leftWidth && separatorXPosition) {
+            const newLeftWidth = leftWidth + evt.clientX - separatorXPosition
+            setSeparatorXPosition(evt.clientX)
+            setLeftWidth(newLeftWidth)
+        }
+    }
+
     useEffect(() => {
-        //@ts-ignore
-        document.addEventListener('mousemove', onMouseMove)
-        //@ts-ignore
+        document.addEventListener('mousemove', onDocumentMouseMove)
         document.addEventListener('mouseup', onMouseUp)
         return () => {
-            //@ts-ignore
-            document.removeEventListener('mousemove', onMouseMove)
-            //@ts-ignore
+            document.removeEventListener('mousemove', onDocumentMouseMove)
             document.addEventListener('mouseup', onMouseUp)
         }
     })
@@ -71,23 +91,6 @@ export const ResizeablePanels: FC<ResizeablePanelsProps> = ({ children }) => {
     const right = children[1]
     // const startWidth = vpWidth * 0.7
     const minWidth = 300
-
-    const onMouseDown: MouseEventHandler = (evt) => {
-        setDragging(true)
-        setSeparatorXPosition(evt.clientX)
-    }
-
-    const onMouseUp: MouseEventHandler = () => {
-        setDragging(false)
-    }
-
-    const onMouseMove: MouseEventHandler = (evt) => {
-        if (dragging && leftWidth && separatorXPosition) {
-            const newLeftWidth = leftWidth + evt.clientX - separatorXPosition
-            setSeparatorXPosition(evt.clientX)
-            setLeftWidth(newLeftWidth)
-        }
-    }
 
     return (
         <Flex

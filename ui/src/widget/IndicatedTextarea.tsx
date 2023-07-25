@@ -11,7 +11,7 @@ const useStyle = createStyles({
 })
 
 interface IndicatedTextAreaProps {
-    form: UseFormReturnType<any>
+    form: UseFormReturnType<unknown>
     formField: string
     inputProps?: TextareaProps & React.RefAttributes<HTMLTextAreaElement>
     indicatorStyle?: object

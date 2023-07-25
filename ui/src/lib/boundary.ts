@@ -1,3 +1,5 @@
+// noinspection SpellCheckingInspection
+
 import { Switchboard } from './switchboard'
 import { Deferred } from './deferred'
 

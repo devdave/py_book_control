@@ -27,7 +27,7 @@ export const RightPanel: FC = () => {
                 setActiveScene(chapter, scene)
             })
         })
-    }, [activeChapter, sceneBroker])
+    }, [activeChapter, sceneBroker, setActiveScene])
 
     if (activeChapter === undefined) {
         return <>No active chapter</>

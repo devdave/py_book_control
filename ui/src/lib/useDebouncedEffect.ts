@@ -23,6 +23,7 @@ export const useDebouncedEffect = (
             fn()
         }, delay)
 
+        // eslint-disable-next-line consistent-return
         return () => {
             clearTimeout(handler)
         }

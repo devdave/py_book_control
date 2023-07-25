@@ -11,7 +11,7 @@ import {
 import { QueryClient, useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanstack/react-query'
 import { clone, find } from 'lodash'
 import APIBridge from '@src/lib/remote'
-import { ActiveElementHelper } from '@src/lib/ActiveElementHelper'
+import { ActiveElementHelper } from '@src/lib/use-active-element'
 import { ChapterBrokerFunctions } from '@src/brokers/ChapterBroker'
 
 export interface SceneBrokerProps {
@@ -127,7 +127,7 @@ export const SceneBroker = ({
     const reorderScene = useCallback(
         async (chapter: Chapter | ChapterIndex, from: number, to: number) => {
             await api.reorder_scene(chapter.id, from, to)
-            await queryClient.invalidateQueries(['book', chapter.book_id, 'chapter'])
+            await queryClient.invalidateQueries(['book', chapter.book_id, 'chapter', chapter.order])
         },
         [api, queryClient]
     )
@@ -262,8 +262,8 @@ export const SceneBroker = ({
         }) => api.delete_scene(chapterId, sceneId),
         onSuccess: async (data, { bookId, chapterId, sceneId }, context) => {
             console.log('Deleted scene', data, chapterId, sceneId, context)
-            await queryClient.invalidateQueries(['book', bookId, 'chapter', chapterId]).then()
-            await queryClient.invalidateQueries(['book', bookId, 'index']).then()
+            await queryClient.invalidateQueries(['book', bookId, 'chapter', chapterId])
+            await queryClient.invalidateQueries(['book', bookId, 'index'])
 
             _setActiveChapter((prior): Chapter | ChapterIndex | undefined => {
                 if (prior === undefined) {

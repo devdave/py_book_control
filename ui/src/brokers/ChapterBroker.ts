@@ -1,7 +1,7 @@
 import { Book, Chapter } from '@src/types'
 import { QueryClient, useMutation, useQuery, UseQueryResult } from '@tanstack/react-query'
 import { useCallback } from 'react'
-import { PromptModal } from '@src/widget/input_modal'
+import { InputModal } from '@src/widget/input_modal'
 import APIBridge from '@src/lib/remote'
 import { ShowError } from '@src/widget/ShowErrorNotification'
 
@@ -56,7 +56,8 @@ export const ChapterBroker = ({
     useCallback(
         async (book: Book) => {
             console.log('addChapter is !DEPRECATED!')
-            const chapterTitle: string = await PromptModal('New chapter title')
+
+            const chapterTitle: string = await InputModal.Show('New chapter.title')
             if (chapterTitle.trim().length <= 2) {
                 ShowError('Error', "Chapter's must have a title longer than 2 characters.")
                 return undefined

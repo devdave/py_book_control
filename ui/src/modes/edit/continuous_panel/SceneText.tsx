@@ -58,7 +58,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
     })
 
     const doSplit = useCallback(
-        async (response: any) => {
+        async (response: { [key: string]: unknown }) => {
             console.group('doSplit')
 
             if (activeScene === undefined || activeChapter === undefined) {

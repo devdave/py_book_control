@@ -61,7 +61,7 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
                 setActiveScene(activeChapter, next_scene)
             }
         }
-    }, [activeScene, activeScene])
+    }, [activeChapter, activeScene, setActiveScene])
 
     const handleCtrlKey: KeyboardEventHandler<HTMLTextAreaElement> = (evt) => {
         if (evt.ctrlKey) {

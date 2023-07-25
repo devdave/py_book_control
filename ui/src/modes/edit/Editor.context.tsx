@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react'
 
 import { type Chapter, type ChapterIndex, EditModes, type Scene, type SceneIndex } from '@src/types'
 import APIBridge from '@src/lib/remote'
-import { ActiveElementHelper } from '@src/lib/ActiveElementHelper'
+import { ActiveElementHelper } from '@src/lib/use-active-element'
 import { SceneStatusBrokerFunctions } from '@src/brokers/SceneStatusBroker'
 import { SceneBrokerFunctions } from '@src/brokers/SceneBroker'
 import { CharacterBrokerFunctions } from '@src/brokers/CharacterBroker'

@@ -35,14 +35,14 @@ from sqlalchemy.orm import (
 )
 
 from .log_helper import getLogger
-from .app_types import common_setting_type, UID, UniqueID, ChapterDict, SettingType
+from .app_types import common_setting_type, UID, UniqueId, ChapterDict, SettingType
 
 log = getLogger(__name__)
 
 GEN_LEN = 18
 
 
-def generate_id(length) -> UniqueID:
+def generate_id(length) -> UniqueId:
     alphanum = string.ascii_letters + string.digits
     return "".join(random.choice(alphanum) for _ in range(length))
 
@@ -108,7 +108,7 @@ class Base(DeclarativeBase):
 
 
 class Book(Base):
-    uid: Mapped[UniqueID] = mapped_column(default=lambda: generate_id(GEN_LEN))
+    uid: Mapped[UniqueId] = mapped_column(default=lambda: generate_id(GEN_LEN))
     title: Mapped[str]
     notes: Mapped[str] = mapped_column(default="")
 
@@ -152,7 +152,7 @@ class Book(Base):
         return session.scalars(stmt).all()
 
     @classmethod
-    def Fetch_by_UID(cls, session: Session, uid: UniqueID):
+    def Fetch_by_UID(cls, session: Session, uid: UniqueId):
         stmt = select(cls).where(cls.uid == uid)
         return session.scalars(stmt).one()
 
@@ -176,7 +176,7 @@ class Book(Base):
 
 
 class Chapter(Base):
-    uid: Mapped[UniqueID] = mapped_column(default=lambda: generate_id(GEN_LEN))
+    uid: Mapped[UniqueId] = mapped_column(default=lambda: generate_id(GEN_LEN))
     title: Mapped[str]
     order: Mapped[int]
 
@@ -222,7 +222,7 @@ class Chapter(Base):
         return session.scalars(stmt)
 
     @classmethod
-    def Fetch_by_uid(cls, session: Session, chapter_uid: UniqueID) -> "Chapter":
+    def Fetch_by_uid(cls, session: Session, chapter_uid: UniqueId) -> "Chapter":
         stmt = select(cls).where(cls.uid == chapter_uid)
         return session.scalars(stmt).one()
 
@@ -262,7 +262,7 @@ Scenes2Characters = Table(
 
 
 class Scene(Base):
-    uid: Mapped[UniqueID] = mapped_column(default=lambda: generate_id(12))
+    uid: Mapped[UniqueId] = mapped_column(default=lambda: generate_id(12))
     title: Mapped[str]
     order: Mapped[int]
 
@@ -333,20 +333,20 @@ class Scene(Base):
         return data
 
     @classmethod
-    def Fetch_by_uid(cls, session: Session, scene_uid: UniqueID) -> "Scene":
+    def Fetch_by_uid(cls, session: Session, scene_uid: UniqueId) -> "Scene":
         stmt = select(cls).where(cls.uid == scene_uid)
         return session.execute(stmt).scalars().one()
 
     @classmethod
     def List_all_characters_by_Uid(
-        cls, session: Session, scene_uid: UniqueID
+        cls, session: Session, scene_uid: UniqueId
     ) -> T.List["Character"]:
         scene = cls.Fetch_by_uid(session, scene_uid)
         return scene.characters
 
 
 class Character(Base):
-    uid: Mapped[UniqueID] = mapped_column(default=lambda: generate_id(GEN_LEN))
+    uid: Mapped[UniqueId] = mapped_column(default=lambda: generate_id(GEN_LEN))
     name: Mapped[str] = mapped_column(unique=True)
     notes: Mapped[str] = mapped_column(default="")
 
@@ -393,7 +393,7 @@ class Character(Base):
         return data
 
     @classmethod
-    def Fetch_by_Uid(cls, session: Session, scene_uid: UniqueID):
+    def Fetch_by_Uid(cls, session: Session, scene_uid: UniqueId):
         stmt = select(cls).where(cls.uid == scene_uid)
         return session.execute(stmt).scalars().one()
 
@@ -409,13 +409,13 @@ class Character(Base):
 
     @classmethod
     def Fetch_by_Uid_and_Book(
-        cls, session: Session, book: Book, character_uid: UniqueID
+        cls, session: Session, book: Book, character_uid: UniqueId
     ):
         stmt = select(cls).where(and_(cls.book == book, cls.uid == character_uid))
         return session.execute(stmt).scalars().one()
 
     @classmethod
-    def Delete_by_Uid(cls, session: Session, character_uid: UniqueID):
+    def Delete_by_Uid(cls, session: Session, character_uid: UniqueId):
         stmt = delete(cls).where(cls.uid == character_uid)
         return session.execute(stmt)
 
@@ -480,7 +480,7 @@ class Setting(Base):
     def BulkSet(
         cls,
         session: Session,
-        changeset: T.Dict[str, T.Dict[str, common_setting_type]],
+        changeset: T.Dict[str, SettingType],
     ):
         for name, item in changeset.items():
             cls.Set(session, name, item["value"])
@@ -508,7 +508,7 @@ class Setting(Base):
 
 
 class SceneStatus(Base):
-    uid: Mapped[UniqueID] = mapped_column(default=lambda: generate_id(GEN_LEN))
+    uid: Mapped[UniqueId] = mapped_column(default=lambda: generate_id(GEN_LEN))
     name: Mapped[str]
     color: Mapped[str] = mapped_column(default="gray")
 
@@ -532,13 +532,13 @@ class SceneStatus(Base):
         return data
 
     @classmethod
-    def Fetch_by_Uid(cls, session, scene_uid: UniqueID) -> "SceneStatus":
+    def Fetch_by_Uid(cls, session, scene_uid: UniqueId) -> "SceneStatus":
         stmt = select(cls).where(cls.uid == scene_uid)
         return session.execute(stmt).scalars().one()
 
     @classmethod
     def Fetch_by_Name(
-        cls, session, book_uid: UniqueID, status_name: str
+        cls, session, book_uid: UniqueId, status_name: str
     ) -> T.Optional["SceneStatus"]:
         # TODO security threat!
         stmt = select(cls).where(
@@ -553,7 +553,7 @@ class SceneStatus(Base):
         return session.execute(stmt).scalars().all()
 
     @classmethod
-    def Create(cls, session, book_uid: UniqueID, name: str):
+    def Create(cls, session, book_uid: UniqueId, name: str):
         record = cls.Fetch_by_Name(session, book_uid, name)
         if record is not None:
             raise ValueError(f"{name} already exists")
@@ -561,6 +561,6 @@ class SceneStatus(Base):
         return cls(name=name, book=book)
 
     @classmethod
-    def Delete(cls, session: Session, status_uid: UniqueID):
+    def Delete(cls, session: Session, status_uid: UniqueId):
         stmt = delete(cls).where(cls.uid == status_uid)
         return session.execute(stmt)

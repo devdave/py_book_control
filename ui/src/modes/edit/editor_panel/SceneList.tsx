@@ -6,6 +6,7 @@ import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 import { Scene } from '@src/types'
 import { useHotkeys } from '@mantine/hooks'
 import { InputModal } from '@src/widget/input_modal'
+import { ShowError } from '@src/widget/ShowErrorNotification'
 import { ScenePanel } from './ScenePanel'
 import { useEditorContext } from '../Editor.context'
 
@@ -29,7 +30,7 @@ const SceneList = () => {
                 inline: 'nearest'
             })
         }
-    }, [activeScene?.id])
+    }, [activeScene, activeScene?.id])
 
     const onChangeScene = useCallback(
         (sceneId: string) => {
@@ -45,7 +46,7 @@ const SceneList = () => {
     )
 
     const onChapterDrop = useCallback(
-        ({ destination, source }: { destination: any; source: any }) => {
+        ({ destination, source }: { destination: unknown; source: unknown }) => {
             if (destination && destination.index !== source.index) {
                 if (activeChapter) {
                     sceneBroker.reorder(activeChapter, source.index, destination.index).then()
@@ -62,7 +63,7 @@ const SceneList = () => {
                     sceneBroker.create(activeChapter.id, scene_name).then()
                 } else {
                     //TODO switch to notification
-                    alert('New scenes need to be 3 or more characters long.')
+                    ShowError('Error', 'New scenes need to be 3 or more characters long.')
                 }
             })
         }
@@ -84,7 +85,7 @@ const SceneList = () => {
                 setActiveScene(activeChapter, next_scene)
             }
         }
-    }, [activeScene, activeScene])
+    }, [activeChapter, activeScene, setActiveScene])
 
     useHotkeys([
         ['ctrl+PageUp', () => goPriorScene()],

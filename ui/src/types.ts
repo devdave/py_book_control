@@ -5,8 +5,24 @@ export type Setter<TTarget> = (val: TTarget | undefined | ((update: TTarget) => 
 
 export type common_setting_type = number | string | boolean | undefined
 
+export interface Setting {
+    [key: string]: common_setting_type
+    id: UniqueId
+    name: string
+    type: 'boolean' | 'string' | 'number'
+    value: common_setting_type
+}
+
 export interface Base {
-    [key: string]: any
+    [key: string]:
+        | common_setting_type
+        | Chapter[]
+        | ChapterIndex[]
+        | SceneIndex[]
+        | Scene[]
+        | Scene
+        | Character[]
+        | Location
 
     id: UID
     created_on?: string
@@ -66,7 +82,7 @@ export interface Character extends Base {
     notes: string
     book_id: UID
     scene_count?: number
-    locations?: CharacterLocation[]
+    location?: string
 }
 
 export enum AppModes {

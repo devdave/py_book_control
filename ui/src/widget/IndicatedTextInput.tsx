@@ -3,7 +3,7 @@ import React from 'react'
 import { UseFormReturnType } from '@mantine/form'
 
 interface IndicatedTextInputProps {
-    form: UseFormReturnType<any>
+    form: UseFormReturnType<unknown>
     fieldName: string
     label: string
     containerprops: object

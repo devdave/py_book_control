@@ -37,10 +37,10 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = ({ chapter }) => {
         (chapterId: Chapter['id']) => {
             new InputModal().arun('Provide a scene name').then((new_name) => {
                 if (new_name.length < 3) {
-                    alert('New scene names must be atleast 3 characters long')
+                    ShowError('Error', 'New scene names must be at least 3 characters long')
                 } else {
                     if (!activeScene) {
-                        alert('Attempting to split scenes without an activeScene')
+                        ShowError('Critical Error', 'Attempting to split scenes without an activeScene')
                         return
                     }
                     sceneBroker.create(chapterId, new_name, activeScene.order + 1 || -1).then((detail) => {
@@ -49,7 +49,7 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = ({ chapter }) => {
                 }
             })
         },
-        [sceneBroker]
+        [activeScene, sceneBroker]
     )
 
     const prevScene = () => {
@@ -67,7 +67,7 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = ({ chapter }) => {
     }
     const nextScene = () => {
         console.log(chapter.scenes)
-        if (activeScene && activeScene.order + 1 < chapter!.scenes.length) {
+        if (activeScene && chapter && activeScene.order + 1 < chapter.scenes.length) {
             const next_order = activeScene.order + 1
             const next = find(chapter.scenes || [], { order: next_order })
             next && setActiveScene(chapter, next)
@@ -131,7 +131,7 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = ({ chapter }) => {
                 inline: 'nearest'
             })
         }
-    }, [activeScene?.id])
+    }, [activeScene, activeScene?.id])
 
     if (!chapter) {
         return (

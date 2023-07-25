@@ -3,62 +3,6 @@ import { Button, Group, TextInput } from '@mantine/core'
 import React from 'react'
 import { GenerateRandomString } from '../lib/utils'
 
-type Callback<Type> = (arg: Type) => void
-
-export const PromptModal = (promptText: string): Promise<string> =>
-    new Promise<string>((resolve) => {
-        let textValue = ''
-
-        const modalId = GenerateRandomString(12)
-
-        const killModal = () => {
-            modals.close(modalId)
-            resolve(textValue)
-        }
-
-        const sendInput = () => {
-            modals.close(modalId)
-            console.info(`Send ${textValue}`)
-            resolve(textValue)
-        }
-
-        const handleClick = () => {
-            sendInput()
-        }
-
-        const detectEnter = (evt: React.KeyboardEvent<HTMLInputElement>) => {
-            if (evt.key === 'Enter') {
-                console.info('Enter caught')
-                evt.preventDefault()
-                sendInput()
-            }
-        }
-
-        modals.open({
-            modalId,
-            title: promptText,
-            withinPortal: false,
-            centered: true,
-            children: (
-                <Group
-                    position='center'
-                    onBlur={killModal}
-                >
-                    <TextInput
-                        placeholder={promptText}
-                        data-autofocus
-                        onChange={(evt) => {
-                            textValue = evt.currentTarget.value
-                        }}
-                        onKeyDown={detectEnter}
-                    />
-                    <Button onClick={handleClick}>Create</Button>
-                    <Button onClick={killModal}>Cancel</Button>
-                </Group>
-            )
-        })
-    })
-
 export class InputModal {
     modalId: string
 

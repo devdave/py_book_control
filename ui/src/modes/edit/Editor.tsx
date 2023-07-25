@@ -5,20 +5,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Body } from '@src/modes/edit/Body'
 import { CompositeHeader } from '@src/modes/edit/CompositeHeader'
 
-import {
-    type ActiveElement,
-    AppModes,
-    type Chapter,
-    type ChapterIndex,
-    EditModes,
-    type Scene,
-    type SceneIndex
-} from '@src/types'
+import { AppModes, type Chapter, type ChapterIndex, EditModes, type Scene, type SceneIndex } from '@src/types'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useAppContext } from '@src/App.context'
-import { useImmer } from 'use-immer'
-import { ActiveElementHelper } from '@src/lib/ActiveElementHelper'
+import { useActiveElement } from '@src/lib/use-active-element'
 import { SceneStatusBroker } from '@src/brokers/SceneStatusBroker'
 import { SceneBroker } from '@src/brokers/SceneBroker'
 import { CharacterBroker } from '@src/brokers/CharacterBroker'
@@ -32,19 +23,7 @@ export const Editor: React.FC = () => {
 
     // const [chapters, _setChapters] = useState<ChapterIndex[]>([])
 
-    const [_activeElement, _setActiveElement] = useImmer<ActiveElement>({
-        type: undefined,
-        detail: undefined,
-        subtype: undefined,
-        subdetail: undefined,
-        focus: undefined,
-        focus_id: undefined
-    })
-
-    const activeElement = useMemo<ActiveElementHelper>(
-        () => new ActiveElementHelper(_activeElement, _setActiveElement),
-        [_activeElement, _setActiveElement]
-    )
+    const activeElement = useActiveElement()
 
     const [activeChapter, _setActiveChapter] = useState<ChapterIndex | Chapter | undefined>(undefined)
     const [activeScene, _setActiveScene] = useState<SceneIndex | Scene | undefined>(undefined)
@@ -74,11 +53,13 @@ export const Editor: React.FC = () => {
         if (!indexIsLoading && indexIsSuccess) {
             if (activeChapter === undefined) {
                 if (index.length > 0) {
-                    activeElement.setChapter(index[0])
-                    _setActiveChapter(index[0])
                     if (index[0].scenes.length > 0) {
+                        activeElement.setScene(index[0], index[0].scenes[0])
                         activeElement.assignScene(index[0].scenes[0])
                         _setActiveScene(index[0].scenes[0])
+                    } else {
+                        activeElement.setChapter(index[0])
+                        _setActiveChapter(index[0])
                     }
                 }
             }
@@ -173,40 +154,7 @@ export const Editor: React.FC = () => {
         queryClient
     })
 
-    /**
-     * Character stuff
-     *  _____ _                          _
-     * /  __ \ |                        | |
-     * | /  \/ |__   __ _ _ __ __ _  ___| |_ ___ _ __
-     * | |   | '_ \ / _` | '__/ _` |/ __| __/ _ \ '__|
-     * | \__/\ | | | (_| | | | (_| | (__| ||  __/ |
-     *  \____/_| |_|\__,_|_|  \__,_|\___|\__\___|_|
-     *
-     * PyCharm sucks at detecting useCallback consts
-     *
-     */
-
     const characterBroker = CharacterBroker({ api, queryClient, activeBook, activeChapter, setActiveScene })
-
-    /**
-     * Wrap around UseQuery so it can be parameterized
-     */
-
-    /**
-     * Scene Status
-     *
-     *
-     *    ______                       _____ __       __
-     *   / ____|                      / ____| |      | |
-     *  | (___   ___ ___ _ __   ___  | (___ | |_ __ _| |_ _   _ ___
-     *   \___ \ / __/ _ \ '_ \ / _ \  \___ \| __/ _` | __| | | / __|
-     *   ____) | (_|  __/ | | |  __/  ____) | || (_| | |_| |_| \__ \
-     *  |_____/ \___\___|_| |_|\___| |_____/ \__\__,_|\__|\__,_|___/
-     *
-     *
-     *
-     *
-     */
 
     /**
      * Packaged everything to do with Scene Status into one portable thing
