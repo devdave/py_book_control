@@ -30,10 +30,14 @@ export const ChapterForm: FC<ChapterFormProps> = ({ chapter }) => {
     useDebouncedEffect(
         () => {
             if (form.isDirty() && form.isValid()) {
-                chapterBroker.update({
-                    ...chapter,
-                    ...form.values
-                })
+                chapterBroker
+                    .update({
+                        ...chapter,
+                        ...form.values
+                    })
+                    .then(() => {
+                        form.resetDirty()
+                    })
             }
         },
         [form.values],

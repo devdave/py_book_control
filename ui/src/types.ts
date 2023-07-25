@@ -88,13 +88,6 @@ export interface SplitResponse {
     split_title: string
 }
 
-export interface Font {
-    name: string
-    size: number
-    weight: string
-    height: string
-}
-
 export enum ActiveElementTypes {
     BOOK = 'book',
     CHAPTER = 'chapter',

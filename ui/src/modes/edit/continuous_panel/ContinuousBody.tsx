@@ -1,12 +1,13 @@
-import { Button, Center, Paper, TextInput, Text, Title, Stack } from '@mantine/core'
+import { Button, Center, Paper, TextInput, Title, Stack } from '@mantine/core'
 import { useCallback, useEffect, useRef } from 'react'
 import { useForm } from '@mantine/form'
 import { useAppContext } from '@src/App.context'
-import { Chapter, type Scene, UniqueId } from '@src/types'
+import { Chapter, type Scene } from '@src/types'
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 import { find } from 'lodash'
-import { useHotkeys, useLogger } from '@mantine/hooks'
+import { useHotkeys } from '@mantine/hooks'
 import { InputModal } from '@src/widget/input_modal'
+import { ShowError } from '@src/widget/ShowErrorNotification'
 import { useEditorContext } from '../Editor.context'
 import { SceneText } from './SceneText'
 
@@ -108,9 +109,9 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = ({ chapter }) => {
                         ...chapter,
                         title: form.values.title || 'Missing chapter'
                     }
-                    chapterBroker.update(new_chapter)
+                    await chapterBroker.update(new_chapter)
                 } else {
-                    alert('Full stop! Data integrity issue.  activeChapter is not defined.')
+                    ShowError('Full STOP!', 'Data integrity issue, activeChapter is not defined')
                 }
             }
 

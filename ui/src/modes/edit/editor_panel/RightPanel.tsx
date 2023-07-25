@@ -1,10 +1,9 @@
 import { ActionIcon, Group, Stack, Textarea, Title } from '@mantine/core'
-import { IconPlus, IconX } from '@tabler/icons-react'
+import { IconPlus } from '@tabler/icons-react'
 import { type FC, useCallback } from 'react'
 
 import { Chapter } from '@src/types'
 import { InputModal } from '@src/widget/input_modal'
-import { notifications } from '@mantine/notifications'
 import { ShowError } from '@src/widget/ShowErrorNotification'
 import { useEditorContext } from '../Editor.context'
 import { ChapterForm } from './ChapterForm'

@@ -25,7 +25,7 @@ export interface ScenePanelProps {
 
 export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
     const { activeBook } = useAppContext()
-    const { activeElement, sceneBroker, activeScene, setActiveScene, activeChapter } = useEditorContext()
+    const { sceneBroker, activeScene, setActiveScene, activeChapter } = useEditorContext()
     const { classes } = useStyles()
 
     const {

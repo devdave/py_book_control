@@ -1,7 +1,7 @@
 import APIBridge from '@src/lib/remote'
 import { useCallback } from 'react'
 import { QueryClient, useMutation, useQuery, UseQueryResult } from '@tanstack/react-query'
-import { Book, Chapter, ChapterIndex, Character, Scene, UniqueId } from '@src/types'
+import { Book, Chapter, ChapterIndex, Character, Scene } from '@src/types'
 
 export interface CharacterBrokerProps {
     api: APIBridge

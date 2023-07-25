@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import { render as testingLibraryRender } from '@testing-library/react'
 import { ThemeProvider } from '@src/ThemeProvider'
 

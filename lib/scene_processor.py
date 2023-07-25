@@ -134,6 +134,7 @@ class SceneProcessor:
         self.msg = "An unhandled error has occurred"
         self.title = None
         self.body = []
+        self.ast = None
 
     def walk(self, raw: str):
         self.ast = Document(raw.strip())

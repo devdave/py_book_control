@@ -27,6 +27,7 @@ class StyleAdapter(logging.LoggerAdapter):
         if self.isEnabledFor(level):
             msg, log_kwargs = self.process(msg, kwargs)
             # Note the `stacklevel` keyword argument so that funcName and lineno are rendered correctly.
+            # noinspection PyProtectedMember
             self.logger._log(
                 level, BraceMessage(msg, args, kwargs), (), stacklevel=2, **log_kwargs
             )
@@ -34,6 +35,7 @@ class StyleAdapter(logging.LoggerAdapter):
     def process(
         self, msg: T.Any, kwargs: T.MutableMapping[str, T.Any]
     ) -> tuple[T.Any, T.MutableMapping[str, T.Any]]:
+        # noinspection PyProtectedMember
         mapped = {
             key: kwargs[key]
             for key in getfullargspec(self.logger._log).args[1:]

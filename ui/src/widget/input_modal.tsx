@@ -117,47 +117,4 @@ export class InputModal {
             })
         })
     }
-
-    run(callback: Callback<string>, prompt: string) {
-        let textValue = ''
-
-        const sendInput = () => {
-            modals.close(this.modalId)
-            console.info(`Send ${textValue}`)
-            callback(textValue)
-        }
-
-        const handleClick = () => {
-            sendInput()
-        }
-
-        const detectEnter = (evt: React.KeyboardEvent<HTMLInputElement>) => {
-            if (evt.key === 'Enter') {
-                console.info('Enter caught')
-                evt.preventDefault()
-                sendInput()
-            }
-        }
-
-        modals.open({
-            modalId: this.modalId,
-            title: prompt,
-            withinPortal: false,
-            centered: true,
-            children: (
-                <Group position='center'>
-                    <TextInput
-                        placeholder={prompt}
-                        data-autofocus
-                        onChange={(evt) => {
-                            textValue = evt.currentTarget.value
-                        }}
-                        onKeyDown={detectEnter}
-                    />
-                    <Button onClick={handleClick}>Create</Button>
-                    <Button onClick={this.killModal.bind(this)}>Cancel</Button>
-                </Group>
-            )
-        })
-    }
 }

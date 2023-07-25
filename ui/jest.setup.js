@@ -1,13 +1,13 @@
+// noinspection JSUnusedGlobalSymbols
+
 require('@testing-library/jest-dom/extend-expect')
 
 const { getComputedStyle } = window
 window.getComputedStyle = (elt) => getComputedStyle(elt)
 
 Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn()
-    .mockImplementation((query) => (
-      {
+    writable: true,
+    value: jest.fn().mockImplementation((query) => ({
         matches: false,
         media: query,
         onchange: null,
@@ -16,15 +16,15 @@ Object.defineProperty(window, 'matchMedia', {
         addEventListener: jest.fn(),
         removeEventListener: jest.fn(),
         dispatchEvent: jest.fn()
-      }))
+    }))
 })
 
 class ResizeObserver {
-  observe () {}
+    observe() {}
 
-  unobserve () {}
+    unobserve() {}
 
-  disconnect () {}
+    disconnect() {}
 }
 
 window.ResizeObserver = ResizeObserver

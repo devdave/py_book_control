@@ -12,7 +12,7 @@ export const Body = () => {
     const { activeBook } = useAppContext()
     const { editMode, chapterBroker, activeChapter, activeScene, activeElement } = useEditorContext()
 
-    const { data: fullChapter, isLoading: fullChapterIsLoading } = chapterBroker.fetch(
+    const { data: fullChapter } = chapterBroker.fetch(
         activeBook.id,
         activeChapter?.id,
         activeChapter !== undefined

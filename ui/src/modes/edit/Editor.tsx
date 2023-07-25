@@ -1,4 +1,4 @@
-import { AppShell, Box, LoadingOverlay, Text } from '@mantine/core'
+import { AppShell, Box, LoadingOverlay } from '@mantine/core'
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -23,7 +23,6 @@ import { SceneStatusBroker } from '@src/brokers/SceneStatusBroker'
 import { SceneBroker } from '@src/brokers/SceneBroker'
 import { CharacterBroker } from '@src/brokers/CharacterBroker'
 import { ChapterBroker, ChapterBrokerFunctions } from '@src/brokers/ChapterBroker'
-import { useLogger } from '@mantine/hooks'
 import { ShowError } from '@src/widget/ShowErrorNotification'
 import { LeftPanel } from './LeftPanel'
 import { EditorContext, type EditorContextValue } from './Editor.context'

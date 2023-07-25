@@ -53,7 +53,7 @@ export const ChapterBroker = ({
             })
         })
 
-    const addChapter = useCallback(
+    useCallback(
         async (book: Book) => {
             console.log('addChapter is !DEPRECATED!')
             const chapterTitle: string = await PromptModal('New chapter title')

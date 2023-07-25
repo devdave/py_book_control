@@ -35,7 +35,7 @@ from sqlalchemy.orm import (
 )
 
 from .log_helper import getLogger
-from .app_types import common_setting_type, UID, UniqueID, ChapterDict
+from .app_types import common_setting_type, UID, UniqueID, ChapterDict, SettingType
 
 log = getLogger(__name__)
 
@@ -485,7 +485,7 @@ class Setting(Base):
         for name, item in changeset.items():
             cls.Set(session, name, item["value"])
 
-    def asdict(self) -> T.Mapping[str, common_setting_type]:
+    def asdict(self) -> SettingType:
         data = dict(
             name=self.name,
             type=self.type,

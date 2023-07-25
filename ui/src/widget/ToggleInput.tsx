@@ -1,5 +1,4 @@
 import { Indicator, TextInput, Title } from '@mantine/core'
-import { useState } from 'react'
 import { useToggle } from '@mantine/hooks'
 import { useForm } from '@mantine/form'
 import { IconEdit } from '@tabler/icons-react'
@@ -12,7 +11,6 @@ interface ToggleInputProps {
 }
 
 export const ToggleInput: React.FC<ToggleInputProps> = ({ value, onChange, title }) => {
-    const [lastTouched, setLastTouched] = useState<number>(10000)
     const [state, toggle] = useToggle(['text', 'input'])
 
     const form = useForm({

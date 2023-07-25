@@ -16,13 +16,13 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close })
         ' dolore magna aliqua. Fermentum iaculis eu non diam phasellus vestibulum lorem. Consequat ac felis ' +
         'donec et odio pellentesque diam volutpat commodo. Mi eget mauris pharetra et. '
 
-    const [fontName, fontNameIsloading, setFontName] = settings.makeState('fontName')
-    const [fontSize, fontSizeIsLoading, setFontSize] = settings.makeState('fontSize')
-    const [fontWeight, fontWeightIsLoading, setFontWeight] = settings.makeState('fontWeight')
-    const [lineHeight, lineHeightIsLoading, setLineHeight] = settings.makeState('lineHeight')
-    const [debounceDelay, debounceDelayIsLoading, setDebounceDelay] = settings.makeState('debounceTime')
-    const [dontAskSplit, dontAskSplitIsLoading, setDontAskSplit] = settings.makeState('dontAskOnSplit')
-    const [dontAskClear, dontAskClearIsLoading, setDontAskClear] = settings.makeState('dontAskOnClear2Delete')
+    const [fontName, , setFontName] = settings.makeState('fontName')
+    const [fontSize, , setFontSize] = settings.makeState('fontSize')
+    const [fontWeight, , setFontWeight] = settings.makeState('fontWeight')
+    const [lineHeight, , setLineHeight] = settings.makeState('lineHeight')
+    const [debounceDelay, , setDebounceDelay] = settings.makeState('debounceTime')
+    const [dontAskSplit, , setDontAskSplit] = settings.makeState('dontAskOnSplit')
+    const [dontAskClear, , setDontAskClear] = settings.makeState('dontAskOnClear2Delete')
 
     console.log('SD', dontAskSplit, dontAskClear)
 

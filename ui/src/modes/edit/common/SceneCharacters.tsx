@@ -1,4 +1,4 @@
-import { ActionIcon, List, Select, Text } from '@mantine/core'
+import { ActionIcon, Select, Text } from '@mantine/core'
 import { Character, Scene } from '@src/types'
 import { useAppContext } from '@src/App.context'
 
@@ -35,7 +35,7 @@ export const SceneCharacters: React.FC<SceneCharactersProps> = ({ scene }) => {
     const disconnectOnClick: React.MouseEventHandler<HTMLButtonElement> = (evt) => {
         const toon_id = evt.currentTarget.dataset.toonId
         if (toon_id) {
-            characterBroker.removeFromScene(toon_id, scene.id)
+            characterBroker.removeFromScene(toon_id, scene.id).then()
         }
     }
 

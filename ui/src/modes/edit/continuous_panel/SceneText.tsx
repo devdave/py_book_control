@@ -42,9 +42,9 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
             ? []
             : sceneStatuses.map((status: SceneStatus) => ({ label: status.name, value: status.id }))
 
-    const [debounceTime, debounceIsloading] = settings.makeState('debounceTime')
-    const [dontask2delete, dontask2deleteIsLoadibng] = settings.makeState('dontAskOnClear2Delete')
-    const [dontask2split, dontask2splitIsLoading] = settings.makeState('dontAskOnSplit')
+    const [debounceTime] = settings.makeState('debounceTime')
+    const [dontask2delete] = settings.makeState('dontAskOnClear2Delete')
+    const [dontask2split] = settings.makeState('dontAskOnSplit')
 
     const queryClient = useQueryClient()
 
@@ -100,7 +100,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
 
     const handleDeleteResponse = useCallback((bookId: UniqueId, chapterId: UniqueId, sceneId: UniqueId) => {
         if (dontask2delete === true) {
-            sceneBroker.delete(bookId, chapterId, sceneId)
+            sceneBroker.delete(bookId, chapterId, sceneId).then()
         } else {
             modals.openConfirmModal({
                 modalId: 'shouldDeleteScene',
@@ -115,7 +115,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                     cancel: 'Do not delete scene!'
                 },
                 onConfirm: () => {
-                    sceneBroker.delete(activeBook.id, scene.chapterId, scene.id)
+                    sceneBroker.delete(activeBook.id, scene.chapterId, scene.id).then()
                 }
             })
         }

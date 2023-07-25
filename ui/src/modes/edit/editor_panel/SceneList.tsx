@@ -59,7 +59,7 @@ const SceneList = () => {
         if (activeChapter) {
             new InputModal().arun('Provide a new scene name').then((scene_name) => {
                 if (scene_name && scene_name.length && scene_name.length > 2) {
-                    sceneBroker.create(activeChapter.id, scene_name)
+                    sceneBroker.create(activeChapter.id, scene_name).then()
                 } else {
                     //TODO switch to notification
                     alert('New scenes need to be 3 or more characters long.')

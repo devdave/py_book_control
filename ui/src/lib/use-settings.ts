@@ -1,8 +1,6 @@
 import { UseMutationResult, UseQueryResult } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
-type GenericTypes<TContainer> = TContainer[keyof TContainer]
-
 export interface ApplicationSetting<TValues extends object = Record<string, unknown>> {
     [key: string]: string | number | boolean | undefined
     name: string
@@ -111,21 +109,6 @@ export function useSettings<TValues extends object = Record<string, unknown>>({
             //     value: v
             // }))
 
-            /**
-            const changeset: ApplicationSetting[] = map<TValues, ApplicationSetting>(
-                Object.entries(defaultSettings),
-                (
-                    value: GenericTypes<TValues>,
-                    name: keyof TValues
-                ): { name: keyof TValues; value: GenericTypes<TValues>; type: string } => {
-                    console.log('def', name, value)
-                    return {
-                        name,
-                        value,
-                        type: typeof defaultSettings[name] as string
-                    }
-                }
-            )*/
             console.log(`Defaults are ${JSON.stringify(changeset)}`)
             // const coerced = changeset as ApplicationSetting<TValues>[]
             bulkDefaultSetter(changeset)
