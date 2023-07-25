@@ -8,20 +8,29 @@ import {
     type ChapterIndex,
     type Character,
     type Scene,
-    type SceneIndex
+    type SceneIndex,
+    UniqueId
 } from '@src/types'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { clone } from 'lodash'
 
 export interface useActiveElementReturn {
     setChapter: (chapter: Chapter | ChapterIndex) => void
+    setChapterById: (chapterId: UniqueId) => void
+
     get_subDetail: () => string | undefined
     isThisScene: (scene: Scene | SceneIndex) => boolean
     get_subType: () => ActiveElementSubTypes | undefined
     assignChapter: (chapter: Chapter) => void
+
     setBook: (book: Book) => void
+    setBookById: (bookId: UniqueId) => void
+
     setActiveScene: (chapter: Chapter | ChapterIndex, scene: Scene | SceneIndex) => void
+
     setScene: (chapter: Chapter | ChapterIndex, scene: Scene | SceneIndex) => void
+    setSceneById: (chapterId: UniqueId, sceneId: UniqueId) => void
+
     assignScene: (scene: SceneIndex) => void
     clear: () => void
     clearSubType: () => void
@@ -37,7 +46,11 @@ export interface useActiveElementReturn {
     isThisBook: (book: Book) => boolean
     position: ActiveElement[]
     setCharacter: (character: Character) => void
-    isFocussed: (name: string, id?: string) => boolean | boolean
+    setCharacterById: (characterId: Character['id']) => void
+    isFocussed: (name: string, id?: string) => boolean
+
+    setTypeToCharacters: () => void
+    isCharactersActive: () => boolean
 }
 
 export function useActiveElement(): useActiveElementReturn {
@@ -54,131 +67,209 @@ export function useActiveElement(): useActiveElementReturn {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const [position, setPosition] = useState<ActiveElement[]>([])
 
-    const setTypeAndSubtype = (
-        type_name: ActiveElementTypes | undefined,
-        type_detail: string | undefined,
-        subtype_name: ActiveElementSubTypes | undefined,
-        sub_detail: string | undefined
-    ) => {
-        setPosition((current) => [clone(state), ...current])
+    const setTypeAndSubtype = useCallback(
+        (
+            type_name: ActiveElementTypes | undefined,
+            type_detail: string | undefined,
+            subtype_name: ActiveElementSubTypes | undefined,
+            sub_detail: string | undefined
+        ) => {
+            setPosition((current) => [clone(state), ...current])
 
-        updater((draft) => {
-            draft.type = type_name
-            draft.detail = type_detail
-            draft.subtype = subtype_name
-            draft.subdetail = sub_detail
-        })
-    }
+            updater((draft) => {
+                draft.type = type_name
+                draft.detail = type_detail
+                draft.subtype = subtype_name
+                draft.subdetail = sub_detail
+            })
+        },
+        [state, updater]
+    )
 
-    const assignType = (type_name: ActiveElementTypes | undefined, type_detail: string) => {
-        setPosition((current) => [clone(state), ...current])
-        updater((draft) => {
-            draft.type = type_name
-            draft.detail = type_detail
-        })
-    }
+    const assignType = useCallback(
+        (type_name: ActiveElementTypes | undefined, type_detail: string) => {
+            setPosition((current) => [clone(state), ...current])
+            updater((draft) => {
+                draft.type = type_name
+                draft.detail = type_detail
+            })
+        },
+        [state, updater]
+    )
 
-    const assignSubType = (subtype_name: ActiveElementSubTypes | undefined, subtype_detail: string) => {
-        setPosition((current) => [clone(state), ...current])
-        updater((draft) => {
-            draft.subtype = subtype_name
-            draft.subdetail = subtype_detail
-        })
-    }
+    const assignSubType = useCallback(
+        (subtype_name: ActiveElementSubTypes | undefined, subtype_detail: string) => {
+            setPosition((current) => [clone(state), ...current])
+            updater((draft) => {
+                draft.subtype = subtype_name
+                draft.subdetail = subtype_detail
+            })
+        },
+        [state, updater]
+    )
 
-    const pop = (): void => {
+    const pop = useCallback((): void => {
         const old_state = position.pop()
         if (old_state) {
             updater(() => old_state)
         }
-    }
+    }, [position, updater])
 
-    const setActiveSceneById = (chapter_id: string, scene_id: string) => {
-        setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, ActiveElementSubTypes.SCENE, scene_id)
-    }
+    const setActiveSceneById = useCallback(
+        (chapter_id: string, scene_id: string) => {
+            setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, ActiveElementSubTypes.SCENE, scene_id)
+        },
+        [setTypeAndSubtype]
+    )
 
-    const setActiveScene = (chapter: Chapter | ChapterIndex, scene: Scene | SceneIndex) => {
-        setActiveSceneById(chapter.id, scene.id)
-    }
+    const setActiveScene = useCallback(
+        (chapter: Chapter | ChapterIndex, scene: Scene | SceneIndex) => {
+            setActiveSceneById(chapter.id, scene.id)
+        },
+        [setActiveSceneById]
+    )
 
-    const isThisSceneById = (scene_id: string): boolean =>
-        state.subtype === ActiveElementSubTypes.SCENE && state.subdetail === scene_id
+    const isThisSceneById = useCallback(
+        (scene_id: string): boolean =>
+            state.subtype === ActiveElementSubTypes.SCENE && state.subdetail === scene_id,
+        [state.subdetail, state.subtype]
+    )
 
-    const isThisScene = (scene: Scene | SceneIndex): boolean => isThisSceneById(scene.id)
+    const isThisScene = useCallback(
+        (scene: Scene | SceneIndex): boolean => isThisSceneById(scene.id),
+        [isThisSceneById]
+    )
 
-    const isThisChapterById = (chapter_id: string): boolean =>
-        state.type === ActiveElementTypes.CHAPTER && state.detail === chapter_id
+    const isThisChapterById = useCallback(
+        (chapter_id: string): boolean =>
+            state.type === ActiveElementTypes.CHAPTER && state.detail === chapter_id,
+        [state.detail, state.type]
+    )
 
-    const isThisChapter = (chapter: Chapter | ChapterIndex): boolean => isThisChapterById(chapter.id)
+    const isThisChapter = useCallback(
+        (chapter: Chapter | ChapterIndex): boolean => isThisChapterById(chapter.id),
+        [isThisChapterById]
+    )
 
-    const setSceneById = (chapter_id: string, scene_id: string) => {
-        setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, ActiveElementSubTypes.SCENE, scene_id)
-    }
+    const setSceneById = useCallback(
+        (chapter_id: string, scene_id: string) => {
+            setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, ActiveElementSubTypes.SCENE, scene_id)
+        },
+        [setTypeAndSubtype]
+    )
 
-    const setScene = (chapter: Chapter | ChapterIndex, scene: Scene | SceneIndex) => {
-        setSceneById(chapter.id, scene.id)
-    }
+    const setScene = useCallback(
+        (chapter: Chapter | ChapterIndex, scene: Scene | SceneIndex) => {
+            setSceneById(chapter.id, scene.id)
+        },
+        [setSceneById]
+    )
 
-    const assignSceneById = (scene_id: string) => {
-        assignSubType(ActiveElementSubTypes.SCENE, scene_id)
-    }
+    const assignSceneById = useCallback(
+        (scene_id: string) => {
+            assignSubType(ActiveElementSubTypes.SCENE, scene_id)
+        },
+        [assignSubType]
+    )
 
-    const assignScene = (scene: SceneIndex) => {
-        assignSceneById(scene.id)
-    }
+    const assignScene = useCallback(
+        (scene: SceneIndex) => {
+            assignSceneById(scene.id)
+        },
+        [assignSceneById]
+    )
 
-    const setChapterById = (chapter_id: string) => {
-        setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, undefined, undefined)
-    }
+    const setChapterById = useCallback(
+        (chapter_id: string) => {
+            setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, undefined, undefined)
+        },
+        [setTypeAndSubtype]
+    )
 
-    const setChapter = (chapter: Chapter | ChapterIndex) => {
-        setChapterById(chapter.id)
-    }
+    const setChapter = useCallback(
+        (chapter: Chapter | ChapterIndex) => {
+            setChapterById(chapter.id)
+        },
+        [setChapterById]
+    )
 
-    const assignChapterById = (chapter_id: string) => {
-        assignType(ActiveElementTypes.CHAPTER, chapter_id)
-    }
+    const assignChapterById = useCallback(
+        (chapter_id: string) => {
+            assignType(ActiveElementTypes.CHAPTER, chapter_id)
+        },
+        [assignType]
+    )
 
-    const assignChapter = (chapter: Chapter) => {
-        assignChapterById(chapter.id)
-    }
+    const assignChapter = useCallback(
+        (chapter: Chapter) => {
+            assignChapterById(chapter.id)
+        },
+        [assignChapterById]
+    )
 
-    const isThisBookById = (book_id: string): boolean =>
-        state.type === ActiveElementTypes.BOOK && state.detail === book_id
+    const isThisBookById = useCallback(
+        (book_id: string): boolean => state.type === ActiveElementTypes.BOOK && state.detail === book_id,
+        [state.detail, state.type]
+    )
 
-    const isThisBook = (book: Book): boolean => isThisBookById(book.id)
+    const isThisBook = useCallback((book: Book): boolean => isThisBookById(book.id), [isThisBookById])
 
-    const setBookById = (book_id: string) => {
-        setTypeAndSubtype(ActiveElementTypes.BOOK, book_id, undefined, undefined)
-    }
+    const setBookById = useCallback(
+        (book_id: string) => {
+            setTypeAndSubtype(ActiveElementTypes.BOOK, book_id, undefined, undefined)
+        },
+        [setTypeAndSubtype]
+    )
 
-    const setBook = (book: Book) => {
-        setBookById(book.id)
-    }
+    const setBook = useCallback(
+        (book: Book) => {
+            setBookById(book.id)
+        },
+        [setBookById]
+    )
 
-    const setCharacterById = (character_id: string) =>
-        setTypeAndSubtype(
-            ActiveElementTypes.CHARACTERS,
-            undefined,
-            ActiveElementSubTypes.CHARACTER,
-            character_id
-        )
+    const setCharacterById = useCallback(
+        (character_id: string) =>
+            setTypeAndSubtype(
+                ActiveElementTypes.CHARACTERS,
+                undefined,
+                ActiveElementSubTypes.CHARACTER,
+                character_id
+            ),
+        [setTypeAndSubtype]
+    )
 
-    const setCharacter = (character: Character) => setCharacterById(character.id)
+    const setCharacter = useCallback(
+        (character: Character) => setCharacterById(character.id),
+        [setCharacterById]
+    )
 
-    const setFocus = (name: string, id: string | undefined = undefined) => {
-        updater((draft) => {
-            draft.focus = name
-            draft.focus_id = id
-        })
-    }
+    const setTypeToCharacters = useCallback(
+        () => setTypeAndSubtype(ActiveElementTypes.CHARACTERS, undefined, undefined, undefined),
+        [setTypeAndSubtype]
+    )
 
-    const isFocussed = (name: string, id?: string) => {
-        if (id) {
-            return state.focus === name && state.focus_id === id
-        }
-        return state.focus === name
-    }
+    const isCharactersActive = useCallback(() => state.type === ActiveElementTypes.CHARACTERS, [state.type])
+
+    const setFocus = useCallback(
+        (name: string, id: string | undefined = undefined) => {
+            updater((draft) => {
+                draft.focus = name
+                draft.focus_id = id
+            })
+        },
+        [updater]
+    )
+
+    const isFocussed = useCallback(
+        (name: string, id?: string) => {
+            if (id) {
+                return state.focus === name && state.focus_id === id
+            }
+            return state.focus === name
+        },
+        [state.focus, state.focus_id]
+    )
 
     const get_type = () => state.type
 
@@ -226,15 +317,28 @@ export function useActiveElement(): useActiveElementReturn {
 
         isThisScene,
         isThisChapter,
+
         setScene,
+        setSceneById,
+
         assignType,
         assignScene,
+
         setChapter,
+        setChapterById,
 
         assignChapter,
         isThisBook,
+
         setBook,
+        setBookById,
+
         setCharacter,
+        setCharacterById,
+
+        setTypeToCharacters,
+        isCharactersActive,
+
         get_detail,
         get_focus,
         get_focus_id,
