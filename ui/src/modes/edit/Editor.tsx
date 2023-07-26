@@ -21,8 +21,6 @@ import { EditorContext, type EditorContextValue } from './Editor.context'
 export const Editor: React.FC = () => {
     const { api, activeBook, setAppMode } = useAppContext()
 
-    // const [chapters, _setChapters] = useState<ChapterIndex[]>([])
-
     const activeElement = useActiveElement()
 
     const [activeChapter, _setActiveChapter] = useState<ChapterIndex | Chapter | undefined>(undefined)
@@ -30,8 +28,6 @@ export const Editor: React.FC = () => {
 
     const [editMode, _setEditMode] = useState<EditModes>(EditModes.LIST)
     const queryClient = useQueryClient()
-
-    const [selectedScene, setSelectedScene] = useState(false)
 
     const setEditMode = (val: EditModes) => {
         _setEditMode(val)
@@ -52,17 +48,16 @@ export const Editor: React.FC = () => {
             return
         }
 
-        if (!indexIsLoading && indexIsSuccess && !selectedScene) {
-            setSelectedScene(true)
+        if (!indexIsLoading && indexIsSuccess) {
             if (activeChapter === undefined) {
                 if (index.length > 0) {
+                    activeElement.setChapter(index[0])
+                    _setActiveChapter(index[0])
+
                     if (index[0].scenes.length > 0) {
                         activeElement.setScene(index[0], index[0].scenes[0])
                         activeElement.assignScene(index[0].scenes[0])
                         _setActiveScene(index[0].scenes[0])
-                    } else {
-                        activeElement.setChapter(index[0])
-                        _setActiveChapter(index[0])
                     }
                 }
             }
@@ -70,7 +65,7 @@ export const Editor: React.FC = () => {
                 _setActiveScene(activeChapter.scenes[0])
             }
         }
-    }, [activeBook, activeScene, activeChapter, index, indexIsLoading, indexIsSuccess, activeElement])
+    }, [index, indexUpdatedAt])
 
     /**
      *
