@@ -25,7 +25,7 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = ({ chapter }) => {
         setActiveScene
     } = useEditorContext()
 
-    const paperRefs = useRef<Record<string, HTMLDivElement>>({})
+    const paperRefs = useRef<Record<string, HTMLTextAreaElement>>({})
 
     const [debounceTime] = settings.makeState('debounceTime')
 
@@ -124,12 +124,20 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = ({ chapter }) => {
     )
 
     useEffect(() => {
-        if (activeScene && paperRefs.current[activeScene.id] !== undefined) {
-            paperRefs.current[activeScene.id]?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'end',
-                inline: 'nearest'
-            })
+        if (activeScene) {
+            if (paperRefs.current[activeScene.id] !== undefined) {
+                const currentElement = paperRefs.current[activeScene.id]
+
+                currentElement?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                    inline: 'nearest'
+                })
+                currentElement.scrollTop = currentElement.scrollHeight
+                currentElement.focus()
+                currentElement.selectionStart = currentElement.value.length || 0
+                currentElement.value += ''
+            }
         }
     }, [activeScene, activeScene?.id])
 
@@ -139,6 +147,15 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = ({ chapter }) => {
                 <Title order={2}>Missing active chapter</Title>
             </>
         )
+    }
+
+    const bindPaperRef = (ref: HTMLTextAreaElement) => {
+        if (ref) {
+            const { sceneId } = ref.dataset
+            if (sceneId) {
+                paperRefs.current[sceneId] = ref
+            }
+        }
     }
 
     return (
@@ -153,16 +170,12 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = ({ chapter }) => {
                     p='xs'
                     withBorder
                     style={{ minHeight: '80vh', marginBottom: '2em' }}
-                    ref={(ref: HTMLDivElement) => {
-                        if (ref) {
-                            paperRefs.current[scene.id] = ref
-                        }
-                    }}
                 >
                     {scene && (
                         <SceneText
                             key={`${scene.id} ${scene.order}`}
                             scene={scene}
+                            bindScrollRef={bindPaperRef}
                         />
                     )}
                 </Paper>
