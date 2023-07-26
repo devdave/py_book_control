@@ -23,6 +23,8 @@ export interface Base {
 export interface SceneStatus extends Base {
     name: string
     scene?: Scene
+    book_id?: UniqueId
+    color: string
 }
 
 export interface Book extends Base {
