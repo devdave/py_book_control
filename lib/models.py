@@ -522,7 +522,7 @@ class SceneStatus(Base):
     SAFE_KEYS = ["name", "color"]
 
     def asdict(self, stripped=True):
-        data = dict(id=self.uid, name=self.name)
+        data = dict(id=self.uid, name=self.name, color=self.color)
 
         if stripped is False:
             data["scenes"] = [
