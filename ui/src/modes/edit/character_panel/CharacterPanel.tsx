@@ -51,14 +51,14 @@ export const CharacterPanel = () => {
         failureReason: charactersLoadFailureReason
     } = characterBroker.list(activeBook.id)
 
-    const enabledCurrentToonQuery =
-        activeElement.subType === 'character' && activeElement.subDetail !== undefined
+    const enabledCurrentToonQuery = activeElement.isCharactersActive()
+    activeElement.get_subType() === 'character' && activeElement.get_subDetail()
 
     const {
         data: currentToon,
         isFetched: currentToonFetched,
         isLoading: currentToonIsLoading
-    } = characterBroker.get(activeBook.id, activeElement.subDetail as string, enabledCurrentToonQuery)
+    } = characterBroker.get(activeBook.id, activeElement.get_subDetail() as string, enabledCurrentToonQuery)
 
     if (charactersIsLoading || !characters) {
         return (
@@ -158,7 +158,7 @@ export const CharacterPanel = () => {
                             <LoadingOverlay visible />
                         </Box>
                     )}
-                    {activeElement.subDetail !== undefined &&
+                    {activeElement.get_subDetail() !== undefined &&
                         currentToonFetched &&
                         currentToon !== undefined && (
                             <CharacterDetail
@@ -166,7 +166,7 @@ export const CharacterPanel = () => {
                                 character={currentToon}
                             />
                         )}
-                    {activeElement.subDetail !== undefined &&
+                    {activeElement.get_subDetail() !== undefined &&
                         currentToonFetched &&
                         currentToon === undefined && (
                             <>
