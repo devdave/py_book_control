@@ -256,7 +256,7 @@ def transform(payload: T.Tuple[str, set[str]]):
     cls_name, functions = payload
 
     template = jinja2.Template(template_body, newline_sequence="\n")
-    return template.render(cls_name=cls_name, functions=functions)
+    return template.render(cls_name=cls_name, functions=functions).replace("\r\n", "\n")
 
 
 class MainArgs(tap.Tap):
