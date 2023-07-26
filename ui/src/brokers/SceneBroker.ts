@@ -75,8 +75,8 @@ export const SceneBroker = ({
     )
 
     const _addScene = useMutation({
-        mutationFn: (newScene: { [key: string]: string | number }) =>
-            api.create_scene(newScene.chapterId as UniqueId, newScene.title as string, newScene.position),
+        mutationFn: (newScene: Scene) =>
+            api.create_scene(newScene.chapterId as UniqueId, newScene.title as string, newScene.order),
         onSuccess: ([scene, chapter]: [Scene, Chapter], newSceneParts: Partial<Scene>) => {
             queryClient
                 .invalidateQueries({
@@ -107,26 +107,25 @@ export const SceneBroker = ({
     const createScene: (
         chapterId: string,
         sceneTitle: string,
-        position?: number,
+        order?: number,
         content?: string
     ) => Promise<[Scene, Chapter]> = async (
         chapterId: string,
         sceneTitle: string,
-        position = -1,
+        order = -1,
         content = ''
     ) =>
         new Promise((resolve) => {
-            _addScene.mutate(
-                {
-                    chapterId,
-                    title: sceneTitle,
-                    position,
-                    content
-                },
-                {
-                    onSuccess: (response) => resolve(response)
-                }
-            )
+            const new_scene = {
+                chapterId,
+                title: sceneTitle,
+                order,
+                content
+            }
+
+            _addScene.mutate(new_scene as Scene, {
+                onSuccess: (response) => resolve(response)
+            })
         })
 
     const reorderScene = useCallback(
