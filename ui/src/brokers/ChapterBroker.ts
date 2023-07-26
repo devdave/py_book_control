@@ -30,7 +30,7 @@ export const ChapterBroker = ({
     queryClient
 }: ChapterBrokerProps): ChapterBrokerFunctions => {
     const _createChapter = useMutation<Chapter | undefined, Error, Partial<Chapter>>({
-        mutationFn: (newChapter: object) => api.create_chapter(newChapter),
+        mutationFn: (newChapter: Partial<Chapter>) => api.create_chapter(newChapter as Chapter),
         onSuccess: (response) => {
             console.log(response)
             if (response) {
@@ -76,7 +76,7 @@ export const ChapterBroker = ({
         (book_id: Book['id'], chapter_id: Chapter['id'] | undefined, enabled = true) =>
             // eslint-disable-next-line react-hooks/rules-of-hooks
             useQuery<Chapter, Error>({
-                queryFn: () => api.fetch_chapter(chapter_id),
+                queryFn: () => api.fetch_chapter(chapter_id as Chapter['id']),
                 queryKey: ['book', book_id, 'chapter', chapter_id],
                 enabled
             }),

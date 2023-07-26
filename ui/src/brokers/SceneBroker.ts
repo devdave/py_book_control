@@ -47,7 +47,11 @@ export interface SceneBrokerFunctions {
         content?: Scene['content']
     ) => Promise<[Scene, Chapter]>
     reorder: (chapter: Chapter | ChapterIndex, from: number, to: number) => Promise<void>
-    delete: (bookId: Book['id'], chapterId: Scene['chapterId'], sceneId: Scene['id']) => Promise<void>
+    delete: (
+        bookId: Book['id'],
+        chapterId: Scene['chapterId'] | undefined,
+        sceneId: Scene['id'] | undefined
+    ) => Promise<void>
 }
 
 export const SceneBroker = ({
@@ -268,8 +272,17 @@ export const SceneBroker = ({
         }
     })
 
-    const deleteScene = async (bookId: Book['id'], chapterId: Chapter['id'], sceneId: Scene['id']) => {
+    const deleteScene = async (
+        bookId: Book['id'],
+        chapterId: Chapter['id'] | undefined,
+        sceneId: Scene['id'] | undefined
+    ) => {
         console.log('Deleting scene: ', chapterId, sceneId)
+        if (!sceneId || !chapterId) {
+            console.error('Attempting to delete undefined chapter or scene')
+            console.trace()
+            return
+        }
         const chapter: Chapter = await getChapter(chapterId, false)
 
         const target: Scene | SceneIndex | undefined = find(chapter.scenes, { id: sceneId })

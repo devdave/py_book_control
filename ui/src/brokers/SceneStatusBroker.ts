@@ -47,7 +47,7 @@ export const SceneStatusBroker: SceneStatusBrokerType = ({ api, queryClient }: S
             queryFn: () => api.fetch_scene_status(status_uid)
         })
 
-    const createSceneStatus = (name: SceneStatus['name'], book: Book, scene?: Scene) => {
+    const createSceneStatus = (name: SceneStatus['name'], book: Book, scene?: Scene) =>
         api.create_scene_status(name, book.id, scene?.id).then(() => {
             queryClient
                 .invalidateQueries({
@@ -66,7 +66,6 @@ export const SceneStatusBroker: SceneStatusBrokerType = ({ api, queryClient }: S
                     .then()
             }
         })
-    }
 
     const _updateSceneStatus = useMutation({
         mutationKey: ['sceneStatus', 'updating'],
