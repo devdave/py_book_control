@@ -3,6 +3,7 @@ import { AppModes, AppSettingValues, Book, UID } from '@src/types'
 import APIBridge from '@src/lib/remote'
 import { UseQueryResult } from '@tanstack/react-query'
 import { SettingsManagerReturn } from '@src/lib/use-settings'
+import { SceneStatusBrokerFunctions } from '@src/brokers/SceneStatusBroker'
 
 export interface AppContextValue {
     api: APIBridge
@@ -20,6 +21,8 @@ export interface AppContextValue {
 
     fonts: Set<string>
     setFonts: (val: Set<string>) => void
+
+    sceneStatusBroker: SceneStatusBrokerFunctions
 }
 
 export const AppContext = createContext<AppContextValue>({} as AppContextValue)

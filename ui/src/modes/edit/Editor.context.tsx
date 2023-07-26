@@ -24,7 +24,7 @@ export interface EditorContextValue {
 
     chapterBroker: ChapterBrokerFunctions
     characterBroker: CharacterBrokerFunctions
-    sceneStatusBroker: SceneStatusBrokerFunctions
+
     sceneBroker: SceneBrokerFunctions
 }
 

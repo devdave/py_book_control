@@ -154,11 +154,6 @@ export const Editor: React.FC = () => {
 
     const characterBroker = CharacterBroker({ api, queryClient, activeBook, activeChapter, setActiveScene })
 
-    /**
-     * Packaged everything to do with Scene Status into one portable thing
-     */
-    const sceneStatusBroker = SceneStatusBroker({ api, queryClient })
-
     const editorContextValue = useMemo<EditorContextValue>(
         () => ({
             index,
@@ -176,7 +171,7 @@ export const Editor: React.FC = () => {
 
             chapterBroker,
             characterBroker,
-            sceneStatusBroker,
+
             sceneBroker
         }),
         [
@@ -192,7 +187,7 @@ export const Editor: React.FC = () => {
 
             chapterBroker,
             characterBroker,
-            sceneStatusBroker,
+
             sceneBroker
         ]
     )

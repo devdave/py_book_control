@@ -21,6 +21,8 @@ import { useImmer } from 'use-immer'
 import { ApplicationSetting, useSettings } from '@src/lib/use-settings'
 import { forEach } from 'lodash'
 import { Notifications } from '@mantine/notifications'
+import { SceneStatusMaker } from '@src/common/SceneStatusMaker'
+import { SceneStatusBroker } from '@src/brokers/SceneStatusBroker'
 
 interface AppWrapperProps {
     value: AppContextValue
@@ -207,6 +209,8 @@ const App: React.FC = () => {
         [api]
     )
 
+    const sceneStatusBroker = SceneStatusBroker({ api, queryClient })
+
     const appContextValue = useMemo<AppContextValue>(
         () => ({
             api,
@@ -219,7 +223,9 @@ const App: React.FC = () => {
             fetchStrippedBook,
             fetchStrippedBooks,
             fonts,
-            setFonts
+            setFonts,
+
+            sceneStatusBroker
         }),
         [
             api,
