@@ -1,8 +1,21 @@
-import { Checkbox, Drawer, NumberInput, Select, Text, Textarea, TextInput, Title } from '@mantine/core'
+import {
+    Button,
+    Checkbox,
+    Drawer,
+    LoadingOverlay,
+    NumberInput,
+    Select,
+    Text,
+    Textarea,
+    TextInput,
+    Title
+} from '@mantine/core'
 import React, { useMemo } from 'react'
-import { map } from 'lodash'
+import { map, values } from 'lodash'
 import { useAppContext } from '@src/App.context'
-import { useLogger } from '@mantine/hooks'
+import { useDisclosure, useLogger } from '@mantine/hooks'
+import { useEditorContext } from '@src/modes/edit/Editor.context'
+import { SceneStatusMaker } from '@src/common/SceneStatusMaker'
 
 interface SettingsDrawerProps {
     opened: boolean
@@ -11,7 +24,8 @@ interface SettingsDrawerProps {
 export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close }) => {
     useLogger('SettingsDrawer', [])
 
-    const { fonts, settings } = useAppContext()
+    const { sceneStatusBroker } = useEditorContext()
+    const { activeBook, fonts, settings } = useAppContext()
 
     const select_fonts = useMemo(
         () => map([...fonts], (fontName: string) => ({ value: fontName, label: fontName })),
@@ -29,6 +43,32 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close })
     const [debounceDelay, , setDebounceDelay] = settings.makeState('debounceTime')
     const [dontAskSplit, , setDontAskSplit] = settings.makeState('dontAskOnSplit')
     const [dontAskClear, , setDontAskClear] = settings.makeState('dontAskOnClear2Delete')
+
+    const [openedStatiMaker, { open: openStatiMaker, close: closeStatiMaker }] = useDisclosure(false)
+
+    const {
+        data: stati,
+        isLoading: statiLoading,
+        status: statiStatus
+    } = sceneStatusBroker.fetchAll(activeBook.id)
+
+    const onSceneStatusCreateClick = () => {
+        console.log('Create a new status')
+    }
+
+    const stati_selects =
+        stati === undefined
+            ? []
+            : stati.map((stat) => ({ label: stat.name, value: stat.id, color: stat.color }))
+
+    if (statiLoading) {
+        return (
+            <>
+                <Text>Loading statuses...</Text>
+                <LoadingOverlay visible />
+            </>
+        )
+    }
 
     return (
         <Drawer
@@ -107,6 +147,16 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close })
                 label={"Don't ask to delete when a scene is empty."}
                 checked={dontAskClear}
                 onChange={() => setDontAskClear(!dontAskClear)}
+            />
+            <Title order={1}>Book settings</Title>
+            <Select
+                data={stati_selects}
+                label='Scene statuses'
+            />
+            <Button onClick={openStatiMaker}>Create new status</Button>
+            <SceneStatusMaker
+                opened={openedStatiMaker}
+                onClose={closeStatiMaker}
             />
         </Drawer>
     )
