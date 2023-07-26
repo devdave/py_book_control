@@ -10,8 +10,6 @@ import { IndicatedTextarea } from '@src/widget/IndicatedTextarea'
 
 import { modals } from '@mantine/modals'
 
-import { useQueryClient } from '@tanstack/react-query'
-
 import { useAppContext } from '@src/App.context'
 
 import { SceneCharacters } from '@src/modes/edit/common/SceneCharacters'
@@ -19,10 +17,11 @@ import { ShowError } from '@src/widget/ShowErrorNotification'
 import { useEditorContext } from '../Editor.context'
 
 interface SceneTextProps {
-    scene: Scene
+    scene: Scene | undefined
+    bindScrollRef: (ref: HTMLTextAreaElement) => void
 }
 
-const compile_scene2md = (scene: Scene) => {
+const compile_scene2md = (scene: Scene | undefined) => {
     if (scene) {
         const content = scene.content !== undefined ? scene.content : ''
         return `## ${scene.title}\n\n${content}`
@@ -30,7 +29,7 @@ const compile_scene2md = (scene: Scene) => {
     return 'Loading...'
 }
 
-export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
+export const SceneText: React.FC<SceneTextProps> = ({ scene, bindScrollRef }) => {
     const { api, activeBook, settings } = useAppContext()
 
     const { activeScene, activeElement, activeChapter, setActiveScene, sceneBroker, sceneStatusBroker } =
@@ -89,12 +88,6 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                     setActiveScene(new_chapter, new_scene)
                 })
 
-            // const [newScene, newChapter] = await api.create_scene(
-            //     activeChapId,
-            //     response.split_title,
-            //     activeScene.order + 1
-            // )
-
             console.groupEnd()
         },
         [activeChapter, activeScene, api, form, sceneBroker, setActiveScene]
@@ -118,18 +111,23 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                         cancel: 'Do not delete scene!'
                     },
                     onConfirm: () => {
-                        sceneBroker.delete(activeBook.id, scene.chapterId, scene.id).then()
+                        sceneBroker.delete(activeBook.id, scene?.chapterId, scene?.id).then()
                     }
                 })
             }
         },
-        [activeBook.id, dontask2delete, scene.chapterId, scene.id, sceneBroker]
+        [activeBook.id, dontask2delete, scene?.chapterId, scene?.id, sceneBroker]
     )
 
     useDebouncedEffect(
         () => {
             async function reprocessMDnSave(): Promise<null | undefined> {
-                const response = await api.process_scene_markdown(scene.id, form.values.content as string)
+                if (!scene) {
+                    ShowError('Integrity error', 'Failed to save because scene.id is missing!')
+                    return null
+                }
+
+                const response = await api.process_scene_markdown(scene?.id, form.values.content as string)
 
                 if (
                     (form.values.content && form.values.content.trim().length === 0) ||
@@ -171,7 +169,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                         children: (
                             <Text size='sm'>
                                 You have added a second title to the current scene. Was this a mistake or do
-                                you want to create and insert a new after the current scene with the new
+                                you want to create and insert a new scene after the current scene with the new
                                 title?
                             </Text>
                         ),
@@ -186,6 +184,11 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                         onCancel: () => console.log('Split cancelled!')
                     })
 
+                    return null
+                }
+
+                if (!scene) {
+                    ShowError('Error', 'Unable to save data as the scene id is missing!')
                     return null
                 }
 
@@ -271,6 +274,12 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene }) => {
                     })}
                     autoFocus={activeScene?.id === scene.id}
                     autoCapitalize='sentences'
+                    data-scene-id={scene.id}
+                    ref={(ref) => {
+                        if (ref) {
+                            bindScrollRef(ref)
+                        }
+                    }}
                     {...form.getInputProps('content')}
                 />
             </Indicator>
