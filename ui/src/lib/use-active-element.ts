@@ -15,11 +15,15 @@ import { useCallback, useState } from 'react'
 import { clone } from 'lodash'
 
 export interface useActiveElementReturn {
+    pop: () => void
+    length: () => number
+    push: () => void
+    trail: () => ActiveElement[]
+
     setChapter: (chapter: Chapter | ChapterIndex) => void
     setChapterById: (chapterId: UniqueId) => void
 
     get_subDetail: () => string | undefined
-    isThisScene: (scene: Scene | SceneIndex) => boolean
     get_subType: () => ActiveElementSubTypes | undefined
     assignChapter: (chapter: Chapter) => void
 
@@ -27,26 +31,28 @@ export interface useActiveElementReturn {
     setBookById: (bookId: UniqueId) => void
 
     setActiveScene: (chapter: Chapter | ChapterIndex, scene: Scene | SceneIndex) => void
-
+    isThisScene: (scene: Scene | SceneIndex) => boolean
     setScene: (chapter: Chapter | ChapterIndex, scene: Scene | SceneIndex) => void
     setSceneById: (chapterId: UniqueId, sceneId: UniqueId) => void
-
     assignScene: (scene: SceneIndex) => void
+
     clear: () => void
     clearSubType: () => void
+
     assignType: (type_name: ActiveElementTypes | undefined, type_detail: string) => void
+    get_type: () => ActiveElementTypes | undefined
+
     get_focus_id: () => string | number | undefined
     setFocus: (name: string, id?: string | undefined) => void
     isThisChapter: (chapter: Chapter | ChapterIndex) => boolean
-    setPosition: (value: ((prevState: ActiveElement[]) => ActiveElement[]) | ActiveElement[]) => void
-    get_focus: () => string | undefined
-    pop: () => void
-    get_type: () => ActiveElementTypes | undefined
+
     get_detail: () => string | undefined
     isThisBook: (book: Book) => boolean
-    position: ActiveElement[]
+
     setCharacter: (character: Character) => void
     setCharacterById: (characterId: Character['id']) => void
+
+    get_focus: () => string | undefined
     isFocussed: (name: string, id?: string) => boolean
 
     setTypeToCharacters: () => void
@@ -65,7 +71,25 @@ export function useActiveElement(): useActiveElementReturn {
     })
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [position, setPosition] = useState<ActiveElement[]>([])
+    const [history, setHistory] = useState<ActiveElement[]>([])
+
+    const pop = useCallback((): void => {
+        const old_state = history.pop()
+        if (old_state) {
+            updater(() => old_state)
+        }
+    }, [history, updater])
+
+    const push = useCallback(() => {
+        setHistory((current) => [clone(state), ...current])
+        if (history.length > 5) {
+            history.pop()
+        }
+    }, [history, state])
+
+    const length = () => history.length
+
+    const trail = () => clone(history)
 
     const setTypeAndSubtype = useCallback(
         (
@@ -74,8 +98,7 @@ export function useActiveElement(): useActiveElementReturn {
             subtype_name: ActiveElementSubTypes | undefined,
             sub_detail: string | undefined
         ) => {
-            setPosition((current) => [clone(state), ...current])
-
+            push()
             updater((draft) => {
                 draft.type = type_name
                 draft.detail = type_detail
@@ -88,7 +111,7 @@ export function useActiveElement(): useActiveElementReturn {
 
     const assignType = useCallback(
         (type_name: ActiveElementTypes | undefined, type_detail: string) => {
-            setPosition((current) => [clone(state), ...current])
+            setHistory((current) => [clone(state), ...current])
             updater((draft) => {
                 draft.type = type_name
                 draft.detail = type_detail
@@ -99,7 +122,7 @@ export function useActiveElement(): useActiveElementReturn {
 
     const assignSubType = useCallback(
         (subtype_name: ActiveElementSubTypes | undefined, subtype_detail: string) => {
-            setPosition((current) => [clone(state), ...current])
+            setHistory((current) => [clone(state), ...current])
             updater((draft) => {
                 draft.subtype = subtype_name
                 draft.subdetail = subtype_detail
@@ -107,13 +130,6 @@ export function useActiveElement(): useActiveElementReturn {
         },
         [state, updater]
     )
-
-    const pop = useCallback((): void => {
-        const old_state = position.pop()
-        if (old_state) {
-            updater(() => old_state)
-        }
-    }, [position, updater])
 
     const setActiveSceneById = useCallback(
         (chapter_id: string, scene_id: string) => {
@@ -311,8 +327,6 @@ export function useActiveElement(): useActiveElementReturn {
     }
 
     return {
-        position,
-        setPosition,
         setActiveScene,
 
         isThisScene,
@@ -328,8 +342,8 @@ export function useActiveElement(): useActiveElementReturn {
         setChapterById,
 
         assignChapter,
-        isThisBook,
 
+        isThisBook,
         setBook,
         setBookById,
 
@@ -349,6 +363,10 @@ export function useActiveElement(): useActiveElementReturn {
         setFocus,
         clear,
         clearSubType,
-        pop
+
+        pop,
+        push,
+        length,
+        trail
     }
 }
