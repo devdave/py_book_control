@@ -54,6 +54,7 @@ export const MainSceneForm: FC<SceneFormProps> = ({ scene, onKeyUp }) => {
                 {...form.getInputProps('title')}
             />
             <Textarea
+                className='mainContent'
                 onKeyUp={onKeyUp}
                 autoCapitalize='sentences'
                 autosize
