@@ -39,7 +39,6 @@ export const SceneCharacters: React.FC<SceneCharactersProps> = ({ scene }) => {
         }
     }
 
-    console.log(scene.title)
     return (
         <>
             <Select
