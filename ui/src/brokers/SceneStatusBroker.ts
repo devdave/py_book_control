@@ -14,14 +14,11 @@ export interface _updateSceneStatusArgs {
 }
 
 export interface SceneStatusBrokerFunctions {
-    deleteSceneStatus: (book_uid: Book['id'], status_uid: SceneStatus['id']) => void
-    fetchAllSceneStatuses: (book_id: Book['id']) => UseQueryResult<SceneStatus[], Error>
-    updateSceneStatus: (book_uid: Book['id'], status_uid: SceneStatus['id'], changeset: SceneStatus) => void
-    createSceneStatus: (name: SceneStatus['name'], book: Book, scene?: Scene) => void
-    fetchSceneStatus: (
-        book_uid: Book['id'],
-        status_uid: SceneStatus['id']
-    ) => UseQueryResult<SceneStatus, Error>
+    delete: (book_uid: Book['id'], status_uid: SceneStatus['id']) => void
+    fetchAll: (book_id: Book['id']) => UseQueryResult<SceneStatus[], Error>
+    update: (book_uid: Book['id'], status_uid: SceneStatus['id'], changeset: SceneStatus) => void
+    create: (name: SceneStatus['name'], book: Book, scene?: Scene) => void
+    fetch: (book_uid: Book['id'], status_uid: SceneStatus['id']) => UseQueryResult<SceneStatus, Error>
 }
 
 export type SceneStatusBrokerType = ({
@@ -97,10 +94,10 @@ export const SceneStatusBroker: SceneStatusBrokerType = ({ api, queryClient }: S
     }
 
     return {
-        deleteSceneStatus,
-        updateSceneStatus,
-        createSceneStatus,
-        fetchSceneStatus,
-        fetchAllSceneStatuses
+        delete: deleteSceneStatus,
+        update: updateSceneStatus,
+        create: createSceneStatus,
+        fetch: fetchSceneStatus,
+        fetchAll: fetchAllSceneStatuses
     }
 }
