@@ -30,6 +30,8 @@ class SceneType(T.TypedDict):
     updated_on: str
 
     characters: list[CharacterType]
+    status_id: UniqueId
+    status: T.Optional["SceneStatusType"]
 
 
 class ChapterDict(T.TypedDict):
@@ -56,3 +58,11 @@ class BookType(T.TypedDict):
     updated_on: str
 
     chapters: T.List[ChapterDict]
+
+
+class SceneStatusType(T.TypedDict):
+    id: UniqueId
+    name: str
+    color: str
+
+    book_id: UniqueId
