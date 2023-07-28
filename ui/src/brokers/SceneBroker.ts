@@ -32,7 +32,11 @@ export interface SceneBrokerProps {
 
 export interface SceneBrokerFunctions {
     // add: (chapterId: string | undefined) => Promise<void | Scene>
-    attachSceneStatus2Scene: (book_uid: Book['id'], scene: Scene, status: SceneStatus) => void
+    attachSceneStatus2Scene: (
+        bookUid: Book['id'],
+        scene: Scene,
+        statusUid: SceneStatus['id']
+    ) => Promise<boolean>
     change: UseMutationResult<[Scene, Chapter], unknown, Scene>
     fetch: (
         book_id: Book['id'],
@@ -189,43 +193,13 @@ export const SceneBroker = ({
         }
     })
 
-    const _attachSceneStatus2Scene = useMutation<Scene, Error, attachSceneStatus2SceneProps>({
-        mutationKey: ['scene', 'status_update'],
-        mutationFn: (changeset: attachSceneStatus2SceneProps) =>
-            api.attach_scene_status2scene(changeset.scene_uid as UniqueId, changeset.status_uid as UniqueId),
-        onSuccess: (updated_scene: Scene, changeset) => {
-            queryClient.setQueryData(
-                ['book', changeset.book_id, 'chapter', updated_scene.chapterId, 'scene', updated_scene.id],
-                () => updated_scene
-            )
-
-            queryClient
-                .invalidateQueries({
-                    queryKey: [
-                        'book',
-                        changeset.book_id,
-                        'chapter',
-                        updated_scene.chapterId,
-                        'scene',
-                        updated_scene.id
-                    ],
-                    exact: true,
-                    refetchType: 'active'
-                })
-                .then()
-            queryClient
-                .invalidateQueries({
-                    queryKey: ['book', changeset.book_id, 'sceneStatuses'],
-                    exact: true,
-                    refetchType: 'active'
-                })
-                .then()
-        }
-    })
-
-    const attachSceneStatus2Scene = useCallback(
-        (book_uid: Book['id'], scene: Scene, status: SceneStatus) => {
-            api.attach_scene_status2scene(scene.id, status.id).then(() => {
+    const attachSceneStatus2Scene: (
+        book_uid: Book['id'],
+        scene: Scene,
+        statusUid: SceneStatus['id']
+    ) => Promise<boolean> = useCallback(
+        (book_uid: Book['id'], scene: Scene, statusUid: SceneStatus['id']) =>
+            api.attach_scene_status2scene(scene.id, statusUid).then(() => {
                 queryClient
                     .invalidateQueries({
                         queryKey: ['book', book_uid, 'chapter', scene.chapterId, 'scene', scene.id],
@@ -233,6 +207,11 @@ export const SceneBroker = ({
                         refetchType: 'active'
                     })
                     .then()
+                queryClient.invalidateQueries({
+                    queryKey: ['book', book_uid, 'index'],
+                    exact: true,
+                    refetchType: 'active'
+                })
                 queryClient
                     .invalidateQueries({
                         queryKey: ['book', book_uid, 'sceneStatuses'],
@@ -240,8 +219,8 @@ export const SceneBroker = ({
                         refetchType: 'active'
                     })
                     .then()
-            })
-        },
+                return true
+            }),
         [api, queryClient]
     )
 
