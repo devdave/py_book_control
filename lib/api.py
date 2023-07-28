@@ -2,6 +2,8 @@ import typing as T
 import logging
 
 import webview  # type: ignore
+from sqlalchemy.exc import IntegrityError
+
 from .scene_processor import SceneProcessor2 as SceneProcessor
 from .application import BCApplication
 from . import models
@@ -13,6 +15,7 @@ from .app_types import (
     CharacterType as Character,
     ChapterDict as Chapter,
     BookType as Book,
+    SceneStatusType as SceneStatus,
 )
 
 
@@ -193,7 +196,7 @@ class BCAPI:
             )
 
     def create_scene(
-        self, chapter_id: UniqueId, title: str, position=-1
+        self, chapter_id: UniqueId, title: str, position: int = -1
     ) -> T.Tuple[Scene, Chapter]:
         with self.app.get_db() as session:
             chapter = models.Chapter.Fetch_by_uid(session, chapter_id)
@@ -203,6 +206,16 @@ class BCAPI:
                 chapter.scenes.reorder()  # type: ignore
             else:
                 chapter.scenes.append(scene)
+
+            statusValue = models.Setting.Get(session, "defaultSceneStatus")
+            if statusValue != "-1":
+                try:
+                    status = models.SceneStatus.Fetch_by_Uid(session, statusValue)
+                except Exception as exc:
+                    self.log.error(
+                        "Failed to attach default "
+                        + f"scene status with id {statusValue=} because {exc=}"
+                    )
 
             session.add(scene)
             session.commit()
@@ -251,7 +264,7 @@ class BCAPI:
 
     def attach_scene_status2scene(
         self, scene_uid: UniqueId, status_uid: UniqueId
-    ) -> Scene:
+    ) -> bool:
         with self.app.get_db() as session:
             scene_status = models.SceneStatus.Fetch_by_Uid(session, status_uid)
 
@@ -259,7 +272,7 @@ class BCAPI:
 
             scene.status = scene_status
             session.commit()
-            return scene.asdict()
+            return True
 
     """
     
@@ -362,7 +375,7 @@ class BCAPI:
             models.Setting.Set(session, name, value)
             session.commit()
 
-    def bulkUpdateSettings(self, changeset: T.Dict[str, Setting]):
+    def bulk_update_settings(self, changeset: Setting):
         with self.app.get_db() as session:
             models.Setting.BulkSet(session, changeset)
             session.commit()
@@ -376,7 +389,7 @@ class BCAPI:
 
             session.commit()
 
-    def setDefaultSetting(self, name, val, type):
+    def set_default_setting(self, name, val, type):
         with self.app.get_db() as session:
             models.Setting.SetDefault(session, name, val, type)
 
@@ -384,44 +397,51 @@ class BCAPI:
         Scene Status
     """
 
-    def fetch_all_scene_statuses(self, book_uid: UniqueId):
+    def fetch_all_scene_statuses(self, book_uid: UniqueId) -> list[SceneStatus]:
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, book_uid)  # type: models.Book
             return [status.asdict() for status in book.scene_statuses]
 
-    def fetch_scene_status(self, status_uid: UniqueId):
+    def fetch_scene_status(self, status_uid: UniqueId) -> SceneStatus:
         with self.app.get_db() as session:
             status = models.SceneStatus.Fetch_by_Uid(session, status_uid)
+            return status.asdict(stripped=True)
 
     def create_scene_status(
         self,
-        scene_name: str,
         book_uid: UniqueId,
+        name: str,
+        color: str,
         scene_uid: T.Optional[UniqueId] = None,
-    ):
+    ) -> SceneStatus:
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, book_uid)
-            status = models.SceneStatus(name=scene_name, book=book)
+            status = models.SceneStatus(name=name, color=color, book=book)
             session.add(status)
 
             if scene_uid is not None:
                 scene = models.Scene.Fetch_by_uid(session, scene_uid)
                 scene.status = status
 
-            session.commit()
+            try:
+                session.commit()
+            except IntegrityError:
+                raise Exception(
+                    "There may already be a scene status with that name for this book."
+                )
 
             return status.asdict()
 
     def update_scene_status(
-        self, status_uid: UniqueId, changeset: T.Dict[str, str]
-    ) -> T.Mapping[str, str]:
+        self, status_uid: UniqueId, changeset: SceneStatus
+    ) -> SceneStatus:
         with self.app.get_db() as session:
             status = models.SceneStatus.Fetch_by_Uid(session, status_uid)
             status.update(changeset)
             session.commit()
             return status.asdict()
 
-    def delete_scene_status(self, status_uid: UniqueId):
+    def delete_scene_status(self, status_uid: UniqueId) -> None:
         with self.app.get_db() as session:
             models.SceneStatus.Delete(session, status_uid)
             session.commit()
