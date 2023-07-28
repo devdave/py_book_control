@@ -28,7 +28,7 @@ export interface SceneStatus extends Base {
 }
 
 export interface Book extends Base {
-    title: string
+    title: string | undefined
     notes: string
     chapters: Chapter[]
     words: number
@@ -39,8 +39,7 @@ export interface SceneIndex extends Base {
     title: string
     order: number
     words: number
-    status: SceneStatus['name']
-    status_id?: UID
+    status: SceneStatus
 }
 
 export interface Scene extends SceneIndex {
@@ -127,6 +126,7 @@ export interface AppSettingValues {
     debounceTime: number
     dontAskOnSplit: boolean
     dontAskOnClear2Delete: boolean
+    defaultSceneStatus: string
 }
 
 export interface attachSceneStatus2SceneProps {
