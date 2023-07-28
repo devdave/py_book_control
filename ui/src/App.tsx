@@ -21,7 +21,7 @@ import { useImmer } from 'use-immer'
 import { ApplicationSetting, useSettings } from '@src/lib/use-settings'
 import { forEach } from 'lodash'
 import { Notifications } from '@mantine/notifications'
-import { SceneStatusMaker } from '@src/common/SceneStatusMaker'
+import { SceneStatusModal } from '@src/common/SceneStatusModal'
 import { SceneStatusBroker } from '@src/brokers/SceneStatusBroker'
 
 interface AppWrapperProps {
@@ -55,7 +55,7 @@ const App: React.FC = () => {
         created_on: '',
         id: '',
         notes: '',
-        title: 'NotSet',
+        title: undefined,
         updated_on: '',
         words: 0
     })
@@ -90,10 +90,10 @@ const App: React.FC = () => {
 
     const bulkDefaultSetter = (changeset: object[]): Promise<any> => api.bulkDefaultSettings(changeset)
 
-    const bulkFetchSettings = (): Promise<ApplicationSetting<AppSettingValues>[]> => api.fetchAllSettings()
+    const bulkFetchSettings = (): Promise<ApplicationSetting[]> => api.fetchAllSettings()
 
     const reconcileSettings = useCallback(
-        (values: ApplicationSetting<AppSettingValues>[]) => {
+        (values: ApplicationSetting[]) => {
             console.log(`Got bulk settings ${JSON.stringify(values)}`)
             forEach(values, (setting) => {
                 queryClient.setQueryData(['setting', setting.name], () => setting.value)
@@ -108,13 +108,14 @@ const App: React.FC = () => {
         getter: fetchSetting,
         setter: settingsSetter,
         defaultSettings: {
-            fontName: 'calibri',
+            fontName: 'Calibri',
             lineHeight: 150,
             fontSize: 18,
             fontWeight: 400,
             debounceTime: 800,
             dontAskOnSplit: false,
-            dontAskOnClear2Delete: false
+            dontAskOnClear2Delete: false,
+            defaultSceneStatus: '-1'
         }
     })
 

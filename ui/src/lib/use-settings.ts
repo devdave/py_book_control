@@ -1,17 +1,17 @@
 import { UseMutationResult, UseQueryResult } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
-export interface ApplicationSetting<TValues extends object = Record<string, unknown>> {
+export interface ApplicationSetting {
     [key: string]: string | number | boolean | undefined
     name: string
-    value: TValues[keyof TValues]
+    value: string | number | boolean | undefined
     type: string
 }
 
 export interface SettingsManagerReturn<TValues extends object = Record<string, unknown>> {
     get: <Field extends keyof TValues>(name: Field) => UseQueryResult<TValues[Field]> | undefined
     set: <Field extends keyof TValues>(name: Field | string, value: TValues[Field]) => TValues[Field]
-    reconcile: (onValuesLoaded: (values: ApplicationSetting<TValues>[]) => void) => void
+    reconcile: (onValuesLoaded: (values: ApplicationSetting[]) => void) => void
     makeState: <Field extends keyof TValues>(
         name: Field
     ) => [TValues[Field] | undefined, boolean, (value: TValues[Field]) => void]
@@ -25,10 +25,10 @@ export function useSettings<TValues extends object = Record<string, unknown>>({
     bulkDefaultSetter
 }: {
     defaultSettings: TValues
-    bulkFetchSettings: () => Promise<ApplicationSetting<TValues>[]>
+    bulkFetchSettings: () => Promise<ApplicationSetting[]>
     setter: UseMutationResult<undefined, unknown, { name: string; value: string }>
     getter: (<Field extends keyof TValues>(name: string) => UseQueryResult<TValues[Field]>) | undefined
-    bulkDefaultSetter: (changeset: ApplicationSetting<TValues>[]) => Promise<object>
+    bulkDefaultSetter: (changeset: ApplicationSetting[]) => Promise<object>
 }): SettingsManagerReturn<TValues> {
     /**
      * Internalized getter
@@ -87,13 +87,13 @@ export function useSettings<TValues extends object = Record<string, unknown>>({
      *
      */
     const reconcile = useCallback(
-        (onValuesLoaded: (changeset: ApplicationSetting<TValues>[]) => void) => {
+        (onValuesLoaded: (values: ApplicationSetting[]) => void) => {
             console.log('Ensuring defaults are set')
             if (!defaultSettings) {
                 throw new Error('Somehow missing default settings!  Cannot proceed')
             }
 
-            const changeset: ApplicationSetting<TValues>[] = []
+            const changeset: ApplicationSetting[] = []
 
             // eslint-disable-next-line no-restricted-syntax
             for (const [key, value] of Object.entries(defaultSettings)) {
@@ -103,11 +103,6 @@ export function useSettings<TValues extends object = Record<string, unknown>>({
                     type: typeof value
                 })
             }
-            // const coerced: { [key: string]: TValues[keyof TValues] } = defaultSettings
-            // const attempt2 = map<TValues>(defaultSettings, (v, k) => ({
-            //     name: k,
-            //     value: v
-            // }))
 
             console.log(`Defaults are ${JSON.stringify(changeset)}`)
             // const coerced = changeset as ApplicationSetting<TValues>[]
@@ -116,7 +111,7 @@ export function useSettings<TValues extends object = Record<string, unknown>>({
                 .catch((reason) => console.error('Defaults failed with', reason))
 
             if (onValuesLoaded) {
-                bulkFetchSettings().then((payload: ApplicationSetting<TValues>[]) => {
+                bulkFetchSettings().then((payload: ApplicationSetting[]) => {
                     onValuesLoaded(payload)
                 })
             }
