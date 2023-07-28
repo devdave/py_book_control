@@ -27,7 +27,7 @@ import { type FC, useCallback } from 'react'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 
 import { useAppContext } from '@src/App.context'
-import { ActiveElementTypes, ChapterIndex, EditModes } from '@src/types'
+import { ChapterIndex, EditModes } from '@src/types'
 import { InputModal } from '@src/widget/input_modal'
 import { ShowError } from '@src/widget/ShowErrorNotification'
 import { useEditorContext } from './Editor.context'

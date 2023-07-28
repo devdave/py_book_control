@@ -1,4 +1,4 @@
-import { Accordion, Button, Center, createStyles, Group, Select, Text } from '@mantine/core'
+import { Accordion, Button, Center, createStyles, Group, Text } from '@mantine/core'
 import { useCallback, useEffect, useRef } from 'react'
 import { IconGripVertical } from '@tabler/icons-react'
 import { find, map } from 'lodash'

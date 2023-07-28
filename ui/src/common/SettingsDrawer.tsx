@@ -15,7 +15,7 @@ import {
 import React, { useMemo } from 'react'
 import { map } from 'lodash'
 import { useAppContext } from '@src/App.context'
-import { useDisclosure, useLogger } from '@mantine/hooks'
+import { useLogger } from '@mantine/hooks'
 
 import { IconEdit, IconFlagFilled, IconX } from '@tabler/icons-react'
 import { ShowError } from '@src/widget/ShowErrorNotification'
@@ -51,11 +51,10 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close })
 
     const isReadyToFetchSceneStatus = activeBook.title !== undefined
 
-    const {
-        data: stati,
-        isLoading: statiLoading,
-        status: statiStatus
-    } = sceneStatusBroker.fetchAll(activeBook.id, isReadyToFetchSceneStatus)
+    const { data: stati, isLoading: statiLoading } = sceneStatusBroker.fetchAll(
+        activeBook.id,
+        isReadyToFetchSceneStatus
+    )
 
     if (statiLoading && isReadyToFetchSceneStatus) {
         return (

@@ -1,10 +1,9 @@
-import React, { FC, KeyboardEventHandler, useEffect } from 'react'
+import React, { FC, KeyboardEventHandler } from 'react'
 import { Button, Text, ColorPicker, Modal, TextInput, LoadingOverlay } from '@mantine/core'
-import { IconFlag, IconFlagFilled } from '@tabler/icons-react'
+import { IconFlagFilled } from '@tabler/icons-react'
 import { useForm } from '@mantine/form'
 import { useAppContext } from '@src/App.context'
 import { type UniqueId } from '@src/types'
-import { modals } from '@mantine/modals'
 
 const SWATCHES = [
     '#fa5252',
@@ -29,10 +28,6 @@ interface SceneStatusMakerProps {
 
 export const SceneStatusModal: FC<SceneStatusMakerProps> = ({ opened, onClose, status_uid }) => {
     const { activeBook, sceneStatusBroker } = useAppContext()
-    const createStati = () => {
-        console.log('Make a status')
-    }
-
     const { data: loadedSceneStatus } = sceneStatusBroker.fetch(
         activeBook.id,
         status_uid as UniqueId,

@@ -21,7 +21,6 @@ import { useImmer } from 'use-immer'
 import { ApplicationSetting, useSettings } from '@src/lib/use-settings'
 import { forEach } from 'lodash'
 import { Notifications } from '@mantine/notifications'
-import { SceneStatusModal } from '@src/common/SceneStatusModal'
 import { SceneStatusBroker } from '@src/brokers/SceneStatusBroker'
 
 interface AppWrapperProps {

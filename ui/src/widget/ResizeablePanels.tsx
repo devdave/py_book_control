@@ -58,14 +58,6 @@ export const ResizeablePanels: FC<ResizeablePanelsProps> = ({ children }) => {
         setDragging(false)
     }
 
-    const onMouseMove: MouseEventHandler = (evt) => {
-        if (dragging && leftWidth && separatorXPosition) {
-            const newLeftWidth = leftWidth + evt.clientX - separatorXPosition
-            setSeparatorXPosition(evt.clientX)
-            setLeftWidth(newLeftWidth)
-        }
-    }
-
     const onDocumentMouseMove = (evt: MouseEvent) => {
         if (dragging && leftWidth && separatorXPosition) {
             const newLeftWidth = leftWidth + evt.clientX - separatorXPosition

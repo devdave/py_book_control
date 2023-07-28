@@ -1,4 +1,4 @@
-import { createStyles, Skeleton, Tabs, Text, TextInput } from '@mantine/core'
+import { createStyles, Skeleton, Tabs, Text } from '@mantine/core'
 import { type FC, KeyboardEventHandler, useCallback } from 'react'
 import { IconId, IconMapPin, IconNote, IconUsers, IconVocabulary } from '@tabler/icons-react'
 import { type Scene } from '@src/types'

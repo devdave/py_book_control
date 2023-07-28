@@ -10,7 +10,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useAppContext } from '@src/App.context'
 import { useActiveElement } from '@src/lib/use-active-element'
-import { SceneStatusBroker } from '@src/brokers/SceneStatusBroker'
 import { SceneBroker } from '@src/brokers/SceneBroker'
 import { CharacterBroker } from '@src/brokers/CharacterBroker'
 import { ChapterBroker, ChapterBrokerFunctions } from '@src/brokers/ChapterBroker'
