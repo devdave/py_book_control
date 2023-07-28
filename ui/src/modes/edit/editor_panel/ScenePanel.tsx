@@ -1,4 +1,4 @@
-import { createStyles, Skeleton, Tabs, Text } from '@mantine/core'
+import { createStyles, Skeleton, Tabs, Text, TextInput } from '@mantine/core'
 import { type FC, KeyboardEventHandler, useCallback } from 'react'
 import { IconId, IconMapPin, IconNote, IconUsers, IconVocabulary } from '@tabler/icons-react'
 import { type Scene } from '@src/types'
@@ -113,84 +113,94 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
     }
 
     return (
-        <Tabs
-            classNames={{ panel: classes.tabPanel }}
-            value={activeTab}
-            onTabChange={(name) => name && nextTab(name)}
-        >
-            <Tabs.List>
-                <Tabs.Tab
-                    icon={<IconVocabulary size='0.8rem' />}
-                    value='content'
-                    onClick={() => nextTab('content')}
-                >
-                    Content
-                </Tabs.Tab>
-                <Tabs.Tab
-                    icon={<IconId size='0.8rem' />}
-                    value='summary'
-                    onClick={() => nextTab('summary')}
-                >
-                    Summary
-                </Tabs.Tab>
-                <Tabs.Tab
-                    icon={<IconNote size='0.8rem' />}
-                    value='notes'
-                    onClick={() => nextTab('notes')}
-                >
-                    Notes
-                </Tabs.Tab>
-                <Tabs.Tab
-                    icon={<IconMapPin size='0.8rem' />}
-                    value='location'
-                    onClick={() => nextTab('location')}
-                >
-                    Location
-                </Tabs.Tab>
-                <Tabs.Tab
-                    icon={<IconUsers size='0.8rem' />}
-                    value='characters'
-                    onClick={() => nextTab('characters')}
-                >
-                    Characters
-                </Tabs.Tab>
-            </Tabs.List>
-            <Tabs.Panel value='content'>
-                <MainSceneForm
-                    scene={scene}
-                    onKeyUp={handleCtrlKey}
-                />
-            </Tabs.Panel>
-            <Tabs.Panel value='summary'>
-                <TextSceneForm
-                    scene={scene}
-                    onKeyUp={handleCtrlKey}
-                    field='summary'
-                    label='Summary'
-                />
-            </Tabs.Panel>
-            <Tabs.Panel value='notes'>
-                <TextSceneForm
-                    scene={scene}
-                    onKeyUp={handleCtrlKey}
-                    field='notes'
-                    label='Notes'
-                />
-            </Tabs.Panel>
-            <Tabs.Panel value='location'>
-                <TextSceneForm
-                    scene={scene}
-                    onKeyUp={handleCtrlKey}
-                    field='location'
-                    label='Location'
-                />
-            </Tabs.Panel>
-            <Tabs.Panel value='characters'>
-                <SceneCharacters
-                    scene={scene}
-                    key={scene.characters.length}
-                />
-            </Tabs.Panel>
-        </Tabs>
+        <>
+            {/*<TextInput*/}
+            {/*    label='Title'*/}
+            {/*    value={scene?.title}*/}
+            {/*    onChange={(evt) => {*/}
+            {/*        scene.title = evt.target.value*/}
+            {/*        sceneBroker.update(scene)*/}
+            {/*    }}*/}
+            {/*/>*/}
+            <Tabs
+                classNames={{ panel: classes.tabPanel }}
+                value={activeTab}
+                onTabChange={(name) => name && nextTab(name)}
+            >
+                <Tabs.List>
+                    <Tabs.Tab
+                        icon={<IconVocabulary size='0.8rem' />}
+                        value='content'
+                        onClick={() => nextTab('content')}
+                    >
+                        Content
+                    </Tabs.Tab>
+                    <Tabs.Tab
+                        icon={<IconId size='0.8rem' />}
+                        value='summary'
+                        onClick={() => nextTab('summary')}
+                    >
+                        Summary
+                    </Tabs.Tab>
+                    <Tabs.Tab
+                        icon={<IconNote size='0.8rem' />}
+                        value='notes'
+                        onClick={() => nextTab('notes')}
+                    >
+                        Notes
+                    </Tabs.Tab>
+                    <Tabs.Tab
+                        icon={<IconMapPin size='0.8rem' />}
+                        value='location'
+                        onClick={() => nextTab('location')}
+                    >
+                        Location
+                    </Tabs.Tab>
+                    <Tabs.Tab
+                        icon={<IconUsers size='0.8rem' />}
+                        value='characters'
+                        onClick={() => nextTab('characters')}
+                    >
+                        Characters
+                    </Tabs.Tab>
+                </Tabs.List>
+                <Tabs.Panel value='content'>
+                    <MainSceneForm
+                        scene={scene}
+                        onKeyUp={handleCtrlKey}
+                    />
+                </Tabs.Panel>
+                <Tabs.Panel value='summary'>
+                    <TextSceneForm
+                        scene={scene}
+                        onKeyUp={handleCtrlKey}
+                        field='summary'
+                        label='Summary'
+                    />
+                </Tabs.Panel>
+                <Tabs.Panel value='notes'>
+                    <TextSceneForm
+                        scene={scene}
+                        onKeyUp={handleCtrlKey}
+                        field='notes'
+                        label='Notes'
+                    />
+                </Tabs.Panel>
+                <Tabs.Panel value='location'>
+                    <TextSceneForm
+                        scene={scene}
+                        onKeyUp={handleCtrlKey}
+                        field='location'
+                        label='Location'
+                    />
+                </Tabs.Panel>
+                <Tabs.Panel value='characters'>
+                    <SceneCharacters
+                        scene={scene}
+                        key={scene.characters.length}
+                    />
+                </Tabs.Panel>
+            </Tabs>
+        </>
     )
 }
