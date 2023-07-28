@@ -1,6 +1,6 @@
 import { useForm } from '@mantine/form'
-import React, { useCallback } from 'react'
-import { Flex, Indicator, Select, Skeleton, Text, Textarea } from '@mantine/core'
+import React, { useCallback, forwardRef } from 'react'
+import { Flex, Indicator, Select, Skeleton, Text, Textarea, Group } from '@mantine/core'
 
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 
@@ -14,7 +14,28 @@ import { useAppContext } from '@src/App.context'
 
 import { SceneCharacters } from '@src/modes/edit/common/SceneCharacters'
 import { ShowError } from '@src/widget/ShowErrorNotification'
+import { IconFlag, IconFlagFilled } from '@tabler/icons-react'
 import { useEditorContext } from '../Editor.context'
+
+interface ItemProps extends React.ComponentPropsWithoutRef<'div'> {
+    label: string
+    color?: string
+}
+
+// eslint-disable-next-line react/display-name
+const SelectItem = forwardRef<HTMLDivElement, ItemProps>(({ label, color, ...others }: ItemProps, ref) => (
+    <div
+        ref={ref}
+        {...others}
+    >
+        <Group noWrap>
+            {color ? <IconFlagFilled style={{ color }} /> : <IconFlag />}
+            <div>
+                <Text size='sm'>{label}</Text>
+            </div>
+        </Group>
+    </div>
+))
 
 interface SceneTextProps {
     scene: Scene | undefined
@@ -30,17 +51,20 @@ const compile_scene2md = (scene: Scene | undefined) => {
 }
 
 export const SceneText: React.FC<SceneTextProps> = ({ scene, bindScrollRef }) => {
-    const { api, activeBook, settings } = useAppContext()
+    const { api, activeBook, settings, sceneStatusBroker } = useAppContext()
 
-    const { activeScene, activeElement, activeChapter, setActiveScene, sceneBroker, sceneStatusBroker } =
-        useEditorContext()
+    const { activeScene, activeElement, activeChapter, setActiveScene, sceneBroker } = useEditorContext()
 
-    const { data: sceneStatuses } = sceneStatusBroker.fetchAllSceneStatuses(activeBook.id)
+    const { data: sceneStatuses } = sceneStatusBroker.fetchAll(activeBook.id, true)
 
     const select_statuses =
         sceneStatuses === undefined
             ? []
-            : sceneStatuses.map((status: SceneStatus) => ({ label: status.name, value: status.id }))
+            : sceneStatuses.map((status: SceneStatus) => ({
+                  label: status.name,
+                  value: status.id,
+                  color: status.color
+              }))
 
     const [debounceTime] = settings.makeState('debounceTime')
     const [dontask2delete] = settings.makeState('dontAskOnClear2Delete')
@@ -238,7 +262,7 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, bindScrollRef }) =>
             />
         )
     }
-
+    console.log('Scene status', scene.status)
     return (
         <ResizeablePanels>
             <Indicator
@@ -295,10 +319,18 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, bindScrollRef }) =>
                 <Select
                     data={select_statuses}
                     label={<Text>Status</Text>}
+                    value={scene.status?.id}
                     searchable
                     creatable
+                    itemComponent={SelectItem}
                     getCreateLabel={(query) => <Text>{`Create new status ${query}`}</Text>}
                     onCreate={(query) => ({ value: query, label: query })}
+                    onChange={(statusId) => {
+                        console.log('Asking to change status 2', statusId)
+                        if (statusId && activeScene) {
+                            sceneBroker.attachSceneStatus2Scene(activeBook.id, activeScene as Scene, statusId)
+                        }
+                    }}
                 />
                 <details open>
                     <summary>Location</summary>
