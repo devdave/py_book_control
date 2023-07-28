@@ -17,6 +17,9 @@ from sqlalchemy import (
     and_,
     delete,
     insert,
+    UniqueConstraint,
+    text,
+    String,
 )
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -35,7 +38,14 @@ from sqlalchemy.orm import (
 )
 
 from .log_helper import getLogger
-from .app_types import common_setting_type, UID, UniqueId, ChapterDict, SettingType
+from .app_types import (
+    common_setting_type,
+    UID,
+    UniqueId,
+    ChapterDict,
+    SettingType,
+    SceneStatusType,
+)
 
 log = getLogger(__name__)
 
@@ -317,9 +327,12 @@ class Scene(Base):
             created_on=str(self.created_on),
             updated_on=str(self.updated_on),
             words=self.words,
-            status=self.status.name if self.status else None,
-            status_id=self.status.id if self.status else None,
         )
+
+        if self.status:
+            data["status"] = self.status.asdict()
+        else:
+            data["status"] = None
 
         if stripped is False:
             data["summary"] = self.summary
@@ -327,6 +340,7 @@ class Scene(Base):
             data["content"] = self.content
             data["location"] = self.location
             data["characters"] = [toon.asdict() for toon in self.characters]
+
         else:
             data["notes"] = self.notes and len(self.notes.strip()) > 0
 
@@ -509,7 +523,7 @@ class Setting(Base):
 
 class SceneStatus(Base):
     uid: Mapped[UniqueId] = mapped_column(default=lambda: generate_id(GEN_LEN))
-    name: Mapped[str]
+    name: Mapped[str] = mapped_column(String(255, collation="NOCASE"))
     color: Mapped[str] = mapped_column(default="gray")
 
     book: Mapped["Book"] = relationship(back_populates="scene_statuses")
@@ -519,17 +533,12 @@ class SceneStatus(Base):
 
     scenes: Mapped[T.List["Scene"]] = relationship(back_populates="status")
 
+    __table_args__ = (UniqueConstraint("book_id", "name", name="ux_book_name"),)
+
     SAFE_KEYS = ["name", "color"]
 
-    def asdict(self, stripped=True):
-        data = dict(id=self.uid, name=self.name, color=self.color)
-
-        if stripped is False:
-            data["scenes"] = [
-                dict(id=scene.uid, title=scene.title) for scene in self.scenes
-            ]
-
-        return data
+    def asdict(self, stripped=True) -> SceneStatusType:
+        return dict(id=self.uid, name=self.name, color=self.color, book_id=self.book_id)
 
     @classmethod
     def Fetch_by_Uid(cls, session, scene_uid: UniqueId) -> "SceneStatus":
