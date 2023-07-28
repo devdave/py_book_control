@@ -15,6 +15,8 @@ import {
     IconArticle,
     IconBook,
     IconChevronRight,
+    IconFlag,
+    IconFlagFilled,
     IconGripVertical,
     IconList,
     IconPlus,
@@ -200,6 +202,15 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                                                     activeElement.isThisScene(scene)
 
                                                                 // const isSceneActive = scene.id === activeScene?.id
+                                                                const statusFlag = scene.status ? (
+                                                                    <IconFlagFilled
+                                                                        style={{
+                                                                            color: scene.status.color
+                                                                        }}
+                                                                    />
+                                                                ) : (
+                                                                    <IconFlag />
+                                                                )
 
                                                                 return (
                                                                     <NavLink
@@ -215,7 +226,9 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                                                                     {chapter.order + 1}.
                                                                                     {scene.order + 1}.
                                                                                 </Text>
-                                                                                <Text>{scene.title}</Text>
+                                                                                <Text>
+                                                                                    {scene.title} {statusFlag}
+                                                                                </Text>
                                                                             </Group>
                                                                         }
                                                                         onClick={() =>
