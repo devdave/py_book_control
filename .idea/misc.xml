@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="Black">
+    <option name="enabledOnSave" value="true" />
+    <option name="pathToExecutable" value="C:\Python311\Scripts\black.exe" />
+    <option name="sdkUUID" value="a0753ee7-381d-4cb8-a4e5-f47135aade87" />
+  </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Pipenv (py_book_control)" project-jdk-type="Python SDK" />
   <component name="ViteConfiguration">
     <option name="mode" value="AUTO" />
