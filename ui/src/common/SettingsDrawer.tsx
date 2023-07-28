@@ -1,9 +1,11 @@
 import {
+    ActionIcon,
     Button,
     Checkbox,
     Drawer,
     LoadingOverlay,
     NumberInput,
+    Radio,
     Select,
     Text,
     Textarea,
@@ -11,11 +13,18 @@ import {
     Title
 } from '@mantine/core'
 import React, { useMemo } from 'react'
-import { map, values } from 'lodash'
+import { map } from 'lodash'
 import { useAppContext } from '@src/App.context'
 import { useDisclosure, useLogger } from '@mantine/hooks'
-import { useEditorContext } from '@src/modes/edit/Editor.context'
-import { SceneStatusMaker } from '@src/common/SceneStatusMaker'
+
+import { IconEdit, IconFlagFilled, IconX } from '@tabler/icons-react'
+import { ShowError } from '@src/widget/ShowErrorNotification'
+import { createSceneStatus, editSceneStatus } from '@src/common/SceneStatusEditor'
+
+const example_ipsum =
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et' +
+    ' dolore magna aliqua. Fermentum iaculis eu non diam phasellus vestibulum lorem. Consequat ac felis ' +
+    'donec et odio pellentesque diam volutpat commodo. Mi eget mauris pharetra et. '
 
 interface SettingsDrawerProps {
     opened: boolean
@@ -24,17 +33,12 @@ interface SettingsDrawerProps {
 export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close }) => {
     useLogger('SettingsDrawer', [])
 
-    const { sceneStatusBroker } = useEditorContext()
-    const { activeBook, fonts, settings } = useAppContext()
+    const { activeBook, fonts, settings, sceneStatusBroker } = useAppContext()
 
     const select_fonts = useMemo(
         () => map([...fonts], (fontName: string) => ({ value: fontName, label: fontName })),
         [fonts]
     )
-    const example_ipsum =
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et' +
-        ' dolore magna aliqua. Fermentum iaculis eu non diam phasellus vestibulum lorem. Consequat ac felis ' +
-        'donec et odio pellentesque diam volutpat commodo. Mi eget mauris pharetra et. '
 
     const [fontName, , setFontName] = settings.makeState('fontName')
     const [fontSize, , setFontSize] = settings.makeState('fontSize')
@@ -43,29 +47,28 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close })
     const [debounceDelay, , setDebounceDelay] = settings.makeState('debounceTime')
     const [dontAskSplit, , setDontAskSplit] = settings.makeState('dontAskOnSplit')
     const [dontAskClear, , setDontAskClear] = settings.makeState('dontAskOnClear2Delete')
+    const [defaultSceneStatus, , setDefaultSceneStatus] = settings.makeState('defaultSceneStatus')
 
-    const [openedStatiMaker, { open: openStatiMaker, close: closeStatiMaker }] = useDisclosure(false)
+    const isReadyToFetchSceneStatus = activeBook.title !== undefined
 
     const {
         data: stati,
         isLoading: statiLoading,
         status: statiStatus
-    } = sceneStatusBroker.fetchAll(activeBook.id)
+    } = sceneStatusBroker.fetchAll(activeBook.id, isReadyToFetchSceneStatus)
 
-    const onSceneStatusCreateClick = () => {
-        console.log('Create a new status')
-    }
-
-    const stati_selects =
-        stati === undefined
-            ? []
-            : stati.map((stat) => ({ label: stat.name, value: stat.id, color: stat.color }))
-
-    if (statiLoading) {
+    if (statiLoading && isReadyToFetchSceneStatus) {
         return (
             <>
-                <Text>Loading statuses...</Text>
-                <LoadingOverlay visible />
+                <Drawer
+                    opened={opened}
+                    onClose={close}
+                    position='right'
+                    title='Settings'
+                >
+                    <Text>Loading statuses...</Text>
+                    <LoadingOverlay visible />
+                </Drawer>
             </>
         )
     }
@@ -91,7 +94,9 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close })
                 data={select_fonts}
                 value={fontName}
                 onChange={(new_font_name) => {
-                    setFontName(new_font_name as string)
+                    if (new_font_name) {
+                        setFontName(new_font_name as string)
+                    }
                 }}
             />
             <NumberInput
@@ -148,16 +153,95 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close })
                 checked={dontAskClear}
                 onChange={() => setDontAskClear(!dontAskClear)}
             />
-            <Title order={1}>Book settings</Title>
-            <Select
-                data={stati_selects}
-                label='Scene statuses'
-            />
-            <Button onClick={openStatiMaker}>Create new status</Button>
-            <SceneStatusMaker
-                opened={openedStatiMaker}
-                onClose={closeStatiMaker}
-            />
+            {isReadyToFetchSceneStatus && (
+                <>
+                    <Title order={1}>Book settings</Title>
+                    <Button
+                        onClick={() => {
+                            createSceneStatus().then((status) => {
+                                if (!status.name || status.name.length < 3) {
+                                    ShowError('Error', 'Status name needs to be aleast 3 characters long')
+                                } else if (status && status.name && status.color) {
+                                    sceneStatusBroker
+                                        .create(activeBook.id, status.name, status.color)
+                                        .catch((reason) => {
+                                            if (reason instanceof Error || reason.message !== undefined) {
+                                                ShowError('Failed to create', reason.message)
+                                            }
+                                        })
+                                }
+                            })
+                        }}
+                    >
+                        Create new status
+                    </Button>
+                    <table>
+                        <tr>
+                            <th align='left'>Default status</th>
+                        </tr>
+                        <tbody>
+                            <Radio.Group
+                                name='defaultSceneStatus'
+                                value={defaultSceneStatus}
+                                onChange={(value) => {
+                                    setDefaultSceneStatus(value)
+                                }}
+                            >
+                                <tr>
+                                    <td>
+                                        <Radio
+                                            value='-1'
+                                            label='Nothing'
+                                        />
+                                    </td>
+                                </tr>
+                                {stati?.map((sstatus) => (
+                                    <tr key={sstatus.id}>
+                                        <td>
+                                            <Radio
+                                                value={sstatus.id}
+                                                label={sstatus.name}
+                                            />
+                                        </td>
+                                        <td>
+                                            <IconFlagFilled style={{ color: sstatus.color }} />
+                                        </td>
+                                        <td>
+                                            <ActionIcon
+                                                onClick={() => {
+                                                    editSceneStatus(sstatus.id, sceneStatusBroker.get).then(
+                                                        (status) => {
+                                                            console.log('Edit gave ', status)
+                                                            if (status && status.id !== undefined) {
+                                                                sceneStatusBroker.update(
+                                                                    activeBook.id,
+                                                                    status.id,
+                                                                    status
+                                                                )
+                                                            }
+                                                        }
+                                                    )
+                                                }}
+                                            >
+                                                <IconEdit />
+                                            </ActionIcon>
+                                        </td>
+
+                                        <ActionIcon
+                                            onClick={() => {
+                                                sceneStatusBroker.delete(activeBook.id, sstatus.id)
+                                            }}
+                                        >
+                                            <IconX />
+                                        </ActionIcon>
+                                        <td />
+                                    </tr>
+                                ))}
+                            </Radio.Group>
+                        </tbody>
+                    </table>
+                </>
+            )}
         </Drawer>
     )
 }
