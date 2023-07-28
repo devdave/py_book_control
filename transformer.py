@@ -8,7 +8,16 @@ import typing as T
 import jinja2
 import tap
 
-template_body = """import {Book, Chapter, Character, Scene, Setting, common_setting_type, UniqueId} from '@src/types'
+template_body = """import {
+    type Book, 
+    type Chapter, 
+    type Character, 
+    type Scene, 
+    type Setting, 
+    type common_setting_type, 
+    type UniqueId, 
+    type SceneStatus
+    } from '@src/types'
 
 interface Boundary {
     remote: (method_name:string, ...args:any)=> Promise<any>
@@ -64,7 +73,7 @@ def process_source(src_file: pathlib.Path, dest: pathlib.Path | None = None):
     if dest is None:
         print(product)
     else:
-        dest.write_text(product)
+        dest.write_text(product, newline="\n")
 
 
 def process_class(class_elm: ast.ClassDef):
@@ -91,7 +100,7 @@ def py2ts_value(something):
 
 def sanitize_defaults(def_type):
     if def_type in [None, "None", "'None'"]:
-        return "null"
+        return "undefined"
 
     return def_type
 
@@ -155,7 +164,18 @@ def process_function(func_elm: ast.FunctionDef):
 
         elif isinstance(arg.annotation, ast.Subscript):
             # fuck it
-            func_type = "any"
+            if (
+                hasattr(arg.annotation.value, "id")
+                and arg.annotation.value.id == "list"
+            ):
+                func_type = f"{arg.annotation.slice.id}[]"
+            if (
+                isinstance(arg.annotation.value, ast.Attribute)
+                and arg.annotation.value.attr == "Optional"
+            ):
+                func_type = f"{arg.annotation.slice.id} | undefined"
+            else:
+                func_type = "any"
 
         elif arg.annotation is not None and hasattr(arg.annotation, "id"):
             match arg.annotation.id:
