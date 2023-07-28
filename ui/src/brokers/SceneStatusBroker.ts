@@ -15,10 +15,20 @@ export interface _updateSceneStatusArgs {
 
 export interface SceneStatusBrokerFunctions {
     delete: (book_uid: Book['id'], status_uid: SceneStatus['id']) => void
-    fetchAll: (book_id: Book['id']) => UseQueryResult<SceneStatus[], Error>
+    fetchAll: (book_id: Book['id'], enabled: boolean) => UseQueryResult<SceneStatus[], Error>
     update: (book_uid: Book['id'], status_uid: SceneStatus['id'], changeset: SceneStatus) => void
-    create: (name: SceneStatus['name'], book: Book, scene?: Scene) => void
-    fetch: (book_uid: Book['id'], status_uid: SceneStatus['id']) => UseQueryResult<SceneStatus, Error>
+    create: (
+        book_uid: Book['id'],
+        name: SceneStatus['name'],
+        color: SceneStatus['color'],
+        scene?: Scene
+    ) => Promise<SceneStatus>
+    fetch: (
+        book_uid: Book['id'],
+        status_uid: SceneStatus['id'],
+        enabled: boolean
+    ) => UseQueryResult<SceneStatus, Error>
+    get: (sceneStatusId: SceneStatus['id']) => Promise<SceneStatus>
 }
 
 export type SceneStatusBrokerType = ({
@@ -27,28 +37,41 @@ export type SceneStatusBrokerType = ({
 }: SceneStatusBrokerProps) => SceneStatusBrokerFunctions
 
 export const SceneStatusBroker: SceneStatusBrokerType = ({ api, queryClient }: SceneStatusBrokerProps) => {
-    const fetchAllSceneStatuses = (book_id: Book['id']): UseQueryResult<SceneStatus[], Error> =>
+    const fetchAllSceneStatuses = (
+        book_id: Book['id'],
+        enabled: boolean
+    ): UseQueryResult<SceneStatus[], Error> =>
         // eslint-disable-next-line react-hooks/rules-of-hooks
         useQuery({
             queryKey: ['book', book_id, 'sceneStatuses'],
-            queryFn: () => api.fetch_all_scene_statuses(book_id)
+            queryFn: () => api.fetch_all_scene_statuses(book_id),
+            enabled
         })
 
     const fetchSceneStatus = (
         book_uid: Book['id'],
-        status_uid: SceneStatus['id']
+        status_uid: SceneStatus['id'],
+        enabled: boolean
     ): UseQueryResult<SceneStatus, Error> =>
         // eslint-disable-next-line react-hooks/rules-of-hooks
         useQuery({
             queryKey: ['book', book_uid, 'sceneStatus', status_uid],
-            queryFn: () => api.fetch_scene_status(status_uid)
+            queryFn: () => api.fetch_scene_status(status_uid),
+            enabled
         })
 
-    const createSceneStatus = (name: SceneStatus['name'], book: Book, scene?: Scene) =>
-        api.create_scene_status(name, book.id, scene?.id).then(() => {
+    const getSceneStatus = async (sceneStatusUid: SceneStatus['id']) => api.fetch_scene_status(sceneStatusUid)
+
+    const createSceneStatus = (
+        book_uid: Book['id'],
+        name: SceneStatus['name'],
+        color: SceneStatus['color'],
+        scene?: Scene
+    ) =>
+        api.create_scene_status(book_uid, name, color, scene?.id).then((new_status: SceneStatus) => {
             queryClient
                 .invalidateQueries({
-                    queryKey: ['book', book.id, 'sceneStatuses'],
+                    queryKey: ['book', book_uid, 'sceneStatuses'],
                     exact: true,
                     refetchType: 'active'
                 })
@@ -56,12 +79,13 @@ export const SceneStatusBroker: SceneStatusBrokerType = ({ api, queryClient }: S
             if (scene) {
                 queryClient
                     .invalidateQueries({
-                        queryKey: ['book', book.id, 'chapter', scene.chapterId, 'scene', scene.id],
+                        queryKey: ['book', book_uid, 'chapter', scene.chapterId, 'scene', scene.id],
                         exact: true,
                         refetchType: 'active'
                     })
                     .then()
             }
+            return new_status
         })
 
     const _updateSceneStatus = useMutation({
@@ -81,7 +105,7 @@ export const SceneStatusBroker: SceneStatusBrokerType = ({ api, queryClient }: S
     const updateSceneStatus = (book_uid: Book['id'], status_uid: SceneStatus['id'], changeset: SceneStatus) =>
         _updateSceneStatus.mutate({ status_uid, book_uid, changeset })
 
-    const deleteSceneStatus = (book_uid: Book['id'], status_uid: SceneStatus['id']) => {
+    const deleteSceneStatus = (book_uid: Book['id'], status_uid: SceneStatus['id']) =>
         api.delete_scene_status(status_uid).then(() => {
             queryClient
                 .invalidateQueries({
@@ -91,13 +115,13 @@ export const SceneStatusBroker: SceneStatusBrokerType = ({ api, queryClient }: S
                 })
                 .then()
         })
-    }
 
     return {
         delete: deleteSceneStatus,
         update: updateSceneStatus,
         create: createSceneStatus,
         fetch: fetchSceneStatus,
+        get: getSceneStatus,
         fetchAll: fetchAllSceneStatuses
     }
 }
