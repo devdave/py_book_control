@@ -51,7 +51,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                                     colorScheme: theme.colorScheme
                                 },
                                 input: {
-                                    fontFamily: `"${fontName}, serif"`,
+                                    fontFamily: `"${fontName}"`,
                                     fontSize: `${fontSize}px`,
                                     fontWeight,
                                     lineHeight: `${lineHeight}%`
