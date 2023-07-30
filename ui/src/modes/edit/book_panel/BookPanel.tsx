@@ -3,13 +3,14 @@ import { useAppContext } from '@src/App.context'
 import { useForm } from '@mantine/form'
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 import { Book } from '@src/types'
+import { IndicatedTextInput } from '@src/widget/IndicatedTextInput'
 
 export const BookPanel: React.FC = () => {
     const { activeBook, updateBook, settings } = useAppContext()
 
     const [debounceTime] = settings.makeState('debounceTime')
 
-    const form = useForm({
+    const form = useForm<Partial<Book>>({
         initialValues: {
             title: activeBook.title,
             notes: activeBook.notes
@@ -36,15 +37,12 @@ export const BookPanel: React.FC = () => {
 
     return (
         <>
-            <Text>Book title</Text>
-            <Indicator
-                processing
-                disabled={!form.isDirty('title')}
-                color='red'
-                position='top-end'
-            >
-                <TextInput {...form.getInputProps('title')} />
-            </Indicator>
+            <IndicatedTextInput
+                form={form}
+                fieldName='title'
+                label='Book Title'
+                inputprops={form.getInputProps('title')}
+            />
 
             <Text>Notes</Text>
             <Indicator
