@@ -30,6 +30,7 @@ import { useAppContext } from '@src/App.context'
 import { ChapterIndex, EditModes } from '@src/types'
 import { InputModal } from '@src/widget/input_modal'
 import { ShowError } from '@src/widget/ShowErrorNotification'
+import { LeftPanelScene } from '@src/modes/edit/LeftPanelScene'
 import { useEditorContext } from './Editor.context'
 
 interface LeftPanelProps {
@@ -38,7 +39,7 @@ interface LeftPanelProps {
 
 export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
     const theme = useMantineTheme()
-    const { chapterBroker, setActiveScene, setEditMode, editMode, activeElement } = useEditorContext()
+    const { chapterBroker, setEditMode, editMode, activeElement } = useEditorContext()
 
     const { activeBook } = useAppContext()
 
@@ -133,6 +134,7 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                         label='Characters'
                         active={isCharactersActive}
                         onClick={() => activeElement.setTypeToCharacters()}
+                        opened
                         icon={
                             <Center>
                                 <IconUsers />
@@ -197,46 +199,13 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                                     >
                                                         {chapter.scenes
                                                             .sort((a, b) => a.order - b.order)
-                                                            .map((scene) => {
-                                                                const isSceneActive =
-                                                                    activeElement.isThisScene(scene)
-
-                                                                // const isSceneActive = scene.id === activeScene?.id
-                                                                const statusFlag = scene.status ? (
-                                                                    <IconFlagFilled
-                                                                        style={{
-                                                                            color: scene.status.color
-                                                                        }}
-                                                                    />
-                                                                ) : (
-                                                                    <IconFlag />
-                                                                )
-
-                                                                return (
-                                                                    <NavLink
-                                                                        active={isSceneActive}
-                                                                        key={`${scene.id} ${scene.updated_on}`}
-                                                                        label={
-                                                                            <Group
-                                                                                align='start'
-                                                                                noWrap
-                                                                                pl='xl'
-                                                                            >
-                                                                                <Text weight='bold'>
-                                                                                    {chapter.order + 1}.
-                                                                                    {scene.order + 1}.
-                                                                                </Text>
-                                                                                <Text>
-                                                                                    {scene.title} {statusFlag}
-                                                                                </Text>
-                                                                            </Group>
-                                                                        }
-                                                                        onClick={() =>
-                                                                            setActiveScene(chapter, scene)
-                                                                        }
-                                                                    />
-                                                                )
-                                                            })}
+                                                            .map((scene) => (
+                                                                <LeftPanelScene
+                                                                    key={`${scene.id}-${scene.updated_on}`}
+                                                                    sceneIndex={scene}
+                                                                    chapterIndex={chapter}
+                                                                />
+                                                            ))}
                                                     </NavLink>
                                                 )}
                                             </Draggable>
