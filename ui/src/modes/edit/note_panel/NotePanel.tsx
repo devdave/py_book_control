@@ -3,15 +3,15 @@ import React from 'react'
 import { Text } from '@mantine/core'
 
 interface NotePanelProps {
-    parent: Scene
+    scene: Scene
 }
 
-export const NotePanel: React.FC<NotePanelProps> = ({ parent }) => {
-    const fuckoffprettier = 123
+export const NotePanel: React.FC<NotePanelProps> = ({ scene }) => {
+    const fuckoffprettier = scene.notes.length
 
     return (
         <>
-            <Text>Note would go here</Text>
+            <Text>Note would go here: {scene.notes}</Text>
         </>
     )
 }
