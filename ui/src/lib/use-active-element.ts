@@ -1,6 +1,7 @@
 import { useImmer } from 'use-immer'
 import {
     type ActiveElement,
+    ActiveElementFocusTypes,
     ActiveElementSubTypes,
     ActiveElementTypes,
     type Book,
@@ -9,7 +10,7 @@ import {
     type Character,
     type Scene,
     type SceneIndex,
-    UniqueId
+    type UniqueId
 } from '@src/types'
 import { useCallback, useState } from 'react'
 import { clone } from 'lodash'
@@ -40,6 +41,8 @@ export interface useActiveElementReturn {
     clearSubType: () => void
 
     assignType: (type_name: ActiveElementTypes | undefined, type_detail: string) => void
+    assignSubType: (subtype_name: ActiveElementSubTypes | undefined, subtype_detail: string) => void
+
     get_type: () => ActiveElementTypes | undefined
 
     get_focus_id: () => string | number | undefined
@@ -51,9 +54,11 @@ export interface useActiveElementReturn {
 
     setCharacter: (character: Character) => void
     setCharacterById: (characterId: Character['id']) => void
+    characterIsSet(): boolean
 
     get_focus: () => string | undefined
-    isFocussed: (name: string, id?: string) => boolean
+    assignFocus: (name: ActiveElementFocusTypes, id?: string) => void
+    isFocussed: (name: ActiveElementFocusTypes, id?: string) => boolean
 
     setTypeToCharacters: () => void
     isCharactersActive: () => boolean
@@ -130,6 +135,18 @@ export function useActiveElement(): useActiveElementReturn {
         },
         [state, updater]
     )
+
+    const get_type = () => state.type
+
+    const get_detail = () => state.detail
+
+    const get_subType = () => state.subtype
+
+    const get_subDetail = () => state.subdetail
+
+    const get_focus = () => state.focus
+
+    const get_focus_id = () => state.focus_id
 
     const setActiveSceneById = useCallback(
         (chapter_id: string, scene_id: string) => {
@@ -244,6 +261,8 @@ export function useActiveElement(): useActiveElementReturn {
         [setBookById]
     )
 
+    const characterIsSet = () => get_subType() === 'character' && get_subDetail() !== undefined
+
     const setCharacterById = useCallback(
         (character_id: string) =>
             setTypeAndSubtype(
@@ -277,8 +296,17 @@ export function useActiveElement(): useActiveElementReturn {
         [updater]
     )
 
+    const assignFocus = useCallback(
+        (name: ActiveElementFocusTypes, id?: string) => {
+            updater((draft) => {
+                draft.focus = name
+                draft.focus_id = id
+            })
+        },
+        [updater]
+    )
     const isFocussed = useCallback(
-        (name: string, id?: string) => {
+        (name: ActiveElementFocusTypes, id?: string) => {
             if (id) {
                 return state.focus === name && state.focus_id === id
             }
@@ -286,18 +314,6 @@ export function useActiveElement(): useActiveElementReturn {
         },
         [state.focus, state.focus_id]
     )
-
-    const get_type = () => state.type
-
-    const get_detail = () => state.detail
-
-    const get_subType = () => state.subtype
-
-    const get_subDetail = () => state.subdetail
-
-    const get_focus = () => state.focus
-
-    const get_focus_id = () => state.focus_id
 
     const clearFocus = () => {
         updater((draft) => {
@@ -336,6 +352,7 @@ export function useActiveElement(): useActiveElementReturn {
         setSceneById,
 
         assignType,
+        assignSubType,
         assignScene,
 
         setChapter,
@@ -349,18 +366,23 @@ export function useActiveElement(): useActiveElementReturn {
 
         setCharacter,
         setCharacterById,
+        characterIsSet,
 
         setTypeToCharacters,
         isCharactersActive,
 
-        get_detail,
+        isFocussed,
+        assignFocus,
+        setFocus,
         get_focus,
         get_focus_id,
+
+        get_detail,
+
         get_type,
         get_subType,
         get_subDetail,
-        isFocussed,
-        setFocus,
+
         clear,
         clearSubType,
 
