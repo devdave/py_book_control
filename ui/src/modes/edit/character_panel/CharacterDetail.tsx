@@ -1,14 +1,16 @@
-import React, { KeyboardEventHandler, useCallback } from 'react'
+import React, { useCallback } from 'react'
 import { useAppContext } from '@src/App.context'
 import { Character } from '@src/types'
-import { createStyles, Tabs, Text, Button, Table } from '@mantine/core'
+import { createStyles, Text, Button, Table, ActionIcon } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { IndicatedTextInput } from '@src/widget/IndicatedTextInput'
 import { IndicatedTextarea } from '@src/widget/IndicatedTextarea'
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
 import { useEditorContext } from '@src/modes/edit/Editor.context'
-import { useHotkeys } from '@mantine/hooks'
-import { useRotate } from '@src/lib/use-rotate'
+import { ResizeablePanels } from '@src/widget/ResizeablePanels'
+import { IconEye, IconX } from '@tabler/icons-react'
+import { ShowError } from '@src/widget/ShowErrorNotification'
+import { modals } from '@mantine/modals'
 
 const useStyle = createStyles(() => ({
     filled_textarea: {
@@ -36,8 +38,6 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
 
     const { classes } = useStyle()
 
-    const [activeTab, nextTab] = useRotate(['notes', 'scenes'])
-
     const form = useForm<FormProps>({
         initialValues: {
             name: character.name,
@@ -62,48 +62,20 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
     )
 
     const onDeleteClick = useCallback(() => {
-        activeElement.clearSubType()
-        characterBroker.delete(character.id)
-    }, [activeElement, character.id, characterBroker])
-
-    console.log(character)
-
-    const handleKeyUp: KeyboardEventHandler<HTMLTextAreaElement> = (evt) => {
-        if (evt.ctrlKey) {
-            if (evt.key === 'Tab') {
-                evt.preventDefault()
-                nextTab()
-            } else if (evt.key === 'ArrowRight') {
-                evt.preventDefault()
-                nextTab()
+        modals.openConfirmModal({
+            title: 'Permanently delete character?',
+            children: <Text size='sm'>Permanently delete the character {character.name} from the book?</Text>,
+            labels: { confirm: 'Erase character', cancel: 'CANCEL!' },
+            onConfirm: () => {
+                characterBroker.delete(character.id)
+                activeElement.clearSubType()
             }
-        }
-    }
-
-    useHotkeys([
-        ['ctrl+Tab', () => nextTab()],
-        ['ctrl+ArrowRight', () => nextTab()]
-    ])
+        })
+    }, [activeElement, character.id, character.name, characterBroker])
 
     return (
-        <Tabs
-            value={activeTab}
-            className={classes.filled_textarea}
-            style={{
-                minWidth: '100%'
-            }}
-            loop
-            onTabChange={(name) => name && nextTab(name)}
-        >
-            <Tabs.List>
-                <Tabs.Tab value='notes'>Notes</Tabs.Tab>
-                <Tabs.Tab value='scenes'>Scenes present</Tabs.Tab>
-            </Tabs.List>
-            <Tabs.Panel
-                value='notes'
-                style={{ width: '100%', minWidth: '100%' }}
-                onClick={() => nextTab('notes')}
-            >
+        <ResizeablePanels>
+            <>
                 <IndicatedTextInput
                     form={form}
                     fieldName='name'
@@ -116,7 +88,6 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
                 <IndicatedTextarea
                     form={form}
                     formField='notes'
-                    onKeyUp={handleKeyUp}
                     inputProps={{
                         classNames: {
                             input: classes.filled_textarea,
@@ -131,32 +102,42 @@ export const CharacterDetail: React.FC<CharacterDetailProps> = ({ character }) =
                     }}
                 />
                 <Button onClick={onDeleteClick}>Delete?</Button>
-            </Tabs.Panel>
-            <Tabs.Panel
-                value='scenes'
-                style={{ width: '100%', minWidth: '100%' }}
-            >
+            </>
+            <>
                 <Table>
                     <thead>
                         <tr>
-                            <th>Chapter name</th>
+                            <th colSpan={2}>Chapter name</th>
                             <th>Scene name</th>
                         </tr>
                     </thead>
                     <tbody>
                         {character.locations &&
                             character.locations.map(([chapterName, chapterId, sceneName, sceneId]) => (
-                                <tr
-                                    key={`${chapterId}-${sceneId}`}
-                                    onClick={() => activeElement.setSceneById(chapterId, sceneId)}
-                                >
+                                <tr key={`${chapterId}-${sceneId}`}>
+                                    <td>
+                                        <ActionIcon
+                                            size='sm'
+                                            onClick={() => activeElement.setSceneById(chapterId, sceneId)}
+                                        >
+                                            <IconEye />
+                                        </ActionIcon>
+                                    </td>
                                     <td>{chapterName}</td>
                                     <td>{sceneName}</td>
+                                    <td>
+                                        <ActionIcon
+                                            size='sm'
+                                            onClick={() => ShowError('Warning', 'TODO implement delete')}
+                                        >
+                                            <IconX />
+                                        </ActionIcon>
+                                    </td>
                                 </tr>
                             ))}
                     </tbody>
                 </Table>
-            </Tabs.Panel>
-        </Tabs>
+            </>
+        </ResizeablePanels>
     )
 }

@@ -2,6 +2,7 @@ import {
     Box,
     Center,
     createStyles,
+    Divider,
     Group,
     LoadingOverlay,
     ScrollArea,
@@ -51,8 +52,7 @@ export const CharacterPanel = () => {
         failureReason: charactersLoadFailureReason
     } = characterBroker.list(activeBook.id)
 
-    const enabledCurrentToonQuery = activeElement.isCharactersActive()
-    activeElement.get_subType() === 'character' && activeElement.get_subDetail()
+    const enabledCurrentToonQuery = activeElement.characterIsSet()
 
     const {
         data: currentToon,
@@ -90,6 +90,15 @@ export const CharacterPanel = () => {
         // setSelectedToonId(evt.currentTarget.dataset.id)
     }
 
+    const headers = (
+        <tr style={{ backgroundColor: 'gray', color: 'white' }}>
+            <th className={classes.sticky_header}>Name</th>
+            <th className={classes.sticky_header}># of scenes</th>
+            <th className={classes.sticky_header}>Created on</th>
+            <th className={classes.sticky_header}>Updated on</th>
+        </tr>
+    )
+
     const rows = characters.map((character: Character) => (
         <tr
             className={classes.active_style}
@@ -125,14 +134,7 @@ export const CharacterPanel = () => {
                     type='auto'
                 >
                     <Table pos='relative'>
-                        <thead>
-                            <tr style={{ backgroundColor: 'gray', color: 'white' }}>
-                                <th className={classes.sticky_header}>Name</th>
-                                <th className={classes.sticky_header}># of scenes</th>
-                                <th className={classes.sticky_header}>Created on</th>
-                                <th className={classes.sticky_header}>Updated on</th>
-                            </tr>
-                        </thead>
+                        <thead>{headers}</thead>
                         <tbody>{rows}</tbody>
                     </Table>
                 </ScrollArea>
@@ -150,7 +152,9 @@ export const CharacterPanel = () => {
                             mah='100%'
                             mih='100%'
                         >
-                            <Text>Loading character....</Text>
+                            <Group position='center'>
+                                <Text>Loading character....</Text>
+                            </Group>
                             <Skeleton />
                             <Skeleton />
                             <Skeleton />
@@ -161,10 +165,13 @@ export const CharacterPanel = () => {
                     {activeElement.get_subDetail() !== undefined &&
                         currentToonFetched &&
                         currentToon !== undefined && (
-                            <CharacterDetail
-                                key={`${currentToon.id}`}
-                                character={currentToon}
-                            />
+                            <>
+                                <Divider />
+                                <CharacterDetail
+                                    key={`${currentToon.id}`}
+                                    character={currentToon}
+                                />
+                            </>
                         )}
                     {activeElement.get_subDetail() !== undefined &&
                         currentToonFetched &&
