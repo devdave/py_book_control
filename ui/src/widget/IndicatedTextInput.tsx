@@ -6,8 +6,8 @@ interface IndicatedTextInputProps {
     form: UseFormReturnType<any>
     fieldName: string
     label: string
-    containerprops: object
-    indicatorprops: object
+    containerprops?: object
+    indicatorprops?: object
     inputprops: object
 }
 
