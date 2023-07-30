@@ -105,6 +105,11 @@ export enum ActiveElementSubTypes {
     CHARACTER = 'character'
 }
 
+export enum ActiveElementFocusTypes {
+    NOTES = 'notes',
+    SUMMARY = 'summary'
+}
+
 export interface ActiveElement {
     type: ActiveElementTypes | undefined
     detail: string | undefined
