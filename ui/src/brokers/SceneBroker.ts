@@ -39,8 +39,9 @@ export interface SceneBrokerFunctions {
     change: UseMutationResult<[Scene, Chapter], unknown, Scene>
     fetch: (
         book_id: Book['id'],
-        chapter_id: Scene['chapterId'],
-        scene_id: Scene['id']
+        chapter_id: Scene['chapterId'] | undefined,
+        scene_id: Scene['id'] | undefined,
+        enabled?: boolean
     ) => UseQueryResult<Scene, Error>
     update: (scene: Scene) => Promise<[Scene, Chapter] | undefined>
     create: (
@@ -68,11 +69,17 @@ export const SceneBroker = ({
     queryClient
 }: SceneBrokerProps): SceneBrokerFunctions => {
     const fetchScene = useCallback(
-        (book_id: Book['id'], chapter_id: Chapter['id'], scene_id: Scene['id']) =>
+        (
+            book_id: Book['id'],
+            chapter_id: Chapter['id'] | undefined,
+            scene_id: Scene['id'] | undefined,
+            enabled = true
+        ) =>
             // eslint-disable-next-line react-hooks/rules-of-hooks
             useQuery<Scene, Error>({
-                queryFn: () => api.fetch_scene(scene_id),
-                queryKey: ['book', book_id, 'chapter', chapter_id, 'scene', scene_id]
+                queryFn: () => api.fetch_scene(scene_id as Scene['id']),
+                queryKey: ['book', book_id, 'chapter', chapter_id, 'scene', scene_id],
+                enabled
             }),
         [api]
     )
