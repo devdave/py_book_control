@@ -90,7 +90,7 @@ class MainArgs(Tap):
     :param transform_api: Convert the api.py file into a quasi-typeascript api bridge
     """
 
-    database: T.Optional[pathlib.Path] = pathlib.Path("./test.sqlite3")
+    database: T.Optional[pathlib.Path] = pathlib.Path("test.sqlite3")
     """
     :param database: An alternative database file to use
     """

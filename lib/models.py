@@ -126,7 +126,7 @@ class Book(Base):
     notes: Mapped[str] = mapped_column(default="")
 
     operation_type: Mapped[BookTypes] = mapped_column(Enum(BookTypes))
-    import_dir: Mapped[SAPathlike] = mapped_column(default=None)
+    import_dir: Mapped[SAPathlike] = mapped_column(SAPathlike(), default=None)
 
     chapters: Mapped[T.List["Chapter"]] = relationship(
         back_populates="book",
@@ -199,16 +199,18 @@ class Chapter(Base):
     summary: Mapped[str] = mapped_column(default="")
     notes: Mapped[str] = mapped_column(default="")
 
-    source_file: Mapped[SAPathlike] = mapped_column(default=None)
+    source_file: Mapped[T.Optional[SAPathlike]] = mapped_column(
+        SAPathlike(), default=None
+    )
     """The source file from which this chapter and its scenes were imported from"""
 
     source_size: Mapped[int] = mapped_column(default=-1)
     """Ideally kilobytes but the actual value doesn't matter as this is fed from file stat"""
 
     source_modified: Mapped[int] = mapped_column(default=-1)
-    """Ideally kilobytes but the actual value doesn't matter as this is fed from file stat"""
+    """The actual value doesn't matter as this is fed from file stat"""
 
-    last_imported: Mapped[DT.datetime] = mapped_column(default=None)
+    last_imported: Mapped[T.Optional[DT.datetime]] = mapped_column(default=None)
     """When was it last imported"""
 
     scenes: Mapped[T.List["Scene"]] = relationship(
