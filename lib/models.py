@@ -1,3 +1,4 @@
+import pathlib
 import string
 import random
 import contextlib
@@ -20,6 +21,7 @@ from sqlalchemy import (
     UniqueConstraint,
     text,
     String,
+    Enum,
 )
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -37,6 +39,7 @@ from sqlalchemy.orm import (
     attributes,
 )
 
+from .sa_pathlike import SAPathlike
 from .log_helper import getLogger
 from .app_types import (
     common_setting_type,
@@ -45,6 +48,7 @@ from .app_types import (
     ChapterDict,
     SettingType,
     SceneStatusType,
+    BookTypes,
 )
 
 log = getLogger(__name__)
@@ -60,7 +64,6 @@ def generate_id(length) -> UniqueId:
 @contextlib.contextmanager
 def db_with():
     from sqlalchemy import create_engine
-    from sqlalchemy.orm import Session
 
     engine = create_engine("sqlite:///test.sqlite3", echo=True)
     Base.metadata.create_all(engine, checkfirst=True)
@@ -69,9 +72,9 @@ def db_with():
         yield session
 
 
-def connect():
+def connect(db_path: pathlib.Path):
     engine = create_engine(
-        "sqlite:///test.sqlite3", echo=False, pool_size=10, max_overflow=20
+        f"sqlite:///{db_path}", echo=False, pool_size=10, max_overflow=20
     )
     Base.metadata.create_all(engine, checkfirst=True)
 
@@ -121,6 +124,9 @@ class Book(Base):
     uid: Mapped[UniqueId] = mapped_column(default=lambda: generate_id(GEN_LEN))
     title: Mapped[str]
     notes: Mapped[str] = mapped_column(default="")
+
+    operation_type: Mapped[BookTypes] = mapped_column(Enum(BookTypes))
+    import_dir: Mapped[SAPathlike] = mapped_column(default=None)
 
     chapters: Mapped[T.List["Chapter"]] = relationship(
         back_populates="book",
@@ -192,6 +198,18 @@ class Chapter(Base):
 
     summary: Mapped[str] = mapped_column(default="")
     notes: Mapped[str] = mapped_column(default="")
+
+    source_file: Mapped[SAPathlike] = mapped_column(default=None)
+    """The source file from which this chapter and its scenes were imported from"""
+
+    source_size: Mapped[int] = mapped_column(default=-1)
+    """Ideally kilobytes but the actual value doesn't matter as this is fed from file stat"""
+
+    source_modified: Mapped[int] = mapped_column(default=-1)
+    """Ideally kilobytes but the actual value doesn't matter as this is fed from file stat"""
+
+    last_imported: Mapped[DT.datetime] = mapped_column(default=None)
+    """When was it last imported"""
 
     scenes: Mapped[T.List["Scene"]] = relationship(
         back_populates="chapter",
@@ -280,6 +298,9 @@ class Scene(Base):
     content: Mapped[str] = mapped_column(default="")
     notes: Mapped[str] = mapped_column(default="")
     location: Mapped[str] = mapped_column(default="")
+
+    is_locked: Mapped[str] = mapped_column(default=False)
+    """If set, the Scene is locked due likely to being imported in a managed book"""
 
     status: Mapped["SceneStatus"] = relationship(back_populates="scenes")
     scene_status_id: Mapped[int] = mapped_column(

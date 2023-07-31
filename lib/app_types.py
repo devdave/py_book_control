@@ -1,4 +1,6 @@
+import enum
 import typing as T
+from enum import Enum
 
 UID = str
 UniqueId = str
@@ -66,3 +68,16 @@ class SceneStatusType(T.TypedDict):
     color: str
 
     book_id: UniqueId
+
+
+class BookTypes(Enum):
+    """The types of books the app works with."""
+
+    managed = 1
+    """The app controls everything about the project, starting from scratch"""
+
+    oversight = 2
+    """The app tries to import the project and locks Scene.content, Scene.Title, Chapter.Title, and Book.Title"""
+
+    imported = 4
+    """Similar to managed except the content was imported and can potentially import/update as directed by the user"""
