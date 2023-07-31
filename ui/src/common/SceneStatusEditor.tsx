@@ -1,116 +1,117 @@
-import { modals } from '@mantine/modals'
-import { SceneStatus, UniqueId } from '@src/types'
-import { TextInput, ColorInput, Button, ColorPicker } from '@mantine/core'
-import { IconFlagFilled } from '@tabler/icons-react'
-import { KeyboardEventHandler } from 'react'
+import { useAppContext } from '@src/App.context'
+import { ActionIcon, Button, Drawer, LoadingOverlay, Radio, Text, Title } from '@mantine/core'
+import { createSceneStatus, editSceneStatus } from '@src/common/SceneStatusModals'
+import { ShowError } from '@src/widget/ShowErrorNotification'
+import { IconEdit, IconFlagFilled, IconX } from '@tabler/icons-react'
+import React from 'react'
 
-const SWATCHES = [
-    '#fa5252',
-    '#e64980',
-    '#be4bdb',
-    '#7950f2',
-    '#4c6ef5',
-    '#228be6',
-    '#15aabf',
-    '#12b886',
-    '#40c057',
-    '#82c91e',
-    '#fab005',
-    '#fd7e14'
-]
+export const SceneStatusEditor = () => {
+    const { activeBook, sceneStatusBroker, settings } = useAppContext()
 
-export const createSceneStatus = async () => {
-    let name = ''
-    let color = ''
+    const [defaultSceneStatus, , setDefaultSceneStatus] = settings.makeState('defaultSceneStatus')
 
-    return new Promise<Partial<SceneStatus>>((resolve) => {
-        const onKeyUp: KeyboardEventHandler<HTMLInputElement> = (evt) => {
-            if (evt.key === 'Enter') {
-                evt.preventDefault()
-                modals.close('ss-create')
-                resolve({ name, color })
-            }
-        }
+    const isReadyToFetchSceneStatus = activeBook.title !== undefined
 
-        modals.open({
-            title: 'Create scene status',
-            modalId: 'ss-create',
-            children: (
-                <>
-                    <TextInput
-                        label='Name'
-                        defaultValue={name}
-                        onChange={(val) => {
-                            name = val.target.value
-                        }}
-                        onKeyUp={onKeyUp}
-                        icon={<IconFlagFilled style={{ color }} />}
-                    />
-                    <ColorPicker
-                        defaultValue={color}
-                        onChange={(val) => {
-                            color = val
-                        }}
-                    />
-                    <Button
-                        onClick={() => {
-                            modals.close('ss-create')
-                            resolve({ name, color })
-                        }}
-                    >
-                        Create
-                    </Button>
-                </>
-            )
-        })
-    })
-}
+    const { data: stati, isLoading: statiLoading } = sceneStatusBroker.fetchAll(
+        activeBook.id,
+        isReadyToFetchSceneStatus
+    )
 
-export const editSceneStatus = async (
-    statusUid: UniqueId,
-    getter: (uid: UniqueId) => Promise<SceneStatus>
-) => {
-    const sceneStatus = await getter(statusUid)
+    if (statiLoading && isReadyToFetchSceneStatus) {
+        return (
+            <>
+                <Text>Loading statuses...</Text>
+                <LoadingOverlay visible />
+            </>
+        )
+    }
 
-    return new Promise<SceneStatus>((resolve) => {
-        const onKeyUp: KeyboardEventHandler<HTMLInputElement> = (evt) => {
-            if (evt.key === 'Enter') {
-                evt.preventDefault()
-                modals.close(`ss-${statusUid}`)
-                resolve(sceneStatus)
-            }
-        }
-
-        modals.open({
-            title: 'Scene status editor',
-            modalId: `ss-${statusUid}`,
-            children: (
-                <>
-                    <TextInput
-                        label='Name'
-                        defaultValue={sceneStatus.name}
-                        onChange={(val) => {
-                            sceneStatus.name = val.target.value
-                        }}
-                        onKeyUp={onKeyUp}
-                        icon={<IconFlagFilled style={{ color: sceneStatus.color }} />}
-                    />
-                    <ColorPicker
-                        defaultValue={sceneStatus.color}
-                        onChange={(val) => {
-                            sceneStatus.color = val
-                        }}
-                    />
-                    <Button
-                        onClick={() => {
-                            modals.close(`ss-${statusUid}`)
-                            resolve(sceneStatus)
+    return (
+        <>
+            <Button
+                onClick={() => {
+                    createSceneStatus().then((status) => {
+                        if (!status.name || status.name.length < 3) {
+                            ShowError('Error', 'Status name needs to be aleast 3 characters long')
+                        } else if (status && status.name && status.color) {
+                            sceneStatusBroker
+                                .create(activeBook.id, status.name, status.color)
+                                .catch((reason) => {
+                                    if (reason instanceof Error || reason.message !== undefined) {
+                                        ShowError('Failed to create', reason.message)
+                                    }
+                                })
+                        }
+                    })
+                }}
+            >
+                Create new status
+            </Button>
+            <table>
+                <tr>
+                    <th align='left'>Default status</th>
+                </tr>
+                <tbody>
+                    <Radio.Group
+                        name='defaultSceneStatus'
+                        value={defaultSceneStatus}
+                        onChange={(value) => {
+                            setDefaultSceneStatus(value)
                         }}
                     >
-                        Update
-                    </Button>
-                </>
-            )
-        })
-    })
+                        <tr>
+                            <td>
+                                <Radio
+                                    value='-1'
+                                    label='Nothing'
+                                />
+                            </td>
+                        </tr>
+                        {stati?.map((sstatus) => (
+                            <tr key={sstatus.id}>
+                                <td>
+                                    <Radio
+                                        value={sstatus.id}
+                                        label={sstatus.name}
+                                    />
+                                </td>
+                                <td>
+                                    <IconFlagFilled style={{ color: sstatus.color }} />
+                                </td>
+                                <td>
+                                    <ActionIcon
+                                        onClick={() => {
+                                            editSceneStatus(sstatus.id, sceneStatusBroker.get).then(
+                                                (status) => {
+                                                    console.log('Edit gave ', status)
+                                                    if (status && status.id !== undefined) {
+                                                        sceneStatusBroker.update(
+                                                            activeBook.id,
+                                                            status.id,
+                                                            status
+                                                        )
+                                                    }
+                                                }
+                                            )
+                                        }}
+                                    >
+                                        <IconEdit />
+                                    </ActionIcon>
+                                </td>
+
+                                <ActionIcon
+                                    onClick={() => {
+                                        sceneStatusBroker.delete(activeBook.id, sstatus.id)
+                                    }}
+                                >
+                                    <IconX />
+                                </ActionIcon>
+                                <td />
+                            </tr>
+                        ))}
+                    </Radio.Group>
+                </tbody>
+            </table>
+        </>
+    )
 }
