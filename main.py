@@ -4,8 +4,10 @@ import signal
 import time
 import argparse
 import logging
+import typing as T
 
 import webview
+from tap import Tap
 
 from lib.application import BCApplication
 from lib.api import BCAPI
@@ -58,32 +60,55 @@ def spinup_pnpm(url_path: pathlib.Path):
     return process
 
 
-def write_bridge(dest: pathlib.Path):
+def transform_api(dest: pathlib.Path):
     import transformer
 
     dest.touch(exist_ok=True)
     transformer.process_source((HERE / "lib" / "api.py"), dest)
 
 
+class MainArgs(Tap):
+    """
+    Python Book Control
+
+
+
+    """
+
+    url: T.Optional[pathlib.Path] = pathlib.Path("./ui/dist/index.html")
+    """
+        :param url: The interface to load
+    """
+
+    dev: bool = False
+    """
+    :param dev: Enable debug options
+    """
+
+    transform_api: T.Optional[pathlib.Path] = None
+    """
+    :param transform_api: Convert the api.py file into a quasi-typeascript api bridge
+    """
+
+    database: T.Optional[pathlib.Path] = pathlib.Path("./test.sqlite3")
+    """
+    :param database: An alternative database file to use
+    """
+
+    def configure(self) -> None:
+        self.add_argument("--dev", action="store_true")
+
+
 def main():
     setup_logging()
 
-    args = argparse.ArgumentParser("OpenAI API talker")
+    result = MainArgs().parse_args()
+    LOG.debug(f"{result.url}")
+    LOG.debug(f"{result.dev=}")
+    LOG.debug(f"{result.transform_api=}")
+    LOG.debug(f"{result.database.as_posix()=}")
 
-    args.add_argument(
-        "--url",
-        type=pathlib.Path,
-        default=pathlib.Path("./book_control/dist/index.html"),
-    )
-    args.add_argument("--dev", action="store_true", default=False)
-    args.add_argument("--write_bridge", type=pathlib.Path, default=None)
-
-    result = args.parse_args()
-    LOG.debug("url={}", result.url)
-    LOG.debug("dev={}", result.dev)
-    LOG.debug("write_bridge={}", result.write_bridge)
-
-    app = BCApplication()
+    app = BCApplication(result.database)
     api = BCAPI(app)
 
     worker = None
@@ -96,11 +121,12 @@ def main():
         js_api=api,
     )
 
-    if result.write_bridge is not None:
+    if result.transform_api is not None:
         assert (
-            result.write_bridge.parent.exists() and result.write_bridge.parent.is_dir()
+            result.transform_api.parent.exists()
+            and result.transform_api.parent.is_dir()
         )
-        write_bridge(result.write_bridge)
+        transform_api(result.transform_api)
 
     if result.dev is True:
         worker = spinup_pnpm(result.url)

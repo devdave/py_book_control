@@ -1,19 +1,23 @@
+import pathlib
+
 import webview
 from . import models
 from contextlib import contextmanager
 
 
 class BCApplication:
+    database_path: pathlib.Path
     main_window: webview.Window
     book_id: int
     Session: models.scoped_session
 
-    def __init__(self):
+    def __init__(self, database_path: pathlib.Path):
+        self.database_path = database_path
         self.main_window = None
         self.book_id = None
 
         # Makes sure we can connect
-        self.engine, self.Session = models.connect()
+        self.engine, self.Session = models.connect(self.database_path)
 
     @property
     def has_active_book(self):
