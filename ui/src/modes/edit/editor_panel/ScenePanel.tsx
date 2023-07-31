@@ -39,7 +39,6 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
     useHotkeys(
         [
             ['ctrl+tab', () => nextTab()],
-            ['ctrl+Tab', () => nextTab()],
             ['ctrl+ArrowRight', () => nextTab()]
         ],
         []
