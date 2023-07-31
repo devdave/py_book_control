@@ -14,6 +14,7 @@ import { BookPanel } from '@src/modes/edit/book_panel/BookPanel'
 import { CharacterPanel } from '@src/modes/edit/character_panel/CharacterPanel'
 import { ChapterPanel } from '@src/modes/edit/chapter_panel/ChapterPanel'
 import { NotePanel } from '@src/modes/edit/note_panel/NotePanel'
+import { StatusPanel } from '@src/modes/edit/status_panel/StatusPanel'
 
 export const Body = () => {
     const { activeBook } = useAppContext()
@@ -38,11 +39,13 @@ export const Body = () => {
         sceneFetchIsEnabled
     )
 
-    if (activeElement.get_type() === ActiveElementTypes.BOOK) {
-        return <BookPanel />
-    }
-    if (activeElement.get_type() === ActiveElementTypes.CHARACTERS) {
-        return <CharacterPanel />
+    switch (activeElement.get_type()) {
+        case ActiveElementTypes.BOOK:
+            return <BookPanel />
+        case ActiveElementTypes.CHARACTERS:
+            return <CharacterPanel />
+        case ActiveElementTypes.STATUSES:
+            return <StatusPanel />
     }
 
     if (
@@ -56,49 +59,49 @@ export const Body = () => {
         return <LoadingOverlay visible />
     }
 
-    const commonKey = `${activeChapter?.updated_on} ${activeChapter?.id}-${activeScene?.id}`
+    const commonKey = `${activeChapter?.id}-${activeScene?.id}`
 
     if (sceneFetchIsEnabled) {
         switch (fullSceneStatus) {
             case 'loading':
                 return <LoadingOverlay visible />
-            case 'success':
+            case 'error':
                 return <Text>Failed loading scene data</Text>
         }
     }
 
     if (activeChapter !== undefined) {
         if (activeElement.get_subType() === ActiveElementSubTypes.SCENE) {
-            switch (activeElement.get_focus()) {
-                case ActiveElementFocusTypes.NOTES:
-                    return (
-                        <NotePanel
-                            scene={fullScene as Scene}
-                            key={commonKey}
-                        />
-                    )
-                case ActiveElementFocusTypes.SUMMARY:
-                    return <Text>Summary view panel</Text>
-                default:
-                    if (fullChapter && fullChapterStatus === 'success') {
-                        switch (editMode) {
-                            case EditModes.FLOW:
-                                return (
-                                    <ContinuousBody
-                                        chapter={fullChapter}
-                                        key={commonKey}
-                                    />
-                                )
-                            case EditModes.LIST:
-                                return <RightPanel key={commonKey} />
-                            default:
-                                return <Text>Unexpected edit mode {editMode}</Text>
-                        }
-                    } else if (fullChapterStatus === 'loading') {
-                        return <LoadingOverlay visible />
-                    } else if (fullSceneStatus === 'error') {
-                        return <Text>Failed loading chapter data</Text>
-                    }
+            if (activeElement.get_focus() !== undefined) {
+                switch (activeElement.get_focus()) {
+                    case ActiveElementFocusTypes.NOTES:
+                        return (
+                            <NotePanel
+                                scene={fullScene as Scene}
+                                key={commonKey}
+                            />
+                        )
+                    case ActiveElementFocusTypes.SUMMARY:
+                        return <Text>Summary view panel</Text>
+                }
+            } else if (fullChapter && fullChapterStatus === 'success') {
+                switch (editMode) {
+                    case EditModes.FLOW:
+                        return (
+                            <ContinuousBody
+                                chapter={fullChapter}
+                                key={commonKey}
+                            />
+                        )
+                    case EditModes.LIST:
+                        return <RightPanel key={commonKey} />
+                    default:
+                        return <Text>Unexpected edit mode {editMode}</Text>
+                }
+            } else if (fullChapterStatus === 'loading') {
+                return <LoadingOverlay visible />
+            } else if (fullSceneStatus === 'error') {
+                return <Text>Failed loading chapter data</Text>
             }
         }
         return <h2>Create a new chapter!</h2>
