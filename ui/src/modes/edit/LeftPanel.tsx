@@ -15,7 +15,6 @@ import {
     IconArticle,
     IconBook,
     IconChevronRight,
-    IconFlag,
     IconFlagFilled,
     IconGripVertical,
     IconList,
@@ -27,7 +26,7 @@ import { type FC, useCallback } from 'react'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 
 import { useAppContext } from '@src/App.context'
-import { ChapterIndex, EditModes } from '@src/types'
+import { ActiveElementSubTypes, ActiveElementTypes, ChapterIndex, EditModes } from '@src/types'
 import { InputModal } from '@src/widget/input_modal'
 import { ShowError } from '@src/widget/ShowErrorNotification'
 import { LeftPanelScene } from '@src/modes/edit/LeftPanelScene'
@@ -138,6 +137,17 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                         icon={
                             <Center>
                                 <IconUsers />
+                            </Center>
+                        }
+                    />
+                    <NavLink
+                        childrenOffset={1}
+                        label='Statuses'
+                        active={activeElement.typeIs(ActiveElementTypes.STATUSES)}
+                        onClick={() => activeElement.setType(ActiveElementTypes.STATUSES)}
+                        icon={
+                            <Center>
+                                <IconFlagFilled />
                             </Center>
                         }
                     />

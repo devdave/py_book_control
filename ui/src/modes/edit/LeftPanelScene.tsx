@@ -1,8 +1,9 @@
 import { ActiveElementFocusTypes, type ChapterIndex, type SceneIndex } from '@src/types'
 import { useAppContext } from '@src/App.context'
 import { useEditorContext } from '@src/modes/edit/Editor.context'
-import { IconFlag, IconFlagFilled } from '@tabler/icons-react'
+import { IconFlag, IconFlagFilled, IconId, IconNote } from '@tabler/icons-react'
 import { Group, NavLink, Text } from '@mantine/core'
+import React from 'react'
 
 interface LeftPanelSceneProps {
     chapterIndex: ChapterIndex
@@ -59,13 +60,24 @@ export const LeftPanelScene: React.FC<LeftPanelSceneProps> = ({ sceneIndex, chap
         >
             {hasNotes && (
                 <NavLink
-                    label='Notes'
+                    active={activeElement.isFocussed(ActiveElementFocusTypes.NOTES)}
+                    label={
+                        <Text>
+                            <IconNote size='0.8rem' /> Notes
+                        </Text>
+                    }
                     onClick={() => activeElement.assignFocus(ActiveElementFocusTypes.NOTES)}
                 />
             )}
             {hasSummary && (
                 <NavLink
-                    label='Summary'
+                    active={activeElement.isFocussed(ActiveElementFocusTypes.SUMMARY)}
+                    label={
+                        <Text>
+                            <IconId size='0.8rem' />
+                            Summary
+                        </Text>
+                    }
                     onClick={() => activeElement.assignFocus(ActiveElementFocusTypes.SUMMARY)}
                 />
             )}
