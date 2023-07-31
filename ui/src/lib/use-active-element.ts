@@ -25,7 +25,10 @@ export interface useActiveElementReturn {
     setChapterById: (chapterId: UniqueId) => void
 
     get_subDetail: () => string | undefined
+
     get_subType: () => ActiveElementSubTypes | undefined
+    subTypeIs: (subtype: ActiveElementSubTypes) => boolean
+
     assignChapter: (chapter: Chapter) => void
 
     setBook: (book: Book) => void
@@ -44,6 +47,8 @@ export interface useActiveElementReturn {
     assignSubType: (subtype_name: ActiveElementSubTypes | undefined, subtype_detail: string) => void
 
     get_type: () => ActiveElementTypes | undefined
+    setType: (typeName: ActiveElementTypes) => void
+    typeIs: (typeName: ActiveElementTypes) => boolean
 
     get_focus_id: () => string | number | undefined
     setFocus: (name: string, id?: string | undefined) => void
@@ -111,7 +116,7 @@ export function useActiveElement(): useActiveElementReturn {
                 draft.subdetail = sub_detail
             })
         },
-        [state, updater]
+        [push, updater]
     )
 
     const assignType = useCallback(
@@ -136,11 +141,44 @@ export function useActiveElement(): useActiveElementReturn {
         [state, updater]
     )
 
+    const clearFocus = useCallback(() => {
+        updater((draft) => {
+            draft.focus = undefined
+            draft.focus_id = undefined
+        })
+    }, [updater])
+
+    const clearSubType = useCallback(() => {
+        updater((draft) => {
+            draft.subtype = undefined
+            draft.subdetail = undefined
+        })
+    }, [updater])
+
+    const clearType = useCallback(() => {
+        updater((draft) => {
+            draft.type = undefined
+            draft.detail = undefined
+        })
+    }, [updater])
+
+    const clear = useCallback(() => {
+        clearType()
+        clearSubType()
+        clearFocus()
+    }, [clearFocus, clearSubType, clearType])
+
     const get_type = () => state.type
+
+    const setType = (typeName: ActiveElementTypes) => {
+        clear()
+        setTypeAndSubtype(typeName, undefined, undefined, undefined)
+    }
+    const typeIs = (typeName: ActiveElementTypes) => get_type() === typeName
 
     const get_detail = () => state.detail
 
-    const get_subType = () => state.subtype
+    const get_subType = useCallback(() => state.subtype, [state])
 
     const get_subDetail = () => state.subdetail
 
@@ -148,11 +186,17 @@ export function useActiveElement(): useActiveElementReturn {
 
     const get_focus_id = () => state.focus_id
 
+    const subTypeIs = useCallback(
+        (subtype: ActiveElementSubTypes) => get_subType() === subtype,
+        [get_subType]
+    )
+
     const setActiveSceneById = useCallback(
         (chapter_id: string, scene_id: string) => {
+            clear()
             setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, ActiveElementSubTypes.SCENE, scene_id)
         },
-        [setTypeAndSubtype]
+        [setTypeAndSubtype, clear]
     )
 
     const setActiveScene = useCallback(
@@ -186,9 +230,10 @@ export function useActiveElement(): useActiveElementReturn {
 
     const setSceneById = useCallback(
         (chapter_id: string, scene_id: string) => {
+            clear()
             setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, ActiveElementSubTypes.SCENE, scene_id)
         },
-        [setTypeAndSubtype]
+        [setTypeAndSubtype, clear]
     )
 
     const setScene = useCallback(
@@ -214,9 +259,10 @@ export function useActiveElement(): useActiveElementReturn {
 
     const setChapterById = useCallback(
         (chapter_id: string) => {
+            clear()
             setTypeAndSubtype(ActiveElementTypes.CHAPTER, chapter_id, undefined, undefined)
         },
-        [setTypeAndSubtype]
+        [setTypeAndSubtype, clear]
     )
 
     const setChapter = useCallback(
@@ -315,33 +361,6 @@ export function useActiveElement(): useActiveElementReturn {
         [state.focus, state.focus_id]
     )
 
-    const clearFocus = () => {
-        updater((draft) => {
-            draft.focus = undefined
-            draft.focus_id = undefined
-        })
-    }
-
-    const clearSubType = () => {
-        updater((draft) => {
-            draft.subtype = undefined
-            draft.subdetail = undefined
-        })
-    }
-
-    const clearType = () => {
-        updater((draft) => {
-            draft.type = undefined
-            draft.detail = undefined
-        })
-    }
-
-    const clear = () => {
-        clearType()
-        clearSubType()
-        clearFocus()
-    }
-
     return {
         setActiveScene,
 
@@ -380,7 +399,12 @@ export function useActiveElement(): useActiveElementReturn {
         get_detail,
 
         get_type,
+        setType,
+        typeIs,
+
         get_subType,
+        subTypeIs,
+
         get_subDetail,
 
         clear,
