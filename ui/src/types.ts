@@ -97,7 +97,8 @@ export interface SplitResponse {
 export enum ActiveElementTypes {
     BOOK = 'book',
     CHAPTER = 'chapter',
-    CHARACTERS = 'characters'
+    CHARACTERS = 'charactrs',
+    STATUSES = 'statuses'
 }
 
 export enum ActiveElementSubTypes {
