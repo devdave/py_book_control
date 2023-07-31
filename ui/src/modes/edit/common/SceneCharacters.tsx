@@ -45,6 +45,7 @@ export const SceneCharacters: React.FC<SceneCharactersProps> = ({ scene }) => {
                 data={toons_list}
                 searchable
                 creatable
+                placeholder='Add new character'
                 icon={<IconUser />}
                 getCreateLabel={(query) => <Text>Create {query}?</Text>}
                 onChange={(toon_id) => {
