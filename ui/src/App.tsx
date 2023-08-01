@@ -14,7 +14,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { LoadingOverlay, Text } from '@mantine/core'
-import { AppModes, AppSettingValues, type Book, UniqueId } from '@src/types'
+import { AppModes, AppSettingValues, type Book } from '@src/types'
 
 import { Manifest } from '@src/modes/manifest/Manifest'
 import { useImmer } from 'use-immer'
@@ -22,6 +22,7 @@ import { ApplicationSetting, useSettings } from '@src/lib/use-settings'
 import { forEach } from 'lodash'
 import { Notifications } from '@mantine/notifications'
 import { SceneStatusBroker } from '@src/brokers/SceneStatusBroker'
+import { BookBroker } from '@src/brokers/BookBroker'
 
 interface AppWrapperProps {
     value: AppContextValue
@@ -50,6 +51,7 @@ const App: React.FC = () => {
     const [defaultsDone, setDefaultsDone] = useState(false)
 
     const [activeBook, setActiveBook] = useImmer<Book>({
+        operation_type: 'managed',
         chapters: [],
         created_on: '',
         id: '',
@@ -64,6 +66,8 @@ const App: React.FC = () => {
     const boundary = useMemo(() => new Boundary(), [])
 
     const api = useMemo(() => new APIBridge(boundary), [boundary])
+
+    const bookBroker = BookBroker({ api, activeBook, setActiveBook, queryClient })
 
     const settingsSetter = useMutation(({ name, value }) => api.setSetting(name, value), {
         onSuccess: (data: undefined, { name, value }: { name: string; value: string }) => {
@@ -163,81 +167,26 @@ const App: React.FC = () => {
         })
     }, [checkFonts])
 
-    const _changeBook = useMutation<Book, Error, Book>((book) => api.update_book(book), {
-        onSuccess: (updated: Book) => {
-            queryClient.invalidateQueries(['book', updated.id, 'index']).then()
-            if (updated.id === activeBook.id) {
-                setActiveBook((draft) => {
-                    draft.title = updated.title
-                    draft.notes = updated.notes
-                    draft.updated_on = updated.updated_on
-                })
-            }
-        }
-    })
-
-    const updateBook: (book: Partial<Book>) => Promise<Book> = useCallback(
-        (book: Partial<Book>) =>
-            new Promise((resolve, reject) => {
-                if (book.id) {
-                    _changeBook.mutate(book as Book, { onSuccess: resolve, onError: reject })
-                }
-                reject(Error('Cannot update book without Id'))
-            }),
-        [_changeBook]
-    )
-
-    const fetchStrippedBooks = useCallback(
-        () =>
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            useQuery<Book[], Error>({
-                queryFn: () => api.list_books(true),
-                queryKey: ['books', 'index']
-            }),
-        [api]
-    )
-
-    const fetchStrippedBook = useCallback(
-        (book_id: UniqueId) =>
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            useQuery<Book, Error>({
-                enabled: book_id !== undefined,
-                staleTime: 10000,
-                queryFn: () => api.fetch_book_simple(book_id),
-                queryKey: ['book', book_id]
-            }),
-        [api]
-    )
-
     const sceneStatusBroker = SceneStatusBroker({ api, queryClient })
 
     const appContextValue = useMemo<AppContextValue>(
         () => ({
             api,
             settings,
+
             appMode,
             setAppMode,
+
             activeBook,
             setActiveBook,
-            updateBook,
-            fetchStrippedBook,
-            fetchStrippedBooks,
+
             fonts,
             setFonts,
 
+            bookBroker,
             sceneStatusBroker
         }),
-        [
-            api,
-            settings,
-            appMode,
-            activeBook,
-            setActiveBook,
-            updateBook,
-            fetchStrippedBook,
-            fetchStrippedBooks,
-            fonts
-        ]
+        [api, settings, appMode, activeBook, setActiveBook, bookBroker, fonts]
     )
 
     return (

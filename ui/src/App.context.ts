@@ -4,6 +4,7 @@ import APIBridge from '@src/lib/remote'
 import { UseQueryResult } from '@tanstack/react-query'
 import { SettingsManagerReturn } from '@src/lib/use-settings'
 import { SceneStatusBrokerFunctions } from '@src/brokers/SceneStatusBroker'
+import { BookBrokerReturnFunctions } from '@src/brokers/BookBroker'
 
 export interface AppContextValue {
     api: APIBridge
@@ -15,9 +16,7 @@ export interface AppContextValue {
     activeBook: Book
     setActiveBook: (val: Book) => void
 
-    updateBook: (val: Partial<Book>) => Promise<Book>
-    fetchStrippedBook: (book_id: UID) => UseQueryResult<Book, Error>
-    fetchStrippedBooks: () => UseQueryResult<Book[], Error>
+    bookBroker: BookBrokerReturnFunctions
 
     fonts: Set<string>
     setFonts: (val: Set<string>) => void
