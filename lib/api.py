@@ -8,7 +8,7 @@ from .scene_processor import SceneProcessor2 as SceneProcessor
 from .application import BCApplication
 from . import models
 from .log_helper import getLogger
-from .app_types import common_setting_type, UniqueId, ChapterDict
+from .app_types import common_setting_type, UniqueId, ChapterDict, BookTypes
 from .app_types import (
     SettingType as Setting,
     SceneType as Scene,
@@ -77,6 +77,13 @@ class BCAPI:
             self.log.info("book_ui == `{}`", book_uid)
             book = models.Book.Fetch_by_UID(session, book_uid)
             return book.asdict(stripped=True)
+
+    def create_managed_book(self, book_name: str) -> Book:
+        with self.app.get_db() as session:
+            book = models.Book(title=book_name, operation_type=BookTypes.managed)
+            session.add(book)
+            session.commit()
+            return book.asdict()
 
     def find_source(self):
         return self.app.main_window.create_file_dialog(

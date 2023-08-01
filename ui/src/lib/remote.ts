@@ -53,6 +53,10 @@ class APIBridge {
         return this.boundary.remote('fetch_book_simple', book_uid);
     }
 
+    async create_managed_book(book_name:string):Promise<Book> {
+        return this.boundary.remote('create_managed_book', book_name);
+    }
+
     async find_source() {
         return this.boundary.remote('find_source', );
     }
