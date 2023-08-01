@@ -30,6 +30,7 @@ export interface SceneStatus extends Base {
 export interface Book extends Base {
     title: string | undefined
     notes: string
+    operation_type: 'managed' | 'imported' | 'oversight'
     chapters: Chapter[]
     words: number
 }
