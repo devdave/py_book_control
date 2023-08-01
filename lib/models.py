@@ -173,10 +173,20 @@ class Book(Base):
         return session.scalars(stmt).one()
 
     def asdict(self, stripped=True):
+        if self.operation_type == BookTypes.managed:
+            operation_type = "Managed"
+        elif self.operation_type == BookTypes.imported:
+            operation_type = "Imported"
+        elif self.operation_type == BookTypes.oversight:
+            operation_type = "Oversee"
+        else:
+            operation_type = f"Unknown type {self.operation_type.value}"
+
         data = dict(
             type="book",
             id=self.uid,
             title=self.title,
+            operation_type=operation_type,
             updated_on=str(self.updated_on),
             created_on=str(self.created_on),
             words=str(self.words),
