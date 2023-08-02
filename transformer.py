@@ -16,7 +16,9 @@ template_body = """import {
     type Setting, 
     type common_setting_type, 
     type UniqueId, 
-    type SceneStatus
+    type SceneStatus,
+    type DocumentFile,
+    type ImportedBook
     } from '@src/types'
 
 interface Boundary {
@@ -39,7 +41,7 @@ class APIBridge {
 
 }
 
-export default APIBridge;
+export default APIBridge
 """
 
 
@@ -54,6 +56,20 @@ class FuncDef(T.NamedTuple):
     compiled: T.List[str]
     arg_names: T.List[str]
     return_type: T.Optional[str]
+
+
+def python2ts_types(typename):
+    match typename:
+        case "str":
+            return "string"
+        case "int":
+            return "number"
+        case "float":
+            return "number"
+        case "bool":
+            return "boolean"
+        case _:
+            return typename
 
 
 def process_source(src_file: pathlib.Path, dest: pathlib.Path | None = None):
@@ -152,15 +168,7 @@ def process_function(func_elm: ast.FunctionDef):
         arg_def = func_elm
 
         if isinstance(arg.annotation, ast.Name):
-            match arg.annotation.id:
-                case "bool":
-                    func_type = "boolean"
-                case "str":
-                    func_type = "string"
-                case "int":
-                    func_type = "number"
-                case _:
-                    func_type = arg.annotation.id
+            func_type = python2ts_types(arg.annotation.id)
 
         elif isinstance(arg.annotation, ast.Subscript):
             # fuck it
@@ -169,24 +177,23 @@ def process_function(func_elm: ast.FunctionDef):
                 and arg.annotation.value.id == "list"
             ):
                 func_type = f"{arg.annotation.slice.id}[]"
-            if (
+
+            elif (
                 isinstance(arg.annotation.value, ast.Attribute)
                 and arg.annotation.value.attr == "Optional"
             ):
-                func_type = f"{arg.annotation.slice.id} | undefined"
+                func_type = f"{python2ts_types(arg.annotation.slice.id)} | undefined"
+            elif (
+                isinstance(arg.annotation.value, ast.Name)
+                and arg.annotation.value.id == "list"
+            ):
+                func_type = f"{python2ts_types(arg.annotation.slice.id)}[]"
+
             else:
                 func_type = "any"
 
         elif arg.annotation is not None and hasattr(arg.annotation, "id"):
-            match arg.annotation.id:
-                case "str":
-                    func_type = "string"
-                case ["int", "float"]:
-                    func_type = "number"
-                case "bool":
-                    func_type = "boolean"
-                case _:
-                    func_type = "any"
+            func_type = python2ts_types(arg.annotation.id)
 
         arg_map[arg.arg] = f"{arg.arg}:{func_type}"
         if arg.arg in mapped_defaults and mapped_defaults[arg.arg] in (None, "None"):
@@ -262,13 +269,8 @@ def process_returntype(func_elm: ast.FunctionDef):
                     return f"{func_elm.returns.slice.id} | undefined "
 
     if isinstance(func_elm.returns, ast.Name):
-        match func_elm.returns.id:
-            case "str":
-                return "string"
-            case "bool":
-                return "boolean"
-            case _:
-                return func_elm.returns.id
+        return python2ts_types(func_elm.returns.id)
+
     return None
 
 
