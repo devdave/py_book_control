@@ -71,6 +71,10 @@ export const Manifest = () => {
         setAppMode(AppModes.EDITOR)
     }
 
+    const handleClickedImport = () => {
+        setAppMode(AppModes.IMPORTER)
+    }
+
     const handleDeleteBook = async (book_id: Book['id']) => {
         ConfirmModal('Delete', 'Are you sure you want to delete this?').then((response) => {
             alert(`I got ${response}`)
@@ -165,6 +169,7 @@ export const Manifest = () => {
                             shadow='xl'
                             withBorder
                             p='md'
+                            onClick={handleClickedImport}
                         >
                             <IconPlus className='plusBox' />
                             <Title order={5}>Import a book</Title>

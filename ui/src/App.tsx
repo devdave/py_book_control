@@ -23,6 +23,7 @@ import { forEach } from 'lodash'
 import { Notifications } from '@mantine/notifications'
 import { SceneStatusBroker } from '@src/brokers/SceneStatusBroker'
 import { BookBroker } from '@src/brokers/BookBroker'
+import { BookImporter } from '@src/modes/book_importer/BookImporter'
 
 interface AppWrapperProps {
     value: AppContextValue
@@ -118,7 +119,8 @@ const App: React.FC = () => {
             debounceTime: 800,
             dontAskOnSplit: false,
             dontAskOnClear2Delete: false,
-            defaultSceneStatus: '-1'
+            defaultSceneStatus: '-1',
+            lastImportedPath: ''
         }
     })
 
@@ -209,6 +211,8 @@ const App: React.FC = () => {
                         return <Editor />
                     case AppModes.MANIFEST:
                         return <Manifest />
+                    case AppModes.IMPORTER:
+                        return <BookImporter />
                     default:
                         return <Text>Application error: unexpected mode {appMode}</Text>
                 }
