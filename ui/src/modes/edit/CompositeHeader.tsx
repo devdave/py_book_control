@@ -17,7 +17,7 @@ const useStyles = createStyles((styles_theme) => ({
 }))
 
 export const CompositeHeader: React.FC = () => {
-    const { activeBook, updateBook, setAppMode } = useAppContext()
+    const { activeBook, bookBroker, setAppMode } = useAppContext()
 
     const { theme } = useStyles()
     const { colorScheme, toggleColorScheme } = useMantineColorScheme()
@@ -55,7 +55,7 @@ export const CompositeHeader: React.FC = () => {
                         <ToggleInput
                             title='Double click to edit'
                             value={activeBook.title}
-                            onChange={(newTitle) => updateBook({ id: activeBook.id, title: newTitle })}
+                            onChange={(newTitle) => bookBroker.update({ id: activeBook.id, title: newTitle })}
                         />
                     </Group>
 

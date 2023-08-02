@@ -6,7 +6,7 @@ import { Book } from '@src/types'
 import { IndicatedTextInput } from '@src/widget/IndicatedTextInput'
 
 export const BookPanel: React.FC = () => {
-    const { activeBook, updateBook, settings } = useAppContext()
+    const { activeBook, bookBroker, settings } = useAppContext()
 
     const [debounceTime] = settings.makeState('debounceTime')
 
@@ -25,8 +25,7 @@ export const BookPanel: React.FC = () => {
                     notes: form.values.notes,
                     title: form.values.title
                 }
-                updateBook(book_changes).then((updated_book: Book) => {
-                    console.log('Updated book ', updated_book)
+                bookBroker.update(book_changes).then((updated_book: Book) => {
                     form.resetDirty()
                 })
             }
