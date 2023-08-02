@@ -6,7 +6,9 @@ import {
     type Setting, 
     type common_setting_type, 
     type UniqueId, 
-    type SceneStatus
+    type SceneStatus,
+    type DocumentFile,
+    type ImportedBook
     } from '@src/types'
 
 interface Boundary {
@@ -121,7 +123,7 @@ class APIBridge {
         return this.boundary.remote('reorder_scene', chapterId, from_pos, to_pos);
     }
 
-    async reorder_scenes(new_order:any):Promise<Chapter> {
+    async reorder_scenes(new_order:Scene[]):Promise<Chapter> {
         return this.boundary.remote('reorder_scenes', new_order);
     }
 
@@ -204,12 +206,25 @@ class APIBridge {
     async update_scene_status(status_uid:UniqueId, changeset:SceneStatus):Promise<SceneStatus> {
         return this.boundary.remote('update_scene_status', status_uid, changeset);
     }
+/* Removes the targetted record
 
+TODO verify this cascades
+
+:param status_uid:
+:return: */
     async delete_scene_status(status_uid:UniqueId) {
         return this.boundary.remote('delete_scene_status', status_uid);
+    }
+
+    async importer_find_source(optional_dir:string | undefined):Promise<string> {
+        return this.boundary.remote('importer_find_source', optional_dir);
+    }
+
+    async importer_list_files(filepath:string):Promise<ImportedBook> {
+        return this.boundary.remote('importer_list_files', filepath);
     }
 
 
 }
 
-export default APIBridge;
+export default APIBridge

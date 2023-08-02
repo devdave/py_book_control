@@ -44,6 +44,7 @@ export interface SceneIndex extends Base {
 }
 
 export interface Scene extends SceneIndex {
+    [key: string]: string | Character[] | undefined | number | SceneStatus
     summary: string
     content: string
     notes: string
@@ -80,7 +81,8 @@ export enum AppModes {
     EDITOR = 'editor',
     OUTLINE = 'outline',
     STATS = 'stats',
-    MANIFEST = 'manifest'
+    MANIFEST = 'manifest',
+    IMPORTER = 'importer'
 }
 
 export enum EditModes {
@@ -134,6 +136,7 @@ export interface AppSettingValues {
     dontAskOnSplit: boolean
     dontAskOnClear2Delete: boolean
     defaultSceneStatus: string
+    lastImportedPath: string
 }
 
 export interface attachSceneStatus2SceneProps {
@@ -141,4 +144,19 @@ export interface attachSceneStatus2SceneProps {
     status_uid?: SceneStatus['id']
     status_name?: string
     book_id: Book['id']
+}
+
+export interface DocumentFile {
+    name: string
+    path: string
+    created_date: string
+    modified_last: string
+    size: number
+    words?: number
+}
+
+export interface ImportedBook {
+    path: string
+    dir_name: string
+    documents: DocumentFile[]
 }

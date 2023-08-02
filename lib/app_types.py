@@ -81,3 +81,18 @@ class BookTypes(Enum):
 
     imported = 4
     """Similar to managed except the content was imported and can potentially import/update as directed by the user"""
+
+
+class DocumentFile(T.TypedDict):
+    name: str
+    path: str
+    created_date: str
+    modified_last: str
+    size: int
+    words: int
+
+
+class ImportedBook(T.TypedDict):
+    path: str
+    dir_name: str
+    documents: list[DocumentFile]

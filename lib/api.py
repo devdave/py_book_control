@@ -1,5 +1,7 @@
+import pathlib
 import typing as T
 import logging
+import datetime as DT
 
 import webview  # type: ignore
 from sqlalchemy.exc import IntegrityError
@@ -8,7 +10,13 @@ from .scene_processor import SceneProcessor2 as SceneProcessor
 from .application import BCApplication
 from . import models
 from .log_helper import getLogger
-from .app_types import common_setting_type, UniqueId, ChapterDict, BookTypes
+from .app_types import (
+    common_setting_type,
+    UniqueId,
+    BookTypes,
+    DocumentFile,
+    ImportedBook,
+)
 from .app_types import (
     SettingType as Setting,
     SceneType as Scene,
@@ -449,6 +457,66 @@ class BCAPI:
             return status.asdict()
 
     def delete_scene_status(self, status_uid: UniqueId) -> None:
+        """
+        Removes the targetted record
+
+        TODO verify this cascades
+
+        :param status_uid:
+        :return:
+        """
         with self.app.get_db() as session:
             models.SceneStatus.Delete(session, status_uid)
             session.commit()
+
+    """  
+  ____              _      _____                            _            
+ |  _ \            | |    |_   _|                          | |           
+ | |_) | ___   ___ | | __   | |  _ __ ___  _ __   ___  _ __| |_ ___ _ __ 
+ |  _ < / _ \ / _ \| |/ /   | | | '_ ` _ \| '_ \ / _ \| '__| __/ _ \ '__|
+ | |_) | (_) | (_) |   <   _| |_| | | | | | |_) | (_) | |  | ||  __/ |   
+ |____/ \___/ \___/|_|\_\ |_____|_| |_| |_| .__/ \___/|_|   \__\___|_|   
+                                          | |                            
+                                          |_|
+    """
+
+    def importer_find_source(self, optional_dir: T.Optional[str]) -> str:
+        starting_dir = optional_dir if isinstance(optional_dir, str) else ""
+
+        returnval = self.app.main_window.create_file_dialog(
+            dialog_type=webview.FOLDER_DIALOG, directory=starting_dir
+        )
+        self.log.debug("Source is {}", returnval)
+        return returnval
+
+    def importer_list_files(self, filepath: str) -> ImportedBook:
+        path = pathlib.Path(filepath)
+        if path.exists() is False or path.is_dir() is False:
+            raise ValueError(f"{filepath} is not a valid directory")
+
+        def stat2str(statval):
+            return DT.datetime.fromtimestamp(statval).strftime("%Y-%m-%d %H:%M")
+
+        def format_file(file: pathlib.Path):
+            return DocumentFile(
+                name=str(file.name),
+                path=str(file.parent),
+                created_date=stat2str(file.stat().st_ctime),
+                modified_last=stat2str(file.stat().st_mtime),
+                size=file.stat().st_size,
+            )
+
+        files = [
+            format_file(file)
+            for file in path.iterdir()
+            if file.name.startswith("~") is False
+            and file.name.startswith("_") is False
+            and file.suffix == ".docx"
+        ]
+
+        project = ImportedBook(
+            path=str(path), dir_name=path.parent.name, documents=files
+        )
+
+        self.log.debug("File option list is {}", files)
+        return project
