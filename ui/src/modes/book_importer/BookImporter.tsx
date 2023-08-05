@@ -1,132 +1,142 @@
+import React, { useCallback, useState } from 'react'
+import {
+    AppShell,
+    Button,
+    Center,
+    createStyles,
+    Divider,
+    Group,
+    Header,
+    LoadingOverlay,
+    Space,
+    Stepper,
+    Switch,
+    Text,
+    Title,
+    useMantineColorScheme
+} from '@mantine/core'
+import { ImporterGreeting } from '@src/modes/book_importer/ImporterGreeting'
+import { InitialSetup } from '@src/modes/book_importer/InitialSetup'
+import { DocumentSelector } from '@src/modes/book_importer/DocumentSelector'
+import { IconMoonStars, IconSun } from '@tabler/icons-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAppContext } from '@src/App.context'
-import { Box, Button, Group, LoadingOverlay, Skeleton, Text, Title } from '@mantine/core'
-import React, { useEffect, useMemo, useState } from 'react'
-import { DocumentFile, ImportedBook } from '@src/types'
-import { useQuery } from '@tanstack/react-query'
-import { MantineReactTable, useMantineReactTable, type MRT_ColumnDef } from 'mantine-react-table'
-import { number } from 'zod'
+import { VerifyImport } from '@src/modes/book_importer/VerifyImport'
+import { BatchBroker } from '@src/modes/book_importer/lib/BatchBroker'
 
-export const BookImporter: React.FC = () => {
-    const { bookBroker, api, settings } = useAppContext()
-
-    const [loaded, setloaded] = useState(false)
-    const [lastPath, , setLastPath] = settings.makeState('lastImportedPath')
-    const [sourcePath, setSourcePath] = useState<string | null>(null)
-
-    const documentsEnabled = sourcePath !== undefined && sourcePath !== null
-
-    const { data: bookImport, isLoading: bookImportLoading } = useQuery<ImportedBook>({
-        queryKey: ['documents'],
-        queryFn: () => api.importer_list_files(sourcePath as string),
-        enabled: documentsEnabled
-    })
-
-    useEffect(() => {
-        if (loaded === false) {
-            api.importer_find_source(lastPath || '').then((result) => result && setSourcePath(result[0]))
-            setloaded(true)
-        }
-    }, [api, lastPath, loaded])
-
-    useEffect(() => {
-        if (sourcePath !== undefined && sourcePath !== null) {
-            setLastPath(sourcePath)
-        }
-    }, [sourcePath])
-
-    const columns = useMemo<MRT_ColumnDef<DocumentFile>[]>(
-        () => [
-            {
-                accessorKey: 'name',
-                header: 'Name'
-            },
-            {
-                accessorKey: 'created_date',
-                header: 'Created on'
-            },
-            {
-                accessorKey: 'modified_last',
-                header: 'Modified last'
-            },
-            {
-                accessorKey: 'size',
-                header: 'Size',
-                Cell: ({ cell }) => {
-                    const num = cell.getValue<number>()
-                    return <Box>{num.toLocaleString('en-US', { unit: 'byte' })}</Box>
-                }
-            }
-        ],
-        []
-    )
-
-    const table = useMantineReactTable({
-        columns,
-        data: (bookImport?.documents || []).sort((a, b) =>
-            `${a.name.toLowerCase()}`.localeCompare(b.name.toLowerCase())
-        ),
-        enableColumnActions: false,
-        enableColumnFilters: false,
-        enablePagination: false,
-        enableSelectAll: true,
-        enableRowSelection: true,
-        enableBottomToolbar: true,
-        enableColumnFilterModes: false,
-        enableDensityToggle: false,
-        enableExpanding: false,
-        enableExpandAll: false,
-        enableFilters: false,
-        enableGlobalFilter: false,
-        enableTableFooter: false,
-        enableTableHead: false,
-        enableHiding: false,
-        enableFullScreenToggle: false,
-        initialState: {
-            density: 'xs'
-        },
-        mantineTableProps: {
-            withColumnBorders: true,
-            withBorder: true
-        },
-        getRowId: (originalRow: DocumentFile) => originalRow.name
-    })
-
-    const handleImportSelected = () => {
-        const selected = table.getSelectedRowModel().rows
-        console.log('Documents selected: ', selected.length)
+const useStyles = createStyles((styles_theme) => ({
+    header_main: {
+        colorScheme: styles_theme.colorScheme,
+        backgroundColor: styles_theme.colorScheme === 'light' ? 'white' : 'black'
     }
+}))
 
-    if (documentsEnabled === false) {
-        return <Text>Select an import path</Text>
-    }
+export const BookImporter = () => {
+    const { api } = useAppContext()
+    const queryClient = useQueryClient()
 
-    if (documentsEnabled && bookImportLoading) {
+    const batchBroker = BatchBroker({ api, queryClient })
+
+    const [active, setActive] = useState(0)
+
+    const { theme } = useStyles()
+    const { colorScheme, toggleColorScheme } = useMantineColorScheme()
+
+    const onToggleColorScheme = useCallback(() => toggleColorScheme(), [toggleColorScheme])
+
+    const nextStep = () => setActive((current) => (current < 4 ? current + 1 : current))
+    const prevStep = () => setActive((current) => (current > 0 ? current - 1 : current))
+
+    const { data: batch, isLoading: batchLoading, status: batchStatus } = batchBroker.fetch()
+
+    if (batchLoading) {
         return (
             <>
-                <Text>Loading documents</Text>
+                <Title>Starting import wizard</Title>
                 <LoadingOverlay visible />
             </>
         )
     }
 
-    if (bookImport === undefined) {
+    if (!batch) {
         return (
             <>
-                <Text>There was a problem loading the imported files</Text>
+                <Text>Failed to load the batch memory object</Text>
             </>
         )
     }
 
+    const header = (
+        <Header height='6em'>
+            <Group position='apart'>
+                <Title>Book importer</Title>
+                <Group>
+                    <Switch
+                        checked={colorScheme === 'dark'}
+                        onChange={onToggleColorScheme}
+                        size='lg'
+                        onLabel={
+                            <IconMoonStars
+                                color={theme.white}
+                                size='1.25rem'
+                                stroke={1.5}
+                            />
+                        }
+                        offLabel={
+                            <IconSun
+                                color={theme.colors.gray[6]}
+                                size='1.25rem'
+                                stroke={1.5}
+                            />
+                        }
+                    />
+                </Group>
+            </Group>
+        </Header>
+    )
+
     return (
-        <>
-            <Group>
-                <Title>Importing: {bookImport.dir_name}</Title>
-                <Text>Source is: {sourcePath}</Text>
-            </Group>
-            <MantineReactTable table={table} />
-            <Group position='center'>
-                <Button onClick={handleImportSelected}>Import selected</Button>
-            </Group>
-        </>
+        <AppShell header={header}>
+            <Stepper
+                active={active}
+                onStepClick={setActive}
+                breakpoint='sm'
+            >
+                <Stepper.Step
+                    label='Greeting'
+                    description='A greeting'
+                >
+                    <ImporterGreeting />
+                </Stepper.Step>
+                <Stepper.Step
+                    label='Book options'
+                    description='Create a blank book to import into.'
+                >
+                    <InitialSetup />
+                </Stepper.Step>
+                <Stepper.Step
+                    label='Document selection'
+                    description='Select the documents to import'
+                >
+                    <DocumentSelector
+                        batch={batch}
+                        nextStep={nextStep}
+                    />
+                </Stepper.Step>
+                <Stepper.Step
+                    label='Verify everything'
+                    description='A quick sanity check'
+                >
+                    <VerifyImport batch={batch} />
+                </Stepper.Step>
+            </Stepper>
+            <Space h='md' />
+            <Divider />
+            <Space h='md' />
+            <Center>
+                <Button onClick={prevStep}>Go back</Button>
+                <Button onClick={nextStep}>Next step</Button>
+            </Center>
+        </AppShell>
     )
 }
