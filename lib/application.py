@@ -1,4 +1,5 @@
 import pathlib
+import typing as T
 
 import webview
 from . import models
@@ -11,6 +12,8 @@ class BCApplication:
     book_id: int
     Session: models.scoped_session
 
+    _batch: T.Optional[dict[str, str]]
+
     def __init__(self, database_path: pathlib.Path):
         self.database_path = database_path
         self.main_window = None
@@ -18,6 +21,8 @@ class BCApplication:
 
         # Makes sure we can connect
         self.engine, self.Session = models.connect(self.database_path)
+
+        self._batch = None
 
     @property
     def has_active_book(self):
@@ -44,3 +49,17 @@ class BCApplication:
         yield session
         session.close()
         del session
+
+    def get_batch(self):
+        if self._batch is None:
+            self._batch = dict()
+
+        return self._batch
+
+    def add2_batch(self, name, value):
+        self.get_batch()
+        self._batch[name] = value
+        return self._batch
+
+    def reset_batch(self):
+        self._batch = dict()

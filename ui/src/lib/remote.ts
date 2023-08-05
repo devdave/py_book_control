@@ -216,6 +216,18 @@ TODO verify this cascades
         return this.boundary.remote('delete_scene_status', status_uid);
     }
 
+    async importer_start_batch() {
+        return this.boundary.remote('importer_start_batch', );
+    }
+
+    async importer_add2_batch(name:any, value:any) {
+        return this.boundary.remote('importer_add2_batch', name, value);
+    }
+
+    async importer_reset_batch() {
+        return this.boundary.remote('importer_reset_batch', );
+    }
+
     async importer_find_source(optional_dir:string | undefined):Promise<string> {
         return this.boundary.remote('importer_find_source', optional_dir);
     }

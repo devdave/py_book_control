@@ -480,6 +480,15 @@ class BCAPI:
                                           |_|
     """
 
+    def importer_start_batch(self):
+        return self.app.get_batch()
+
+    def importer_add2_batch(self, name, value):
+        return self.app.add2_batch(name, value)
+
+    def importer_reset_batch(self):
+        self.app.reset_batch()
+
     def importer_find_source(self, optional_dir: T.Optional[str]) -> str:
         starting_dir = optional_dir if isinstance(optional_dir, str) else ""
 
@@ -514,9 +523,7 @@ class BCAPI:
             and file.suffix == ".docx"
         ]
 
-        project = ImportedBook(
-            path=str(path), dir_name=path.parent.name, documents=files
-        )
+        project = ImportedBook(path=str(path), dir_name=path.name, documents=files)
 
         self.log.debug("File option list is {}", files)
         return project
