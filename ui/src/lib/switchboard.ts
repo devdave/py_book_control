@@ -14,6 +14,13 @@ export class Switchboard {
     constructor() {
         this.callbacks = {}
         window.returnCall = this.returnVal.bind(this)
+        window.callBack = this.callBack.bind(this)
+    }
+
+    public generate() {
+        const d = new Deferred()
+        const callerId = this.register(d)
+        return [d, callerId]
     }
 
     private generateId() {
@@ -31,6 +38,18 @@ export class Switchboard {
         const identifer = this.generateId()
         this.callbacks[identifer] = d.callback
         return identifer
+    }
+
+    public deregister(identifier: string) {
+        if (this.callbacks[identifier]) {
+            delete this.callbacks[identifier]
+        }
+    }
+
+    public callBack(identifier: string, result: any) {
+        if (this.callbacks[identifier]) {
+            this.callbacks[identifier](result)
+        }
     }
 
     public returnVal(identifier: string, result: any) {
