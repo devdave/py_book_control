@@ -24,6 +24,7 @@ import { Notifications } from '@mantine/notifications'
 import { SceneStatusBroker } from '@src/brokers/SceneStatusBroker'
 import { BookBroker } from '@src/brokers/BookBroker'
 import { BookImporter } from '@src/modes/book_importer/BookImporter'
+import { Switchboard } from '@src/lib/switchboard'
 
 interface AppWrapperProps {
     value: AppContextValue
@@ -67,6 +68,7 @@ const App: React.FC = () => {
     const boundary = useMemo(() => new Boundary(), [])
 
     const api = useMemo(() => new APIBridge(boundary), [boundary])
+    const switchBoard = useMemo(() => new Switchboard(), [])
 
     const bookBroker = BookBroker({ api, activeBook, setActiveBook, queryClient })
 
@@ -175,6 +177,7 @@ const App: React.FC = () => {
         () => ({
             api,
             settings,
+            switchBoard,
 
             appMode,
             setAppMode,

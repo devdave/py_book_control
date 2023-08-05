@@ -5,10 +5,12 @@ import { UseQueryResult } from '@tanstack/react-query'
 import { SettingsManagerReturn } from '@src/lib/use-settings'
 import { SceneStatusBrokerFunctions } from '@src/brokers/SceneStatusBroker'
 import { BookBrokerReturnFunctions } from '@src/brokers/BookBroker'
+import { Switchboard } from '@src/lib/switchboard'
 
 export interface AppContextValue {
     api: APIBridge
     settings: SettingsManagerReturn<AppSettingValues>
+    switchBoard: Switchboard
 
     appMode: AppModes
     setAppMode: (mode: AppModes) => void
