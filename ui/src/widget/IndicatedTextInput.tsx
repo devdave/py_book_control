@@ -20,16 +20,16 @@ export const IndicatedTextInput: React.FC<IndicatedTextInputProps> = ({
     inputprops
 }) => (
     <Group {...containerprops}>
-        <Text>{label}</Text>
         <Indicator
             processing
             withBorder
             color='red'
-            position='top-start'
+            position='bottom-start'
             disabled={!form.isDirty(fieldName)}
             {...indicatorprops}
         >
             <TextInput
+                label={label}
                 {...form.getInputProps(fieldName)}
                 {...inputprops}
             />
