@@ -9,7 +9,10 @@ interface BatchBrokerProps {
 
 export interface BatchBrokerReturns {
     fetch: () => UseQueryResult<BatchSettings>
-    set: (key: keyof BatchSettings, value: never) => Promise<void>
+    set: (
+        key: keyof BatchSettings,
+        value: number | string | Record<string, string | number | boolean>
+    ) => Promise<void>
 }
 
 export const BatchBroker = ({ api, queryClient }: BatchBrokerProps): BatchBrokerReturns => {
