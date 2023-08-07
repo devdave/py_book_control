@@ -50,7 +50,7 @@ class DocxProperty:
         style = "Normal"
         style_sub = src_elm.find(TAGS.StyleType.value)
         if style_sub is not None:
-            style = style_sub.attrib[TAGS.Val.value]
+            style: str = style_sub.attrib[TAGS.Val.value]
 
         # get orientation
         orientation = "both"
