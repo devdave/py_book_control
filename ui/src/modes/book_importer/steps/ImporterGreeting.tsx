@@ -1,7 +1,12 @@
-import { Center, Group, Text, Title } from '@mantine/core'
+import { Button, Center, Group, Text, Title } from '@mantine/core'
 import { useAppContext } from '@src/App.context'
+import React from 'react'
 
-export const ImporterGreeting = () => {
+interface ImporterGreetingProps {
+    nextStep: () => void
+}
+
+export const ImporterGreeting: React.FC<ImporterGreetingProps> = ({ nextStep }) => {
     const { api } = useAppContext()
 
     return (
@@ -19,6 +24,7 @@ export const ImporterGreeting = () => {
                     With little to no exception, nothing is written in stone and can be changed later.
                 </Text>
                 <Text>That even includes the import process!</Text>
+                <Button onClick={nextStep}>Continue onward</Button>
             </Group>
         </Center>
     )
