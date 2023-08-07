@@ -1,6 +1,8 @@
-import { createStyles, Group, Header, Switch, Title, useMantineColorScheme } from '@mantine/core'
-import { IconMoonStars, IconSun } from '@tabler/icons-react'
+import { ActionIcon, createStyles, Group, Header, Switch, Title, useMantineColorScheme } from '@mantine/core'
+import { IconArrowBack, IconMoonStars, IconSun } from '@tabler/icons-react'
 import React, { useCallback } from 'react'
+import { useAppContext } from '@src/App.context'
+import { AppModes } from '@src/types'
 
 const useStyles = createStyles((styles_theme) => ({
     header_main: {
@@ -10,15 +12,26 @@ const useStyles = createStyles((styles_theme) => ({
 }))
 
 export const ImporterHeader: React.FC = () => {
+    const { setAppMode } = useAppContext()
     const { theme } = useStyles()
     const { colorScheme, toggleColorScheme } = useMantineColorScheme()
 
     const onToggleColorScheme = useCallback(() => toggleColorScheme(), [toggleColorScheme])
 
+    const handleGoBack = () => {
+        setAppMode(AppModes.MANIFEST)
+    }
+
     return (
         <Header height='6em'>
             <Group position='apart'>
-                <Title>Book importer</Title>
+                <Group>
+                    <ActionIcon onClick={handleGoBack}>
+                        <IconArrowBack />
+                    </ActionIcon>
+                    <Title>Book importer</Title>
+                </Group>
+
                 <Group>
                     <Switch
                         checked={colorScheme === 'dark'}
