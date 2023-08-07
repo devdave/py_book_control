@@ -236,6 +236,10 @@ TODO verify this cascades
         return this.boundary.remote('importer_list_files', filepath);
     }
 
+    async debug_long_task(callbackId:string) {
+        return this.boundary.remote('debug_long_task', callbackId);
+    }
+
 
 }
 
