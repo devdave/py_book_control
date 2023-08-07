@@ -82,7 +82,8 @@ export enum AppModes {
     OUTLINE = 'outline',
     STATS = 'stats',
     MANIFEST = 'manifest',
-    IMPORTER = 'importer'
+    IMPORTER = 'importer',
+    DEBUG = 'debug'
 }
 
 export enum EditModes {

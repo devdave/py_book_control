@@ -25,6 +25,7 @@ import { SceneStatusBroker } from '@src/brokers/SceneStatusBroker'
 import { BookBroker } from '@src/brokers/BookBroker'
 import { BookImporter } from '@src/modes/book_importer/BookImporter'
 import { Switchboard } from '@src/lib/switchboard'
+import { DebugPanel } from '@src/modes/debug/DebugPanel'
 
 interface AppWrapperProps {
     value: AppContextValue
@@ -216,6 +217,8 @@ const App: React.FC = () => {
                         return <Manifest />
                     case AppModes.IMPORTER:
                         return <BookImporter />
+                    case AppModes.DEBUG:
+                        return <DebugPanel />
                     default:
                         return <Text>Application error: unexpected mode {appMode}</Text>
                 }
