@@ -9,6 +9,7 @@ export interface BookBrokerReturnFunctions {
     update: (book: Partial<Book>) => Promise<Book>
     fetch: (book_id: Book['id']) => UseQueryResult<Book, Error>
     fetchAll: () => UseQueryResult<Book[], Error>
+    clearCache: () => Promise<void>
 }
 
 interface BookBrokerProps {
@@ -29,6 +30,13 @@ export const BookBroker = ({
      *
      *
      */
+    const clearCache = async (): Promise<void> => {
+        await queryClient.invalidateQueries({
+            queryKey: ['books', 'index'],
+            refetchType: 'active'
+        })
+    }
+
     const createManagedBook = async (book_name: string): Promise<Book> => {
         const newBook = await api.create_managed_book(book_name)
         await queryClient.invalidateQueries({ queryKey: ['books', 'index'] })
@@ -85,6 +93,7 @@ export const BookBroker = ({
         createManaged: createManagedBook,
         update: updateBook,
         fetch: fetchStrippedBook,
-        fetchAll: fetchStrippedBooks
+        fetchAll: fetchStrippedBooks,
+        clearCache
     }
 }
