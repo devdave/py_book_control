@@ -137,9 +137,13 @@ class Book(Base):
 
     SAFE_KEYS = ["title", "notes"]
 
-    characters: Mapped[T.List["Character"]] = relationship(back_populates="book")
+    characters: Mapped[T.List["Character"]] = relationship(
+        back_populates="book", cascade="all, delete-orphan"
+    )
 
-    scene_statuses: Mapped[T.List["SceneStatus"]] = relationship(back_populates="book")
+    scene_statuses: Mapped[T.List["SceneStatus"]] = relationship(
+        back_populates="book", cascade="all, delete-orphan"
+    )
 
     def update(self, change: T.Dict[str, str]):
         for safe in self.SAFE_KEYS:
