@@ -1,5 +1,5 @@
 import APIBridge from '@src/lib/remote'
-import { QueryClient, useQuery } from '@tanstack/react-query'
+import { QueryClient, useQuery, UseQueryResult } from '@tanstack/react-query'
 import { BatchSettings } from '@src/modes/book_importer/types'
 
 interface BatchBrokerProps {
@@ -7,7 +7,12 @@ interface BatchBrokerProps {
     queryClient: QueryClient
 }
 
-export const BatchBroker = ({ api, queryClient }: BatchBrokerProps) => {
+export interface BatchBrokerReturns {
+    fetch: () => UseQueryResult<BatchSettings>
+    set: (key: keyof BatchSettings, value: never) => Promise<void>
+}
+
+export const BatchBroker = ({ api, queryClient }: BatchBrokerProps): BatchBrokerReturns => {
     const fetch = () =>
         // eslint-disable-next-line react-hooks/rules-of-hooks
         useQuery<BatchSettings>({
