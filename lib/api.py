@@ -2,6 +2,7 @@ import pathlib
 import typing as T
 import logging
 import datetime as DT
+import time
 
 import webview  # type: ignore
 from sqlalchemy.exc import IntegrityError
@@ -527,3 +528,15 @@ class BCAPI:
 
         self.log.debug("File option list is {}", files)
         return project
+
+    def debug_long_task(self, callbackId: str):
+        payload = dict(msg="Hello World!", nums=123)
+
+        self.app.callback(callbackId, payload)
+        time.sleep(1)
+        payload = dict(msg="Midway", alpha="abcd")
+        self.app.callback(callbackId, payload)
+        payload = dict(msg="End of the road", mixed=["a", 1, "b", 2, "c", 3])
+        self.app.callback(callbackId, payload)
+
+        return

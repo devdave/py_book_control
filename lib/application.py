@@ -1,5 +1,6 @@
 import pathlib
 import typing as T
+import json
 
 import webview
 from . import models
@@ -63,3 +64,9 @@ class BCApplication:
 
     def reset_batch(self):
         self._batch = dict()
+
+    def callback(self, identifierID, returnval):
+        payload = json.dumps(returnval)
+        script = "window.callBack('{0}', {1})".format(identifierID, payload)
+        print(f"callback `{script}`")
+        self.main_window.evaluate_js(script)
