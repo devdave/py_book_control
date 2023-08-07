@@ -1,35 +1,15 @@
-import React, { useCallback, useState } from 'react'
-import {
-    AppShell,
-    Button,
-    Center,
-    createStyles,
-    Divider,
-    Group,
-    Header,
-    LoadingOverlay,
-    Space,
-    Stepper,
-    Switch,
-    Text,
-    Title,
-    useMantineColorScheme
 } from '@mantine/core'
+import React, { useState } from 'react'
+import { AppShell, Button, Center, Divider, LoadingOverlay, Space, Stepper, Text, Title } from '@mantine/core'
 import { ImporterGreeting } from '@src/modes/book_importer/ImporterGreeting'
 import { InitialSetup } from '@src/modes/book_importer/InitialSetup'
 import { DocumentSelector } from '@src/modes/book_importer/DocumentSelector'
-import { IconMoonStars, IconSun } from '@tabler/icons-react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+
+import { useQueryClient } from '@tanstack/react-query'
 import { useAppContext } from '@src/App.context'
 import { VerifyImport } from '@src/modes/book_importer/VerifyImport'
 import { BatchBroker } from '@src/modes/book_importer/lib/BatchBroker'
-
-const useStyles = createStyles((styles_theme) => ({
-    header_main: {
-        colorScheme: styles_theme.colorScheme,
-        backgroundColor: styles_theme.colorScheme === 'light' ? 'white' : 'black'
-    }
-}))
+import { ImporterHeader } from '@src/modes/book_importer/ImporterHeader'
 
 export const BookImporter = () => {
     const { api } = useAppContext()
@@ -38,11 +18,6 @@ export const BookImporter = () => {
     const batchBroker = BatchBroker({ api, queryClient })
 
     const [active, setActive] = useState(0)
-
-    const { theme } = useStyles()
-    const { colorScheme, toggleColorScheme } = useMantineColorScheme()
-
-    const onToggleColorScheme = useCallback(() => toggleColorScheme(), [toggleColorScheme])
 
     const nextStep = () => setActive((current) => (current < 4 ? current + 1 : current))
     const prevStep = () => setActive((current) => (current > 0 ? current - 1 : current))
@@ -66,34 +41,7 @@ export const BookImporter = () => {
         )
     }
 
-    const header = (
-        <Header height='6em'>
-            <Group position='apart'>
-                <Title>Book importer</Title>
-                <Group>
-                    <Switch
-                        checked={colorScheme === 'dark'}
-                        onChange={onToggleColorScheme}
-                        size='lg'
-                        onLabel={
-                            <IconMoonStars
-                                color={theme.white}
-                                size='1.25rem'
-                                stroke={1.5}
-                            />
-                        }
-                        offLabel={
-                            <IconSun
-                                color={theme.colors.gray[6]}
-                                size='1.25rem'
-                                stroke={1.5}
-                            />
-                        }
-                    />
-                </Group>
-            </Group>
-        </Header>
-    )
+    const header = <ImporterHeader />
 
     return (
         <AppShell header={header}>
