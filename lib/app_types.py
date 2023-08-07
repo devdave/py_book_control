@@ -96,3 +96,28 @@ class ImportedBook(T.TypedDict):
     path: str
     dir_name: str
     documents: list[DocumentFile]
+
+
+class InitialSettings(T.TypedDict):
+    book_name: str
+    have_default_status: bool
+    default_status: str
+    status_color: str
+
+
+class BatchSettings(T.TypedDict):
+    documents: list[DocumentFile]
+    name_and_status: InitialSettings
+    book_path: str
+
+
+class ImportMessage(T.TypedDict):
+    action: T.Literal["show"]
+    msg: T.Optional[str]
+
+
+class ImportChapter(T.TypedDict):
+    action: T.Literal["add_chapter"]
+    name: str
+    title: str
+    scene_ct: int
