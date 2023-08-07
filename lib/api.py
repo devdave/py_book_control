@@ -7,6 +7,7 @@ import time
 import webview  # type: ignore
 from sqlalchemy.exc import IntegrityError
 
+from app_types import BatchSettings, ImportMessage, ImportChapter
 from .scene_processor import SceneProcessor2 as SceneProcessor
 from .application import BCApplication
 from . import models
@@ -26,6 +27,8 @@ from .app_types import (
     BookType as Book,
     SceneStatusType as SceneStatus,
 )
+
+from lib.importer.chapter_importer import ChapterImporter
 
 
 class BCAPI:
@@ -528,6 +531,77 @@ class BCAPI:
 
         self.log.debug("File option list is {}", files)
         return project
+
+    def importer_process_batch(self, reporterId: str):
+        def report(msg):
+            payload = ImportMessage(msg=msg, action="show")
+            self.app.callback(reporterId, payload)
+
+        def report_chapter(name, title, scene_ct):
+            payload = ImportChapter(
+                action="add_chapter", name=name, title=title, scene_ct=scene_ct
+            )
+
+            self.app.callback(reporterId, payload)
+
+        def timestamp2datetime(ts):
+            return DT.datetime.fromtimestamp(ts)
+
+        batch = self.app.get_batch()  # type: BatchSettings
+
+        name_status = batch["name_and_status"]
+
+        with self.app.get_db() as session:
+            book = models.Book(
+                title=name_status["book_name"], operation_type=BookTypes.imported
+            )
+            session.add(book)
+
+            status = None
+            if name_status["have_default_status"] is True:
+                status_name = name_status["default_status"]
+                status_color = name_status["status_color"]
+                status = models.SceneStatus(
+                    name=status_name, color=status_color, book=book
+                )
+                session.add(status)
+
+            for document in batch["documents"]:  # type: DocumentFile
+                report(f"Processing {document['name']}")
+                target = pathlib.Path(document["path"]) / document["name"]
+                assert target.exists() and target.is_file()
+                stat = target.stat()
+
+                imported = ChapterImporter.Load(target)
+
+                report(f"{document['name']} has {len(imported.scenes)} scenes")
+                report_chapter(document["name"], imported.title, len(imported.scenes))
+
+                chapter = models.Chapter(
+                    title=imported.title,
+                    source_file=target,
+                    source_size=stat.st_size,
+                    source_modified=timestamp2datetime(stat.st_mtime),
+                    last_imported=timestamp2datetime(time.time()),
+                )
+
+                for scene_record in imported.scenes:
+                    scene = models.Scene(
+                        title=scene_record.title,
+                        content=scene_record.body,
+                        location=scene_record.location,
+                        notes=scene_record.notes,
+                    )
+                    if status is not None:
+                        scene.status = status
+
+                    session.add(scene)
+                    chapter.scenes.append(scene)
+
+                session.add(chapter)
+                book.chapters.append(chapter)
+            session.commit()
+        return True
 
     def debug_long_task(self, callbackId: str):
         payload = dict(msg="Hello World!", nums=123)
