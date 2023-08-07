@@ -1,26 +1,27 @@
 import { Deferred } from './deferred'
 
-type defferedCallback = (...args: any[]) => any | void
-type defferedCallbacks = { [key: string]: defferedCallback }
+type deferredCallback = (...args: never) => void
+type deferredCallbacks = { [key: string]: deferredCallback }
 
 declare global {
     interface Window {
-        returnCall: (identifier: string, result: any) => void
+        returnCall: (identifier: string, result: never) => void
+        callBack: (identifier: string, result: never) => void
     }
 }
 
 export class Switchboard {
-    callbacks: defferedCallbacks
+    callbacks: deferredCallbacks
     constructor() {
         this.callbacks = {}
         window.returnCall = this.returnVal.bind(this)
         window.callBack = this.callBack.bind(this)
     }
 
-    public generate() {
-        const d = new Deferred()
-        const callerId = this.register(d)
-        return [d, callerId]
+    public generate(callBack: (response: never) => void): string {
+        const id = this.generateId()
+        this.callbacks[id] = callBack
+        return id
     }
 
     private generateId() {
@@ -46,13 +47,14 @@ export class Switchboard {
         }
     }
 
-    public callBack(identifier: string, result: any) {
+    public callBack(identifier: string, result: never) {
+        console.debug('Called ', identifier, result)
         if (this.callbacks[identifier]) {
             this.callbacks[identifier](result)
         }
     }
 
-    public returnVal(identifier: string, result: any) {
+    public returnVal(identifier: string, result: never) {
         if (this.callbacks[identifier]) {
             this.callbacks[identifier](result)
             delete this.callbacks[identifier]
