@@ -33,7 +33,7 @@ export const BookImporterStepper: React.FC<BookImporterStepperProps> = ({ batch 
                     label='Book options'
                     description='Create a blank book to import into.'
                 >
-                    <InitialSetup />
+                    <InitialSetup nextStep={nextStep} />
                 </Stepper.Step>
                 <Stepper.Step
                     label='Document selection'
