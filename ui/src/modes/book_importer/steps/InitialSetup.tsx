@@ -7,12 +7,16 @@ import { IconFlagFilled } from '@tabler/icons-react'
 import { BatchBroker } from '@src/modes/book_importer/lib/BatchBroker'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { IndicatedTextInput } from '@src/widget/IndicatedTextInput'
+import { useImportContext } from '@src/modes/book_importer/BookImporter.context'
 
-export const InitialSetup = () => {
+interface InitialSetupProps {
+    nextStep: () => void
+}
+
+export const InitialSetup = ({ nextStep }: InitialSetupProps) => {
     const { api } = useAppContext()
-    const queryClient = useQueryClient()
+    const { batchBroker } = useImportContext()
 
-    const batchBroker = BatchBroker({ api, queryClient })
     const { data: batch, status: batchStatus } = batchBroker.fetch()
 
     const form = useForm({
