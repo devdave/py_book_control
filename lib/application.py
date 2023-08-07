@@ -3,6 +3,8 @@ import typing as T
 import json
 
 import webview
+
+from app_types import BatchSettings
 from . import models
 from contextlib import contextmanager
 
@@ -51,7 +53,7 @@ class BCApplication:
         session.close()
         del session
 
-    def get_batch(self):
+    def get_batch(self) -> BatchSettings:
         if self._batch is None:
             self._batch = dict()
 
