@@ -1,4 +1,3 @@
-} from '@mantine/core'
 import React, { useState } from 'react'
 import { AppShell, Button, Center, Divider, LoadingOverlay, Space, Stepper, Text, Title } from '@mantine/core'
 import { ImporterGreeting } from '@src/modes/book_importer/ImporterGreeting'
