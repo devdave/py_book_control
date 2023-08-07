@@ -1,6 +1,7 @@
 import {
     ActionIcon,
     AppShell,
+    Button,
     createStyles,
     Group,
     Header,
@@ -256,6 +257,7 @@ export const Manifest = () => {
                         return <Text>Failed to fetch book notes.</Text>
                     })()}
                 </Paper>
+                <Button onClick={() => setAppMode(AppModes.DEBUG)}>Debug</Button>
             </Stack>
         </AppShell>
     )
