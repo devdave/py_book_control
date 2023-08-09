@@ -49,6 +49,11 @@ class ChapterDict(T.TypedDict):
     summary: str
     scenes: list[SceneType]
 
+    source_file: T.Optional[str]
+    source_size: T.Optional[int]
+    source_modified: T.Optional[str]
+    last_imported: T.Optional[str]
+
 
 class BookType(T.TypedDict):
     id: UniqueId

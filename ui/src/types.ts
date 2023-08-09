@@ -58,6 +58,10 @@ export interface ChapterIndex extends Base {
     scenes: SceneIndex[]
     order: number
     words: number
+    source_file?: string
+    source_size?: number
+    source_modified?: string
+    last_imported?: string
 }
 
 export interface Chapter extends ChapterIndex {
