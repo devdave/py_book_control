@@ -46,6 +46,7 @@ const TextSceneForm: React.FC<TextSceneFormProps> = ({ scene, field, label, onKe
             label={label}
             autoCapitalize='sentences'
             onKeyUp={onKeyUp}
+            style={{ whiteSpace: 'pre-wrap' }}
             {...form.getInputProps(field)}
         />
     )

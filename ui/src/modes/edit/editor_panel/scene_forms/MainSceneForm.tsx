@@ -62,8 +62,8 @@ export const MainSceneForm: FC<SceneFormProps> = ({ scene, onKeyUp }) => {
                 minRows={4}
                 spellCheck
                 data-autofocus
-                autoFocus
                 {...form.getInputProps('content')}
+                styles={{ input: { whiteSpace: 'pre-wrap' } }}
             />
             <br />
         </>
