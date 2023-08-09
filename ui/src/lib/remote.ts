@@ -240,6 +240,10 @@ TODO verify this cascades
         return this.boundary.remote('importer_process_batch', reporterId);
     }
 
+    async importer_reimport_chapter(chapterUid:UniqueId):Promise<boolean> {
+        return this.boundary.remote('importer_reimport_chapter', chapterUid);
+    }
+
     async debug_long_task(callbackId:string) {
         return this.boundary.remote('debug_long_task', callbackId);
     }

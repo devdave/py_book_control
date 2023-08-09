@@ -603,6 +603,43 @@ class BCAPI:
             session.commit()
         return True
 
+    def importer_reimport_chapter(self, chapterUid: UniqueId) -> bool:
+        def timestamp2datetime(ts):
+            return DT.datetime.fromtimestamp(ts)
+
+        with self.app.get_db() as session:
+            chapter = models.Chapter.Fetch_by_uid(session, chapterUid)
+            book = chapter.book
+            for scene in chapter.scenes:
+                session.delete(scene)
+
+            session.commit()
+
+            stat = chapter.source_file.stat()
+            imported = ChapterImporter.Load(chapter.source_file)
+            chapter.source_size = stat.st_size
+            chapter.last_imported = timestamp2datetime(time.time())
+            chapter.source_modified = timestamp2datetime(stat.st_mtime)
+
+            for idx, scene_record in enumerate(imported.scenes):
+                if scene_record.title is None or scene_record.title.strip() == "":
+                    title = f"Scene {idx}"
+                else:
+                    title = scene_record.title
+
+                scene = models.Scene(
+                    title=title,
+                    content=scene_record.body,
+                    location=scene_record.location,
+                    notes=scene_record.notes,
+                )
+                chapter.scenes.append(scene)
+                session.add(scene)
+
+            session.commit()
+
+            return True
+
     def debug_long_task(self, callbackId: str):
         payload = dict(msg="Hello World!", nums=123)
 
