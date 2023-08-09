@@ -75,6 +75,24 @@ export const ChapterForm: FC<ChapterFormProps> = ({ chapter }) => {
                     {...form.getInputProps('summary')}
                 />
             </details>
+            {chapter.source_file && (
+                <details>
+                    <summary>Imported datum</summary>
+                    <dl>
+                        <dt>Source file</dt>
+                        <dd>{chapter.source_file}</dd>
+
+                        <dt>Source size</dt>
+                        <dd>{chapter.source_size}</dd>
+
+                        <dt>Last modified</dt>
+                        <dd>{chapter.last_imported}</dd>
+
+                        <dt>Last imported</dt>
+                        <dt>{chapter.last_imported}</dt>
+                    </dl>
+                </details>
+            )}
         </>
     )
 }
