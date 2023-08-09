@@ -6,6 +6,7 @@ import APIBridge from '@src/lib/remote'
 import { ShowError } from '@src/widget/ShowErrorNotification'
 
 export interface ChapterBrokerFunctions {
+    clearChapterCache: (book_id: Book['id'], chapter_id: Chapter['id']) => Promise<void>
     create: (book_id: Book['id'], chapter_title: Chapter['title']) => Promise<Chapter | undefined>
     // add: (book: Book) => void
     get: (chapterId: Chapter['id'], stripped: boolean) => Promise<Chapter>
@@ -29,6 +30,20 @@ export const ChapterBroker = ({
 
     queryClient
 }: ChapterBrokerProps): ChapterBrokerFunctions => {
+    const clearChapterCache = async (book_id: Book['id'], chapter_id: Chapter['id']) => {
+        await queryClient.invalidateQueries({
+            queryKey: ['book', book_id, 'index'],
+            exact: true,
+            refetchType: 'active'
+        })
+
+        await queryClient.invalidateQueries({
+            queryKey: ['book', book_id, 'chapter', chapter_id],
+            exact: true,
+            refetchType: 'active'
+        })
+    }
+
     const _createChapter = useMutation<Chapter | undefined, Error, Partial<Chapter>>({
         mutationFn: (newChapter: Partial<Chapter>) => api.create_chapter(newChapter as Chapter),
         onSuccess: (response) => {
@@ -124,6 +139,7 @@ export const ChapterBroker = ({
     )
 
     return {
+        clearChapterCache,
         create: createChapter,
         // add: addChapter,
         get: getChapter,
