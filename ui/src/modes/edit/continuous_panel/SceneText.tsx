@@ -293,7 +293,8 @@ export const SceneText: React.FC<SceneTextProps> = ({ scene, bindScrollRef }) =>
                         input: {
                             minHeight: '80vh',
                             width: '100%',
-                            boxSizing: 'border-box'
+                            boxSizing: 'border-box',
+                            whiteSpace: 'pre-wrap'
                         }
                     })}
                     autoFocus={activeScene?.id === scene.id}

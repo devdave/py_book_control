@@ -39,7 +39,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                             fontFamily: `"${fontName}"`,
                             fontSize: `${fontSize}px`,
                             fontWeight,
-                            lineHeight: `${lineHeight}%`
+                            lineHeight: `${lineHeight}%`,
+                            textAlign: 'justify',
+                            whiteSpace: 'pre-wrap'
                         },
                         colorScheme: theme.colorScheme,
                         backgroundColor: theme.colorScheme === 'light' ? 'white' : 'black'
@@ -54,7 +56,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                                     fontFamily: `"${fontName}"`,
                                     fontSize: `${fontSize}px`,
                                     fontWeight,
-                                    lineHeight: `${lineHeight}%`
+                                    lineHeight: `${lineHeight}%`,
+                                    textAlign: 'justify',
+                                    whiteSpace: 'pre-wrap'
                                 }
                             })
                         },
