@@ -252,6 +252,10 @@ class Chapter(Base):
             notes=self.notes if stripped is False else "",
             summary=self.summary if stripped is False else "",
             scenes=[scene.asdict(stripped=stripped) for scene in self.scenes],
+            source_file=str(self.source_file) if self.source_file else None,
+            source_size=self.source_size if self.source_size else None,
+            source_modified=str(self.source_modified) if self.source_modified else None,
+            last_imported=str(self.last_imported) if self.last_imported else None,
         )  # type: ignore
 
         return data
