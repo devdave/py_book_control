@@ -44,15 +44,20 @@ class SceneProcessor2:
 
     def collect_text(self, ast_node: T.Dict[str, T.Any]) -> str:
         body = []
-        for child in ast_node["children"]:
-            if child["type"] == "text":
-                body.append(child["raw"])
-            elif child["type"] == "softbreak":
-                body.append("\n")
-            else:
-                raise ValueError(
-                    f"I don't know how to collect text from {child}-{repr(child)}"
-                )
+        if ast_node["type"] == "block_code":
+            body.append(ast_node["raw"])
+        else:
+            for child in ast_node["children"]:
+                if child["type"] == "text":
+                    body.append(child["raw"])
+                elif child["type"] == "softbreak":
+                    body.append("\n")
+                elif child["type"] == "linebreak":
+                    body.append("\n")
+                else:
+                    raise ValueError(
+                        f"I don't know how to collect text from {child}-{repr(child)}"
+                    )
 
         return "".join(body)
 
@@ -89,7 +94,7 @@ class SceneProcessor2:
                 else:
                     raise ValueError("Parser can only split one scene at a time!")
 
-            elif child["type"] == "paragraph":
+            elif child["type"] == "paragraph" or child["type"] == "block_code":
                 if self.status == "split":
                     self.split_content.append(self.collect_text(child))
                 else:
