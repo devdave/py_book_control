@@ -125,7 +125,10 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = ({ chapter }) => {
 
     useEffect(() => {
         if (activeScene) {
-            if (paperRefs.current[activeScene.id] !== undefined) {
+            if (
+                paperRefs.current[activeScene.id] !== undefined &&
+                paperRefs.current[activeScene.id] !== document.activeElement
+            ) {
                 const currentElement = paperRefs.current[activeScene.id]
 
                 currentElement?.scrollIntoView({
