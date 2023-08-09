@@ -16,7 +16,7 @@ class Scene:
 
     @property
     def body(self):
-        return "".join(self._body)
+        return "\n".join(self._body)
 
     def add_para(self, paratext):
         self._body.append(paratext)
