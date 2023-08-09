@@ -77,32 +77,38 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
         <Navbar width={{ base: 300 }}>
             {/*<Title order={3}>Chapters</Title>*/}
 
-            <SegmentedControl
-                value={editMode}
-                onChange={setEditMode}
-                data={[
-                    {
-                        value: EditModes.LIST,
-                        label: (
-                            <Center>
-                                <IconList />
-                                <Box ml={10}>Detailed</Box>
-                            </Center>
-                        )
-                    },
-                    {
-                        value: EditModes.FLOW,
-                        label: (
-                            <Center>
-                                <IconArticle />
-                                <Box ml={10}>Flow</Box>
-                            </Center>
-                        )
-                    }
-                ]}
+            <Group>
+                <SegmentedControl
+                    value={editMode}
+                    onChange={setEditMode}
+                    data={[
+                        {
+                            value: EditModes.LIST,
+                            label: (
+                                <Center>
+                                    <IconList />
+                                    <Box ml={10}>Detailed</Box>
+                                </Center>
+                            )
+                        },
+                        {
+                            value: EditModes.FLOW,
+                            label: (
+                                <Center>
+                                    <IconArticle />
+                                    <Box ml={10}>Flow</Box>
+                                </Center>
+                            )
+                        }
+                    ]}
+                />
+            </Group>
+
+            <Divider
+                size='xl'
+                color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]}
             />
 
-            <Divider color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]} />
             <Button
                 size='xs'
                 color={theme.colorScheme === 'light' ? theme.colors.gray[3] : theme.colors.dark[4]}
@@ -150,6 +156,10 @@ export const LeftPanel: FC<LeftPanelProps> = ({ index }) => {
                                 <IconFlagFilled />
                             </Center>
                         }
+                    />
+                    <Divider
+                        label='Chapters'
+                        labelPosition='center'
                     />
 
                     <DragDropContext
