@@ -15,7 +15,7 @@ export interface Setting {
 }
 
 export interface Base {
-    id: UID
+    id: UniqueId
     created_on?: string
     updated_on?: string
 }
@@ -36,7 +36,7 @@ export interface Book extends Base {
 }
 
 export interface SceneIndex extends Base {
-    chapterId: UID
+    chapterId: UniqueId
     title: string
     order: number
     words: number
@@ -76,7 +76,7 @@ export interface Chapter extends ChapterIndex {
 export interface Character extends Base {
     name: string
     notes: string
-    book_id: UID
+    book_id: UniqueId
     scene_count?: number
     locations: CharacterLocation[]
 }
