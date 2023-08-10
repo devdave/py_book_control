@@ -78,7 +78,9 @@ export const Manifest = () => {
 
     const handleDeleteBook = async (book_id: Book['id']) => {
         ConfirmModal('Delete', 'Are you sure you want to delete this?').then((response) => {
-            alert(`I got ${response}`)
+            if (response && response === true) {
+                bookBroker.delete(book_id)
+            }
         })
     }
 
