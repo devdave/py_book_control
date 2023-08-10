@@ -176,6 +176,11 @@ class Book(Base):
         stmt = select(cls).where(cls.uid == uid)
         return session.scalars(stmt).one()
 
+    @classmethod
+    def Delete(cls, session, book_uid):
+        stmt = delete(cls).where(cls.uid == book_uid)
+        return session.execute(stmt)
+
     def asdict(self, stripped=True):
         if self.operation_type == BookTypes.managed:
             operation_type = "Managed"
@@ -332,6 +337,7 @@ class Scene(Base):
     characters: Mapped[list["Character"]] = relationship(
         secondary=Scenes2Characters,
         back_populates="scenes",
+        cascade="all, delete-orphan",
     )
 
     # cascade="all, delete-orphan"
