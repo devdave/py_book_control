@@ -97,6 +97,12 @@ class BCAPI:
             session.commit()
             return book.asdict()
 
+    def book_delete(self, book_uid: UniqueId) -> bool:
+        with self.app.get_db() as session:
+            models.Book.Delete(session, book_uid)
+            session.commit()
+            return True
+
     def find_source(self):
         return self.app.main_window.create_file_dialog(
             webview.OPEN_DIALOG, allow_multiple=False, file_types=self.FILE_TYPES
@@ -585,9 +591,14 @@ class BCAPI:
                     last_imported=timestamp2datetime(time.time()),
                 )
 
-                for scene_record in imported.scenes:
+                for idx, scene_record in enumerate(imported.scenes, 1):
+                    scene_title = (
+                        scene_record.title
+                        if len(scene_record.title.strip()) > 0
+                        else f"Scene {idx}"
+                    )
                     scene = models.Scene(
-                        title=scene_record.title,
+                        title=scene_title,
                         content=scene_record.body,
                         location=scene_record.location,
                         notes=scene_record.notes,
@@ -621,7 +632,7 @@ class BCAPI:
             chapter.last_imported = timestamp2datetime(time.time())
             chapter.source_modified = timestamp2datetime(stat.st_mtime)
 
-            for idx, scene_record in enumerate(imported.scenes):
+            for idx, scene_record in enumerate(imported.scenes, 1):
                 if scene_record.title is None or scene_record.title.strip() == "":
                     title = f"Scene {idx}"
                 else:

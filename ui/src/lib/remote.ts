@@ -59,6 +59,10 @@ class APIBridge {
         return this.boundary.remote('create_managed_book', book_name);
     }
 
+    async book_delete(book_uid:UniqueId):Promise<boolean> {
+        return this.boundary.remote('book_delete', book_uid);
+    }
+
     async find_source() {
         return this.boundary.remote('find_source', );
     }

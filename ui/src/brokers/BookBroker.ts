@@ -10,6 +10,7 @@ export interface BookBrokerReturnFunctions {
     fetch: (book_id: Book['id']) => UseQueryResult<Book, Error>
     fetchAll: () => UseQueryResult<Book[], Error>
     clearCache: () => Promise<void>
+    delete: (book_id: Book['id']) => Promise<void>
 }
 
 interface BookBrokerProps {
@@ -89,11 +90,20 @@ export const BookBroker = ({
         [api]
     )
 
+    const deleteBook = useCallback(
+        async (book_id: Book['id']) => {
+            await api.book_delete(book_id)
+            clearCache()
+        },
+        [api, clearCache]
+    )
+
     return {
         createManaged: createManagedBook,
         update: updateBook,
         fetch: fetchStrippedBook,
         fetchAll: fetchStrippedBooks,
-        clearCache
+        clearCache,
+        delete: deleteBook
     }
 }
