@@ -337,7 +337,6 @@ class Scene(Base):
     characters: Mapped[list["Character"]] = relationship(
         secondary=Scenes2Characters,
         back_populates="scenes",
-        cascade="all, delete-orphan",
     )
 
     # cascade="all, delete-orphan"
