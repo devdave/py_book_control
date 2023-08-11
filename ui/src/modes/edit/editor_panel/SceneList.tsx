@@ -25,20 +25,20 @@ const SceneList = () => {
     useEffect(() => {
         if (activeScene && accordionRefs.current[activeScene.id]) {
             const currentElement = accordionRefs.current[activeScene.id]
-            currentElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'end',
-                inline: 'nearest'
-            })
+            // currentElement.scrollIntoView({
+            //     behavior: 'smooth',
+            //     block: 'end',
+            //     inline: 'nearest'
+            // })
             const ta = currentElement.querySelector('.mainContent textarea') as HTMLTextAreaElement
-            if (ta) {
-                ta.setSelectionRange(ta.value.length, ta.value.length)
-                ta.scrollTop = ta.scrollHeight
-                ta.blur()
-                ta.focus()
-                ta.selectionStart = ta.value.length || 0
-                ta.setSelectionRange(ta.value.length, ta.value.length + 1)
-                ta.value += ''
+            if (ta && ta !== document.activeElement) {
+                // ta.setSelectionRange(ta.value.length, ta.value.length)
+                // ta.scrollTop = ta.scrollHeight
+                // ta.blur()
+                // ta.focus()
+                // ta.selectionStart = ta.value.length || 0
+                // ta.setSelectionRange(ta.value.length, ta.value.length + 1)
+                // ta.value += ''
             }
         }
     }, [activeScene, activeScene?.id])
