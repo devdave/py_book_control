@@ -38,6 +38,7 @@ from sqlalchemy.orm import (
     attribute_keyed_dict,
     attributes,
 )
+from sqlalchemy.orm import MappedAsDataclass
 
 from .sa_pathlike import SAPathlike
 from .log_helper import getLogger
@@ -84,7 +85,9 @@ def connect(db_path: pathlib.Path):
 
 
 class Base(DeclarativeBase):
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+    )
 
     created_on: Mapped[DT.datetime] = mapped_column(server_default=func.now())
     updated_on: Mapped[DT.datetime] = mapped_column(
@@ -125,12 +128,14 @@ class Book(Base):
     title: Mapped[str]
     notes: Mapped[str] = mapped_column(default="")
 
-    operation_type: Mapped[BookTypes] = mapped_column(Enum(BookTypes))
+    operation_type: Mapped[BookTypes] = mapped_column(
+        Enum(BookTypes), default=BookTypes.managed
+    )
     import_dir: Mapped[SAPathlike] = mapped_column(SAPathlike(), default=None)
 
     chapters: Mapped[T.List["Chapter"]] = relationship(
         back_populates="book",
-        cascade="all, delete-orphan",
+        cascade="all, delete",
         order_by="Chapter.order",
         collection_class=ordering_list("order"),
     )
@@ -177,9 +182,9 @@ class Book(Base):
         return session.scalars(stmt).one()
 
     @classmethod
-    def Delete(cls, session, book_uid):
-        stmt = delete(cls).where(cls.uid == book_uid)
-        return session.execute(stmt)
+    def Delete(cls, session: Session, book_uid):
+        book = cls.Fetch_by_UID(session, book_uid)
+        session.delete(book)
 
     def asdict(self, stripped=True):
         if self.operation_type == BookTypes.managed:
@@ -223,10 +228,10 @@ class Chapter(Base):
     )
     """The source file from which this chapter and its scenes were imported from"""
 
-    source_size: Mapped[int] = mapped_column(default=-1)
+    source_size: Mapped[int] = mapped_column(default=None)
     """Ideally kilobytes but the actual value doesn't matter as this is fed from file stat"""
 
-    source_modified: Mapped[int] = mapped_column(default=-1)
+    source_modified: Mapped[int] = mapped_column(default=None)
     """The actual value doesn't matter as this is fed from file stat"""
 
     last_imported: Mapped[T.Optional[DT.datetime]] = mapped_column(default=None)
@@ -234,12 +239,12 @@ class Chapter(Base):
 
     scenes: Mapped[T.List["Scene"]] = relationship(
         back_populates="chapter",
-        cascade="all, delete-orphan",
+        cascade="all, delete",
         order_by="Scene.order",
         collection_class=ordering_list("order"),
     )
 
-    book_id: Mapped[int] = mapped_column(ForeignKey("Book.id"))
+    book_id: Mapped[int] = mapped_column(ForeignKey("Book.id", ondelete="CASCADE"))
     book: Mapped["Book"] = relationship(back_populates="chapters")
 
     SAFE_KEYS = ["title", "order", "summary", "notes"]
