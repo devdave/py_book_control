@@ -1,4 +1,3 @@
-import enum
 import typing as T
 from enum import Enum
 
