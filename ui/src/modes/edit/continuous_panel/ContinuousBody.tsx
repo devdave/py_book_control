@@ -124,24 +124,24 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = ({ chapter }) => {
     )
 
     useEffect(() => {
-        if (activeScene) {
-            if (
-                paperRefs.current[activeScene.id] !== undefined &&
-                paperRefs.current[activeScene.id] !== document.activeElement
-            ) {
-                const currentElement = paperRefs.current[activeScene.id]
-
-                currentElement?.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start',
-                    inline: 'nearest'
-                })
-                currentElement.scrollTop = currentElement.scrollHeight
-                currentElement.focus()
-                currentElement.selectionStart = currentElement.value.length || 0
-                currentElement.value += ''
-            }
-        }
+        // if (activeScene) {
+        //     if (
+        //         paperRefs.current[activeScene.id] !== undefined &&
+        //         paperRefs.current[activeScene.id] !== document.activeElement
+        //     ) {
+        //         const currentElement = paperRefs.current[activeScene.id]
+        //
+        //         currentElement?.scrollIntoView({
+        //             behavior: 'smooth',
+        //             block: 'start',
+        //             inline: 'nearest'
+        //         })
+        //         currentElement.scrollTop = currentElement.scrollHeight
+        //         currentElement.focus()
+        //         currentElement.selectionStart = currentElement.value.length || 0
+        //         currentElement.value += ''
+        //     }
+        // }
     }, [activeScene, activeScene?.id])
 
     if (!chapter) {
