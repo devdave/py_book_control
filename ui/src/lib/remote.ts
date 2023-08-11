@@ -183,7 +183,7 @@ class APIBridge {
         return this.boundary.remote('setSetting', name, value);
     }
 
-    async bulk_update_settings(changeset:Setting) {
+    async bulk_update_settings(changeset:any) {
         return this.boundary.remote('bulk_update_settings', changeset);
     }
 
