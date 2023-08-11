@@ -232,7 +232,7 @@ class BCAPI:
             else:
                 chapter.scenes.append(scene)
 
-            statusValue = models.Setting.Get(session, "defaultSceneStatus")
+            statusValue: str = models.Setting.Get(session, "defaultSceneStatus")
             if statusValue != "-1":
                 try:
                     status = models.SceneStatus.Fetch_by_Uid(session, statusValue)
@@ -400,7 +400,7 @@ class BCAPI:
             models.Setting.Set(session, name, value)
             session.commit()
 
-    def bulk_update_settings(self, changeset: Setting):
+    def bulk_update_settings(self, changeset: T.Dict[str, Setting]):
         with self.app.get_db() as session:
             models.Setting.BulkSet(session, changeset)
             session.commit()
