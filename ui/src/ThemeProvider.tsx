@@ -58,7 +58,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                                     fontWeight,
                                     lineHeight: `${lineHeight}%`,
                                     textAlign: 'justify',
-                                    whiteSpace: 'pre-wrap'
+                                    whiteSpace: 'pre-wrap',
+                                    padding: '14px 30px'
                                 }
                             })
                         },
