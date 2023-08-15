@@ -89,9 +89,11 @@ class Base(DeclarativeBase):
         primary_key=True,
     )
 
-    created_on: Mapped[DT.datetime] = mapped_column(server_default=func.now())
+    created_on: Mapped[DT.datetime] = mapped_column(
+        default=None, server_default=func.now()
+    )
     updated_on: Mapped[DT.datetime] = mapped_column(
-        server_default=func.now(), onupdate=func.now()
+        default=None, server_default=func.now(), onupdate=func.now()
     )
 
     @classmethod
@@ -108,7 +110,7 @@ class Base(DeclarativeBase):
         stmt = select(cls).where(cls.id == fetch_id)
         return session.execute(stmt).scalars().one()
 
-    @declared_attr
+    @declared_attr.directive
     def __tablename__(self):
         return self.__name__
 
