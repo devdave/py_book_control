@@ -125,3 +125,4 @@ class ImportChapter(T.TypedDict):
     name: str
     title: str
     scene_ct: int
+    word_ct: int

@@ -543,9 +543,13 @@ class BCAPI:
             payload = ImportMessage(msg=msg, action="show")
             self.app.callback(reporterId, payload)
 
-        def report_chapter(name, title, scene_ct):
+        def report_chapter(name, title, scene_ct, word_ct):
             payload = ImportChapter(
-                action="add_chapter", name=name, title=title, scene_ct=scene_ct
+                action="add_chapter",
+                name=name,
+                title=title,
+                scene_ct=scene_ct,
+                word_ct=word_ct,
             )
 
             self.app.callback(reporterId, payload)
@@ -581,7 +585,9 @@ class BCAPI:
                 imported = ChapterImporter.Load(target)
 
                 report(f"{document['name']} has {len(imported.scenes)} scenes")
-                report_chapter(document["name"], imported.title, len(imported.scenes))
+                report_chapter(
+                    document["name"], imported.title, len(imported.scenes), 0
+                )
 
                 chapter = models.Chapter(
                     title=imported.title,

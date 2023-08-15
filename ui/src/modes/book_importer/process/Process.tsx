@@ -18,6 +18,7 @@ interface ImportedChapter extends ImportedMessage {
     name: string
     title: string
     scene_ct: number
+    word_ct: number
 }
 
 export const Process = () => {
