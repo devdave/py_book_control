@@ -123,26 +123,26 @@ export const ContinuousBody: React.FC<ContinuousBodyProps> = ({ chapter }) => {
         { delay: debounceTime || 900, runOnInitialize: false }
     )
 
-    useEffect(() => {
-        // if (activeScene) {
-        //     if (
-        //         paperRefs.current[activeScene.id] !== undefined &&
-        //         paperRefs.current[activeScene.id] !== document.activeElement
-        //     ) {
-        //         const currentElement = paperRefs.current[activeScene.id]
-        //
-        //         currentElement?.scrollIntoView({
-        //             behavior: 'smooth',
-        //             block: 'start',
-        //             inline: 'nearest'
-        //         })
-        //         currentElement.scrollTop = currentElement.scrollHeight
-        //         currentElement.focus()
-        //         currentElement.selectionStart = currentElement.value.length || 0
-        //         currentElement.value += ''
-        //     }
-        // }
-    }, [activeScene, activeScene?.id])
+    // useEffect(() => {
+    //     // if (activeScene) {
+    //     //     if (
+    //     //         paperRefs.current[activeScene.id] !== undefined &&
+    //     //         paperRefs.current[activeScene.id] !== document.activeElement
+    //     //     ) {
+    //     //         const currentElement = paperRefs.current[activeScene.id]
+    //     //
+    //     //         currentElement?.scrollIntoView({
+    //     //             behavior: 'smooth',
+    //     //             block: 'start',
+    //     //             inline: 'nearest'
+    //     //         })
+    //     //         currentElement.scrollTop = currentElement.scrollHeight
+    //     //         currentElement.focus()
+    //     //         currentElement.selectionStart = currentElement.value.length || 0
+    //     //         currentElement.value += ''
+    //     //     }
+    //     // }
+    // }, [activeScene, activeScene?.id])
 
     if (!chapter) {
         return (

@@ -123,7 +123,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({ nextStep, ba
     const handleImportSelected = () => {
         const selectedRows = table.getSelectedRowModel().rows
         console.log('Documents selected: ', selected)
-        batchBroker.set('book_path', sourcePath).then()
+        batchBroker.set('book_path', sourcePath as string).then()
         batchBroker
             .set(
                 'documents',

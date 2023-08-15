@@ -1,6 +1,6 @@
 import { useImportContext } from '@src/modes/book_importer/BookImporter.context'
 import { Button, Center, LoadingOverlay, Table, Text, Title } from '@mantine/core'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ShowInfo } from '@src/widget/ShowInfoNotification'
 import { useAppContext } from '@src/App.context'
 import { ShowError } from '@src/widget/ShowErrorNotification'
@@ -29,36 +29,22 @@ export const Process = () => {
 
     const { data: batch, isLoading: batchIsLoading } = batchBroker.fetch()
 
-    if (batchIsLoading) {
-        return (
-            <>
-                <Text>Loading batch data...</Text>
-                <LoadingOverlay visible />
-            </>
-        )
-    }
-
-    const return2Manifest = () => {
-        setAppMode(AppModes.MANIFEST)
-    }
-
     const handleUpdates = (payload: ImportedReport | ImportedChapter) => {
         if (payload.action === 'show') {
-            if ('msg' in payload) {
-                ShowInfo('Importing', payload.msg)
-            }
+            // if ('msg' in payload) {
+            //     ShowInfo('Importing', payload.msg)
+            // }
         } else if (payload.action === 'add_chapter') {
             const status_update: ImportedChapter = payload as ImportedChapter
             setChapters((prior) => [...prior, status_update])
         }
     }
 
-    const onClickProcess = () => {
+    const runImportProcess = () => {
         const handlerId = switchBoard.generate(handleUpdates)
 
         api.importer_process_batch(handlerId)
             .then(() => {
-                ShowInfo('Importing', 'Importing process finished')
                 bookBroker.clearCache().then(() => {
                     setAppMode(AppModes.MANIFEST)
                 })
@@ -68,11 +54,21 @@ export const Process = () => {
             })
     }
 
+    useEffect(() => {
+        runImportProcess()
+    }, [])
+
+    if (batchIsLoading) {
+        return (
+            <>
+                <Text>Loading batch data...</Text>
+                <LoadingOverlay visible />
+            </>
+        )
+    }
+
     return (
         <>
-            <Center>
-                <Button onClick={onClickProcess}>Start the Import</Button>
-            </Center>
             <Title>Import status</Title>
             <Text>The table below will populate as chapters/files are imported</Text>
             <Table>
@@ -90,14 +86,11 @@ export const Process = () => {
                             <td>{chapter.name}</td>
                             <td>{chapter.title}</td>
                             <td>{chapter.scene_ct}</td>
-                            <td>TODO</td>
+                            <td>{chapter.word_ct}</td>
                         </tr>
                     ))}
                 </tbody>
             </Table>
-            <Center>
-                <Button onClick={return2Manifest}>Go back to manifest</Button>
-            </Center>
         </>
     )
 }

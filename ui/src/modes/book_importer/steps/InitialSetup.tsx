@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Title, Text, TextInput, Checkbox, Group, ColorPicker, Center, Stack } from '@mantine/core'
+import { Title, Text, TextInput, Checkbox, Group, ColorPicker, Center, Stack, Button } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useAppContext } from '@src/App.context'
 import { useDebouncedEffect } from '@src/lib/useDebouncedEffect'
@@ -25,6 +25,17 @@ export const InitialSetup = ({ nextStep }: InitialSetupProps) => {
             have_default_status: false,
             default_status: '',
             status_color: ''
+        },
+        validate: {
+            book_name: (val: string) => {
+                if (val) {
+                    if (val.length >= 3) {
+                        return undefined
+                    }
+                    return 'Book name needs to be 3 or more characters long.'
+                }
+                return 'Missing book name.'
+            }
         }
     })
 
@@ -87,6 +98,7 @@ export const InitialSetup = ({ nextStep }: InitialSetupProps) => {
                     />
                 </Group>
             </fieldset>
+            {form.isValid() && <Button onClick={nextStep}>Continue</Button>}
         </Stack>
     )
 }

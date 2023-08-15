@@ -63,7 +63,7 @@ export const VerifyImport: React.FC<VerifyImportProps> = ({ batch }) => {
                                         <td>{doc.name}</td>
                                         <td>{doc.created_date}</td>
                                         <td>{doc.modified_last}</td>
-                                        <td>{doc.size}</td>
+                                        <td>{doc.size.toLocaleString('en-US', { unit: 'byte' })}</td>
                                     </tr>
                                 ))}
                             </tbody>

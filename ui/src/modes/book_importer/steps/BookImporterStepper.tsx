@@ -54,9 +54,6 @@ export const BookImporterStepper: React.FC<BookImporterStepperProps> = ({ batch 
             <Space h='md' />
             <Divider />
             <Space h='md' />
-            <Center>
-                <Button onClick={prevStep}>Go back</Button>
-            </Center>
         </>
     )
 }
