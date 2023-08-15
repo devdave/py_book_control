@@ -1,6 +1,7 @@
 import APIBridge from '@src/lib/remote'
 import { QueryClient, useQuery, UseQueryResult } from '@tanstack/react-query'
 import { BatchSettings } from '@src/modes/book_importer/types'
+import { DocumentFile } from '@src/types'
 
 interface BatchBrokerProps {
     api: APIBridge
@@ -11,7 +12,7 @@ export interface BatchBrokerReturns {
     fetch: () => UseQueryResult<BatchSettings>
     set: (
         key: keyof BatchSettings,
-        value: number | string | Record<string, string | number | boolean>
+        value: number | string | Record<string, string | number | boolean> | DocumentFile[]
     ) => Promise<void>
 }
 
