@@ -47,16 +47,16 @@ class DocxProperty:
     @classmethod
     def Load(cls, src_elm: _Element):
         # get style
-        style = "Normal"
         style_sub = src_elm.find(TAGS.StyleType.value)
-        if style_sub is not None:
-            style: str = style_sub.attrib[TAGS.Val.value]
+        style: str = (
+            style_sub.attrib[TAGS.Val.value] if style_sub is not None else "Normal"
+        )
 
         # get orientation
-        orientation = "both"
         orient_sub = src_elm.find(TAGS.Justification.value)
-        if orient_sub is not None:
-            orientation = orient_sub.attrib[TAGS.Val.value]
+        orientation = (
+            orient_sub.attrib[TAGS.Val.value] if orient_sub is not None else "both"
+        )
 
         return cls(style, orientation)
 
