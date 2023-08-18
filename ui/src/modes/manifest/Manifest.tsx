@@ -223,7 +223,7 @@ export const Manifest = () => {
                                         >
                                             {book.title}
                                         </td>
-                                        <td>{book.words}</td>
+                                        <td>{parseInt(String(book.words), 10)?.toLocaleString()}</td>
                                         <td>{book.operation_type}</td>
                                         <td>{book.chapters && book.chapters.length}</td>
                                         <td>{book.updated_on}</td>
