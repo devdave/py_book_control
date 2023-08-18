@@ -1,7 +1,14 @@
 import { useCallback, useState } from 'react'
 import { indexOf } from 'lodash'
 
-export const useRotate = (options: string[]): [string, (val?: string) => void] => {
+interface useRotateOptions {
+    nextOption: (val?: string) => void
+    prevOption: () => void
+}
+
+type useRotateReturn = [string, useRotateOptions]
+
+export const useRotate = (options: string[]): useRotateReturn => {
     if (!options || options.length <= 1) {
         throw new Error('Expected at least two options')
     }
@@ -31,5 +38,15 @@ export const useRotate = (options: string[]): [string, (val?: string) => void] =
         [options, value]
     )
 
-    return [value, nextOption]
+    const prevOption = useCallback(() => {
+        const current_index = indexOf(options, value)
+
+        if (current_index - 1 >= 0) {
+            setValue(() => options[current_index - 1])
+        } else {
+            setValue(() => options[options.length - 1])
+        }
+    }, [options, value])
+
+    return [value, { nextOption, prevOption }]
 }
