@@ -1,4 +1,4 @@
-import { MainSceneForm } from './MainSceneForm'
+import { SceneContentForm } from './SceneContentForm'
 import TextSceneForm from './TextSceneForm'
 
-export { MainSceneForm, TextSceneForm }
+export { SceneContentForm, TextSceneForm }
