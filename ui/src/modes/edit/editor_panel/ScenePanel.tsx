@@ -9,9 +9,10 @@ import { useHotkeys } from '@mantine/hooks'
 import { find } from 'lodash'
 import { useRotate } from '@src/lib/use-rotate'
 import { SceneCharacters } from '@src/modes/edit/common/SceneCharacters'
+import { SceneSummaryForm } from '@src/modes/edit/editor_panel/scene_forms/SceneSummaryForm'
 import TextSceneForm from './scene_forms/TextSceneForm'
 
-import { MainSceneForm } from './scene_forms/MainSceneForm'
+import { SceneContentForm } from './scene_forms/SceneContentForm'
 
 const useStyles = createStyles((theme) => ({
     tabPanel: {
@@ -35,10 +36,16 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
         error: sceneLoadError
     } = sceneBroker.fetch(activeBook.id, indexedScene.chapterId, indexedScene.id)
 
-    const [activeTab, nextTab] = useRotate(['content', 'summary', 'notes', 'location', 'characters'])
+    const [activeTab, { nextOption: nextTab, prevOption: prevTab }] = useRotate([
+        'content',
+        'summary',
+        'notes',
+        'location',
+        'characters'
+    ])
     useHotkeys(
         [
-            ['ctrl+tab', () => nextTab()],
+            ['ctrl+ArrowLeft', () => prevTab()],
             ['ctrl+ArrowRight', () => nextTab()]
         ],
         []
@@ -69,6 +76,9 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
                 case 'Tab':
                 case 'ArrowRight':
                     action = nextTab
+                    break
+                case 'ArrowLeft':
+                    action = prevTab
                     break
                 case 'PageUp':
                     action = goPriorScene
@@ -113,14 +123,6 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
 
     return (
         <>
-            {/*<TextInput*/}
-            {/*    label='Title'*/}
-            {/*    value={scene?.title}*/}
-            {/*    onChange={(evt) => {*/}
-            {/*        scene.title = evt.target.value*/}
-            {/*        sceneBroker.update(scene)*/}
-            {/*    }}*/}
-            {/*/>*/}
             <Tabs
                 classNames={{ panel: classes.tabPanel }}
                 value={activeTab}
@@ -164,17 +166,15 @@ export const ScenePanel: FC<ScenePanelProps> = ({ indexedScene }) => {
                     </Tabs.Tab>
                 </Tabs.List>
                 <Tabs.Panel value='content'>
-                    <MainSceneForm
+                    <SceneContentForm
                         scene={scene}
                         onKeyUp={handleCtrlKey}
                     />
                 </Tabs.Panel>
                 <Tabs.Panel value='summary'>
-                    <TextSceneForm
+                    <SceneSummaryForm
                         scene={scene}
                         onKeyUp={handleCtrlKey}
-                        field='summary'
-                        label='Summary'
                     />
                 </Tabs.Panel>
                 <Tabs.Panel value='notes'>
