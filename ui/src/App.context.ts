@@ -6,6 +6,7 @@ import { SettingsManagerReturn } from '@src/lib/use-settings'
 import { SceneStatusBrokerFunctions } from '@src/brokers/SceneStatusBroker'
 import { BookBrokerReturnFunctions } from '@src/brokers/BookBroker'
 import { Switchboard } from '@src/lib/switchboard'
+import { ChatBrokerFunctions } from '@src/brokers/ChatBroker'
 
 export interface AppContextValue {
     api: APIBridge
@@ -24,6 +25,7 @@ export interface AppContextValue {
     setFonts: (val: Set<string>) => void
 
     sceneStatusBroker: SceneStatusBrokerFunctions
+    chatBroker: ChatBrokerFunctions
 }
 
 export const AppContext = createContext<AppContextValue>({} as AppContextValue)

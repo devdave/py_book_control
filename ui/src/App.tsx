@@ -26,6 +26,7 @@ import { BookBroker } from '@src/brokers/BookBroker'
 import { BookImporter } from '@src/modes/book_importer/BookImporter'
 import { Switchboard } from '@src/lib/switchboard'
 import { DebugPanel } from '@src/modes/debug/DebugPanel'
+import { ChatBroker } from '@src/brokers/ChatBroker'
 
 interface AppWrapperProps {
     value: AppContextValue
@@ -174,6 +175,8 @@ const App: React.FC = () => {
 
     const sceneStatusBroker = SceneStatusBroker({ api, queryClient })
 
+    const chatBroker = ChatBroker('http://127.0.0.1:8000/')
+
     const appContextValue = useMemo<AppContextValue>(
         () => ({
             api,
@@ -190,9 +193,21 @@ const App: React.FC = () => {
             setFonts,
 
             bookBroker,
-            sceneStatusBroker
+            sceneStatusBroker,
+            chatBroker
         }),
-        [api, settings, appMode, activeBook, setActiveBook, bookBroker, fonts]
+        [
+            api,
+            settings,
+            switchBoard,
+            appMode,
+            activeBook,
+            setActiveBook,
+            fonts,
+            bookBroker,
+            sceneStatusBroker,
+            chatBroker
+        ]
     )
 
     return (
