@@ -56,6 +56,37 @@ export const BookPanel: React.FC = () => {
                     {...form.getInputProps('notes')}
                 />
             </Indicator>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Chapter name</th>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <th>Scene name</th>
+                        <th>Words</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {activeBook.chapters.map((chapter, idx) => (
+                        <>
+                            <tr key={idx}>
+                                <td>{chapter.title}</td>
+                            </tr>
+                            {chapter.scenes.map((scene, sidx) => (
+                                <tr key={sidx}>
+                                    <td>&nbsp;</td>
+                                    <td>{scene.title}</td>
+                                    <td>{scene.words}</td>
+                                </tr>
+                            ))}
+                        </>
+                    ))}
+                </tbody>
+            </table>
+            <label>JSON</label>
+            <pre style={{ maxWidth: '60vw', whiteSpace: 'pre-wrap' }}>{JSON.stringify(activeBook)}</pre>
         </>
     )
 }
