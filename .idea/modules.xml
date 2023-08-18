@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/py_book_control.iml" filepath="$PROJECT_DIR$/.idea/py_book_control.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../pychatbroker/.idea/pychatbroker.iml" filepath="$PROJECT_DIR$/../pychatbroker/.idea/pychatbroker.iml" />
     </modules>
   </component>
 </project>
