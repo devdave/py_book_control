@@ -1,6 +1,6 @@
 import { Button, Textarea, TextInput } from '@mantine/core'
 import { useForm, zodResolver } from '@mantine/form'
-import { type FC, KeyboardEventHandler, useCallback } from 'react'
+import { type FC, KeyboardEventHandler, MouseEventHandler, useState, useCallback } from 'react'
 import z from 'zod'
 
 import { type Scene } from '@src/types'
@@ -21,6 +21,9 @@ export interface SceneContentFormProps {
 export const SceneContentForm: FC<SceneContentFormProps> = ({ scene, onKeyUp }) => {
     const { chatBroker } = useAppContext()
     const { sceneBroker } = useEditorContext()
+
+    const [waiting, setWaiting] = useState(false)
+
     const form = useForm<Partial<Scene>>({
         initialValues: {
             content: scene.content,
@@ -47,14 +50,25 @@ export const SceneContentForm: FC<SceneContentFormProps> = ({ scene, onKeyUp }) 
         }
     )
 
-    const handleSummarizeClick = useCallback(async () => {
-        if (!form.values.content || form.values.content?.length <= 0) {
-            ShowError('Auto-Error', 'Trying to summarize empty content')
-            throw Error('Missing/bad content!')
-        }
-        const response = await chatBroker.summarize(form.values.content as string)
-        console.log(response)
-    }, [chatBroker, form.values.content])
+    const handleSummarizeClick: MouseEventHandler<HTMLButtonElement> = useCallback(
+        async (evt) => {
+            if (!form.values.content || form.values.content?.length <= 0) {
+                ShowError('Auto-Error', 'Trying to summarize empty content')
+                throw Error('Missing/bad content!')
+            }
+
+            try {
+                setWaiting(true)
+                const response = await chatBroker.summarize(form.values.content as string)
+                console.log(response)
+            } catch (err) {
+                console.error(err)
+            } finally {
+                setWaiting(false)
+            }
+        },
+        [chatBroker, form.values.content]
+    )
 
     return (
         <>
@@ -78,7 +92,12 @@ export const SceneContentForm: FC<SceneContentFormProps> = ({ scene, onKeyUp }) 
                 styles={{ input: { whiteSpace: 'pre-wrap' } }}
             />
             <br />
-            <Button onClick={handleSummarizeClick}>Auto-summarize</Button>
+            <Button
+                onClick={handleSummarizeClick}
+                loading={waiting}
+            >
+                Auto-summarize
+            </Button>
         </>
     )
 }
