@@ -23,7 +23,7 @@ export const ChapterPanel: React.FC<ChapterPanelProps> = ({ chapter }) => {
 
     return (
         <>
-            <Text>Chapter Panel</Text>
+            <Text>Chapter: {chapter.title}</Text>
             <dl>
                 <dt>Source file</dt>
                 <dd>{chapter.source_file}</dd>
@@ -35,7 +35,10 @@ export const ChapterPanel: React.FC<ChapterPanelProps> = ({ chapter }) => {
                 <dd>TO FIX! {chapter.last_imported}</dd>
 
                 <dt>Last imported</dt>
-                <dt>{chapter.last_imported}</dt>
+                <dd>{chapter.last_imported}</dd>
+
+                <dt>Est. token/words</dt>
+                <dd>{chapter.words}</dd>
             </dl>
             {chapter.source_file && <Button onClick={onClickReimport}>Re-import</Button>}
         </>
