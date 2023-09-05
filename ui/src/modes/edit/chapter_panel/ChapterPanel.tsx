@@ -12,9 +12,6 @@ export const ChapterPanel: React.FC<ChapterPanelProps> = ({ chapter }) => {
     const { api } = useAppContext()
     const { chapterBroker } = useEditorContext()
 
-    //Let's see what we got
-    console.log('ActiveChapter', chapter)
-
     const onClickReimport = () => {
         api.importer_reimport_chapter(chapter.id).then(() =>
             chapterBroker.clearChapterCache(chapter.book_id, chapter.id).then()
