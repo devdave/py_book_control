@@ -626,3 +626,16 @@ class SceneStatus(Base):
     def Delete(cls, session: Session, status_uid: UniqueId):
         stmt = delete(cls).where(cls.uid == status_uid)
         return session.execute(stmt)
+
+
+class AIActions(Base):
+    target: Mapped[str]
+    target_id: Mapped[UniqueId]
+    action_type: Mapped[str]
+
+    trx_id: Mapped[str]
+    action: Mapped[str]
+    result: Mapped[str]
+
+    book: Mapped["Book"] = relationship(back_populates="actions")
+    book_id: Mapped[int] = mapped_column(ForeignKey("Book.id", name="FK_ACTION2BOOK"))
