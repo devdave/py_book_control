@@ -259,6 +259,7 @@ class Chapter(Base):
             title=self.title,
             order=self.order,
             words=self.words,
+            summary_tokens=self.summary_tokens,
             created_on=str(self.created_on),
             updated_on=str(self.updated_on),
             notes=self.notes if stripped is False else "",
@@ -275,6 +276,10 @@ class Chapter(Base):
     @hybrid_property
     def words(self):
         return sum(scene.words for scene in self.scenes)
+
+    @hybrid_property
+    def summary_tokens(self):
+        return sum(scene.summary_tokens for scene in self.scenes)
 
     @classmethod
     def Fetch_all(cls, session):
@@ -370,6 +375,17 @@ class Scene(Base):
 
         return len(cleaned.replace('",.!?', " ").strip().split(" "))
 
+    @hybrid_property
+    def summary_tokens(self):
+        cleaned = self.summary
+        if isinstance(cleaned, str):
+            if len(cleaned.strip()) == 0:
+                return 0
+            else:
+                return len(cleaned.replace('",.!?', " ").strip().split(" "))
+
+        return 0
+
     def asdict(self, stripped=False):
         data = dict(
             id=self.uid,
@@ -380,6 +396,7 @@ class Scene(Base):
             created_on=str(self.created_on),
             updated_on=str(self.updated_on),
             words=self.words,
+            summary_tokens=self.summary_tokens,
         )
 
         if self.status:
