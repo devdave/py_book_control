@@ -23,8 +23,8 @@ export const Body = () => {
 
     const { data: fullChapter, status: fullChapterStatus } = chapterBroker.fetch(
         activeBook.id,
-        activeChapter?.id,
-        activeChapter !== undefined
+        activeElement.get_detail(),
+        activeElement.get_detail() !== undefined
     )
 
     const sceneFetchIsEnabled =
