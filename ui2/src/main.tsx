@@ -1,10 +1,22 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query"
+import {WebRoot} from "@src/routes/WebRoot.tsx";
 
-import {WebRoot} from "./WebRoot.tsx"
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: Infinity
+        }
+    }
+})
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <WebRoot />
-  </React.StrictMode>,
+const Main = () => (
+    <QueryClientProvider client={queryClient}>
+        <React.StrictMode>
+            <WebRoot />
+        </React.StrictMode>
+    </QueryClientProvider>
 )
+
+ReactDOM.createRoot(document.getElementById('root')!).render(Main(),)
