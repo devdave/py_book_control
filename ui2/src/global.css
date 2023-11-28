@@ -1,0 +1,14 @@
+
+:root {
+    --pbc-fontFamily: "Calibri";
+    --pbc-fontSize: "18px";
+    --pbc-fontWeight: 400;
+    --pbc-lineHeight: "150%";
+}
+
+textarea {
+    font-family: var(--pbc-fontFamily);
+    font-size: var(--pbc-fontSize);
+    font-weight: var(--pbc-fontWeight);
+    line-height: var(--pbc-lineHeight);
+}

@@ -1,5 +1,5 @@
 import { notifications } from '@mantine/notifications'
-import { IconInfoSquareRounded, IconX } from '@tabler/icons-react'
+import { IconInfoSquareRounded } from '@tabler/icons-react'
 
 export const ShowInfo = (title: string, message: string) => {
     notifications.show({

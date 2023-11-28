@@ -1,0 +1,26 @@
+
+.bookList thead td {
+    text-align: left;
+}
+
+.bookList tbody td {
+    text-align: left;
+}
+
+.shadowBoxes {
+    position: relative;
+    min-height: 12em;
+    min-width: 4em;
+    width: 13em;
+    cursor: pointer;
+}
+
+.plusBox {
+    position: absolute;
+    top: 10px;
+    right: 5px;
+}
+
+.highlight {
+    background: lightgray;
+}
