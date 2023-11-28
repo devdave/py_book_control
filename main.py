@@ -42,7 +42,7 @@ def setup_logging(level=logging.DEBUG):
 
 
 def spinup_pnpm(url_path: pathlib.Path):
-    ui_dir = url_path.parent
+    ui_dir = url_path
     LOG.debug("Spinup CWD {}", ui_dir)
 
     process = subprocess.Popen(
@@ -70,8 +70,6 @@ def transform_api(dest: pathlib.Path):
 class MainArgs(Tap):
     """
     Python Book Control
-
-
 
     """
 
