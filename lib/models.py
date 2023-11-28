@@ -152,6 +152,10 @@ class Book(Base):
         back_populates="book", cascade="all, delete-orphan"
     )
 
+    actions: Mapped[T.List["AIActions"]] = relationship(
+        back_populates="book", cascade="all, delete-orphan"
+    )
+
     def update(self, change: T.Dict[str, str]):
         for safe in self.SAFE_KEYS:
             if safe in change:
