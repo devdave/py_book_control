@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { readDataTransferFromClipboard } from '@testing-library/user-event/utils/dataTransfer/Clipboard'
 import axios from 'axios'
 
 export interface ChatBrokerFunctions {

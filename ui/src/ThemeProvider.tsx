@@ -26,6 +26,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     const [fontWeight] = settings.makeState('fontWeight')
     const [lineHeight] = settings.makeState('lineHeight')
 
+    const safeFont = fontName || 'Calibre'
+
     return (
         <ColorSchemeProvider
             colorScheme={colorScheme}
@@ -36,7 +38,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
                     colorScheme,
                     globalStyles: (theme) => ({
                         textarea: {
-                            fontFamily: `"${fontName}"`,
+                            fontFamily: `"${safeFont}"`,
                             fontSize: `${fontSize}px`,
                             fontWeight,
                             lineHeight: `${lineHeight}%`,

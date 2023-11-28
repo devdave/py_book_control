@@ -41,8 +41,11 @@ export const CharacterBroker = ({
         ): UseQueryResult<Character, Error> => {
             const toon_key = ['book', book_id, 'character', character_id]
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            return useQuery(toon_key, () => api.fetch_character(book_id, character_id), {
-                enabled
+            return useQuery(
+                {
+                    queryKey: toon_key,
+                    queryFn: () => api.fetch_character(book_id, character_id),
+                    enabled
             })
         },
         [api]

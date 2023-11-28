@@ -92,7 +92,7 @@ export const SceneStatusBroker: SceneStatusBrokerType = ({ api, queryClient }: S
         mutationKey: ['sceneStatus', 'updating'],
         mutationFn: ({ status_uid, changeset }: _updateSceneStatusArgs) =>
             api.update_scene_status(status_uid, changeset),
-        onSuccess: (new_status: SceneStatus, params: _updateSceneStatusArgs) => {
+        onSuccess: (_new_status: SceneStatus, params: _updateSceneStatusArgs) => {
             queryClient
                 .invalidateQueries({
                     queryKey: ['book', params.book_uid, 'sceneStatuses'],

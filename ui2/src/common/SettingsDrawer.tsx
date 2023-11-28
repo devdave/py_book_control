@@ -1,11 +1,7 @@
 import {
-    ActionIcon,
-    Button,
     Checkbox,
     Drawer,
-    LoadingOverlay,
     NumberInput,
-    Radio,
     Select,
     Text,
     Textarea,
@@ -15,12 +11,8 @@ import {
 import React, { useMemo } from 'react'
 import { map } from 'lodash'
 import { useAppContext } from '@src/App.context'
-import { useLogger } from '@mantine/hooks'
 
-import { IconEdit, IconFlagFilled, IconX } from '@tabler/icons-react'
-import { ShowError } from '@src/widget/ShowErrorNotification'
-import { createSceneStatus, editSceneStatus } from '@src/common/SceneStatusModals'
-import { SceneStatusEditor } from '@src/common/SceneStatusEditor'
+// import { SceneStatusEditor } from '@src/common/SceneStatusEditor'
 
 const example_ipsum =
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et' +
@@ -32,7 +24,7 @@ interface SettingsDrawerProps {
     close: () => void
 }
 export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close }) => {
-    const { activeBook, fonts, settings, sceneStatusBroker } = useAppContext()
+    const { fonts, settings } = useAppContext()
 
     const select_fonts = useMemo(
         () => map([...fonts], (fontName: string) => ({ value: fontName, label: fontName })),
@@ -64,7 +56,11 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close })
             <Select
                 label='Font name'
                 searchable
-                zIndex={1000}
+                styles={{
+                    dropdown: {
+                        zIndex: 1000
+                    }
+                }}
                 data={select_fonts}
                 value={fontName}
                 onChange={(new_font_name) => {
@@ -127,8 +123,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ opened, close })
                 checked={dontAskClear}
                 onChange={() => setDontAskClear(!dontAskClear)}
             />
-            <Title order={1}>Book settings</Title>
-            <SceneStatusEditor />
+
         </Drawer>
     )
 }

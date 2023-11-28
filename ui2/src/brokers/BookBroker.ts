@@ -83,7 +83,7 @@ export const BookBroker = ({
     const deleteBook = useCallback(
         async (book_id: Book['id']) => {
             await api.book_delete(book_id)
-            clearCache()
+            await clearCache()
         },
         [api, clearCache]
     )
