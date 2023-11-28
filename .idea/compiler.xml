@@ -3,5 +3,7 @@
   <component name="TypeScriptCompiler">
     <option name="recompileOnChanges" value="true" />
     <option name="showAllErrors" value="false" />
+    <option name="typeScriptServiceDirectory" value="$PROJECT_DIR$/ui2/node_modules/typescript" />
+    <option name="versionType" value="SERVICE_DIRECTORY" />
   </component>
 </project>
