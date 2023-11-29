@@ -1,22 +1,24 @@
-import { useParams } from "react-router-dom";
+import {Outlet, Route, Routes, useParams} from "react-router-dom";
 
 import { useAppContext } from "@src/App.context.ts";
 import {
     ActionIcon,
     AppShell,
     Group,
-    LoadingOverlay,
+    LoadingOverlay, Space,
     Switch,
     Title,
     useMantineColorScheme,
     useMantineTheme
 } from "@mantine/core";
-import {useMemo} from "react";
+import { useMemo} from "react";
 import {EditorContext} from "@src/routes/editor/Editor.context.ts";
 import {SettingsDrawer} from "@src/common/SettingsDrawer.tsx";
 import {IconMoonStars, IconSettings, IconSun} from "@tabler/icons-react";
 import {useDisclosure} from "@mantine/hooks";
 import {NavBar} from "@src/routes/editor/NavBar.tsx";
+import {SceneList} from "@src/routes/editor/scenes/SceneList.tsx";
+import {BookOverview} from "@src/routes/editor/BookOverview.tsx";
 
 
 
@@ -39,6 +41,9 @@ export const Editor = () => {
     const editorContextValue = useMemo(()=>({
         book
     }),[book])
+
+
+
 
 
     console.log("Editor got ", book);
@@ -65,6 +70,7 @@ export const Editor = () => {
     const header = (
         <AppShell.Header>
             <SettingsDrawer opened={opened} close={close} />
+            <Space w="xl"/>
             <Group align="center" justify="space-between">
                 <Title order={1}>{book.title}</Title>
                 <Group>
@@ -96,16 +102,15 @@ export const Editor = () => {
     return (
         <EditorContext.Provider value={editorContextValue}>
             <AppShell header={{height:64}}
-                navbar={{width:220, breakpoint:"md" }}>
+                navbar={{width:260, breakpoint:"md" }}>
                 {header}
                 {<NavBar book={book}/>}
                 <AppShell.Main>
-                    <h2>Book!</h2>
-                    <i>
-                        Book is <pre style={{ width:'70vw', wordWrap:"break-word"}} >{JSON.stringify(book,null,4)}</pre>
-
-
-                    </i>
+                    <Routes>
+                        <Route path="chapter/:chapter_id" element={<SceneList/>} />
+                        <Route path="*" element={<BookOverview book={book}/>}/>
+                    </Routes>
+                    <Outlet/>
                 </AppShell.Main>
             </AppShell>
 
