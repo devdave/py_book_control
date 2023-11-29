@@ -7,7 +7,7 @@ import time
 import webview  # type: ignore
 from sqlalchemy.exc import IntegrityError
 
-from app_types import BatchSettings, ImportMessage, ImportChapter
+from .app_types import BatchSettings, ImportMessage, ImportChapter
 from .scene_processor import SceneProcessor2 as SceneProcessor
 from .application import BCApplication
 from . import models

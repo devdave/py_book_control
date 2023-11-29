@@ -4,7 +4,7 @@ import json
 
 import webview
 
-from app_types import BatchSettings
+from .app_types import BatchSettings
 from . import models
 from contextlib import contextmanager
 

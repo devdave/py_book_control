@@ -73,7 +73,7 @@ class MainArgs(Tap):
 
     """
 
-    url: T.Optional[pathlib.Path] = pathlib.Path("./ui/dist/index.html")
+    url: T.Optional[pathlib.Path] = pathlib.Path("./ui2/")
     """
         :param url: The interface to load
     """
