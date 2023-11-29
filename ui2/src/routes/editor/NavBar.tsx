@@ -1,4 +1,4 @@
-import {NavLink as RoutedLink} from "react-router-dom";
+import {NavLink as RoutedLink, useParams} from "react-router-dom";
 import {Button, NavLink, Title} from "@mantine/core";
 import {Book, Chapter, Scene} from "@src/types.ts";
 import {AppShell} from "@mantine/core";
@@ -10,6 +10,7 @@ interface NavBarParams {
 
 export const NavBar:React.FC<NavBarParams> = ({book}) => {
 
+    const params = useParams<{book_id:string, chapter_id?:string}>()
 
 
     return (
