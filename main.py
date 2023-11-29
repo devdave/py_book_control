@@ -46,7 +46,7 @@ def spinup_pnpm(url_path: pathlib.Path):
     LOG.debug("Spinup CWD {}", ui_dir)
 
     process = subprocess.Popen(
-        ["pnpm", "dev", "--port", "8080", "--host"],
+        ["pnpm", "dev", "--port", "8085", "--host"],
         cwd=str(ui_dir),
         creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
     )
@@ -128,7 +128,7 @@ def main():
 
     if result.dev is True:
         worker = spinup_pnpm(result.url)
-        default_win_settings["url"] = "http://127.0.0.1:8080"
+        default_win_settings["url"] = "http://127.0.0.1:8085"
     else:
         default_win_settings["url"] = str(result.url)
 
