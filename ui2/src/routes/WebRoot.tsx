@@ -10,15 +10,21 @@ import { useMantineColorScheme } from "@mantine/core";
 import { Manifest } from "@src/routes/entry/Manifest.tsx";
 import { NotFound } from "@src/routes/NotFound.tsx";
 import { Editor } from "@src/routes/editor/Editor.tsx";
+import ScrollToAnchor from "@src/lib/ScrollToAnchor.tsx";
+
 
 export const Root = () => {
     const { toggleColorScheme } = useMantineColorScheme();
 
+    ScrollToAnchor()
+
     useHotkeys([["mod+J", () => toggleColorScheme()]]);
+
+
     return (
         <Routes>
             <Route path="/" element={<Manifest />} />
-            <Route path="/book/:book_id" element={<Editor />} />
+            <Route path="/book/:book_id/*" element={<Editor />} />
             <Route path="*" element={<NotFound />} />
         </Routes>
     );
