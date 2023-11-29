@@ -13,33 +13,33 @@ interface IndicatedTextAreaProps {
   textStyle?: object;
   onKeyUp?: React.KeyboardEventHandler<HTMLTextAreaElement>;
 }
-
+ 
 export const IndicatedTextarea: React.FC<IndicatedTextAreaProps> = ({
-  form,
-  formField,
-  inputProps,
-  onKeyUp,
+    form,
+    formField,
+    inputProps,
+    onKeyUp,
 }) => {
-  return (
-    <Indicator
-      processing
-      color="red"
-      position="top-start"
-      disabled={!form.isDirty(formField)}
-      style={{ height: "100%", boxSizing: "border-box" }}
-    >
-      <Textarea
-        autosize
-        minRows={5}
-        onKeyUp={onKeyUp}
-        classNames={{
-          root: classes.max_out,
-          wrapper: classes.max_out,
-          input: classes.max_out,
-        }}
-        {...form.getInputProps(formField)}
-        {...inputProps}
-      />
-    </Indicator>
-  );
+    return (
+        <Indicator
+            processing
+            color="red"
+            position="top-start"
+            disabled={!form.isDirty(formField)}
+            style={{ height: "100%", boxSizing: "border-box" }}
+        >
+            <Textarea
+                autosize
+                minRows={5}
+                onKeyUp={onKeyUp}
+                classNames={{
+                    root: classes.max_out,
+                    wrapper: classes.max_out,
+                    input: classes.max_out,
+                }}
+                {...form.getInputProps(formField)}
+                {...inputProps}
+            />
+        </Indicator>
+    );
 };
