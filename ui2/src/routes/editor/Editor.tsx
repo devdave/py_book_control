@@ -12,7 +12,7 @@ import { useMemo} from "react";
 import {EditorContext} from "@src/routes/editor/Editor.context.ts";
 
 import {NavBar} from "@src/routes/editor/NavBar.tsx";
-import {SceneList} from "@src/routes/editor/scenes/SceneList.tsx";
+import {SceneList} from "@src/routes/editor/detailed/SceneList.tsx";
 import {BookOverview} from "@src/routes/editor/BookOverview.tsx";
 import {Header} from "@src/routes/editor/Header.tsx";
 
