@@ -2,7 +2,7 @@ import {useLocation, useParams} from "react-router-dom";
 import {useAppContext} from "@src/App.context.ts";
 import {Scene, UniqueId} from "@src/types.ts";
 import {LoadingOverlay} from "@mantine/core";
-import {SceneElement} from "@src/routes/editor/scenes/SceneElement.tsx";
+import {SceneElement} from "@src/routes/editor/detailed/SceneElement.tsx";
 
 
 export const SceneList = () => {
