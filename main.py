@@ -41,12 +41,12 @@ def setup_logging(level=logging.DEBUG):
     root.info("Logging setup")
 
 
-def spinup_pnpm(url_path: pathlib.Path):
+def spinup_pnpm(url_path: pathlib.Path, port: str):
     ui_dir = url_path
     LOG.debug("Spinup CWD {}", ui_dir)
 
     process = subprocess.Popen(
-        ["pnpm", "dev", "--port", "8085", "--host"],
+        ["pnpm", "dev", "--port", port, "--host"],
         cwd=str(ui_dir),
         creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
     )
@@ -78,6 +78,11 @@ class MainArgs(Tap):
         :param url: The interface to load
     """
 
+    port: T.Optional[str] = "8080"
+    """
+        :param port: Optional alternative port
+    """
+
     dev: bool = False
     """
     :param dev: Enable debug options
@@ -101,7 +106,8 @@ def main():
     setup_logging()
 
     result = MainArgs().parse_args()
-    LOG.debug(f"{result.url}")
+    LOG.debug(f"{result.url=}")
+    LOG.debug(f"{result.port=}")
     LOG.debug(f"{result.dev=}")
     LOG.debug(f"{result.transform_api=}")
     LOG.debug(f"{result.database.as_posix()=}")
@@ -127,8 +133,8 @@ def main():
         transform_api(result.transform_api)
 
     if result.dev is True:
-        worker = spinup_pnpm(result.url)
-        default_win_settings["url"] = "http://127.0.0.1:8085"
+        worker = spinup_pnpm(result.url, result.port)
+        default_win_settings["url"] = f"http://127.0.0.1:{result.port}"
     else:
         default_win_settings["url"] = str(result.url)
 
