@@ -2,23 +2,19 @@ import {Outlet, Route, Routes, useParams} from "react-router-dom";
 
 import { useAppContext } from "@src/App.context.ts";
 import {
-    ActionIcon,
+
     AppShell,
-    Group,
-    LoadingOverlay, Space,
-    Switch,
-    Title,
-    useMantineColorScheme,
-    useMantineTheme
+
+    LoadingOverlay,
+
 } from "@mantine/core";
 import { useMemo} from "react";
 import {EditorContext} from "@src/routes/editor/Editor.context.ts";
-import {SettingsDrawer} from "@src/common/SettingsDrawer.tsx";
-import {IconMoonStars, IconSettings, IconSun} from "@tabler/icons-react";
-import {useDisclosure} from "@mantine/hooks";
+
 import {NavBar} from "@src/routes/editor/NavBar.tsx";
 import {SceneList} from "@src/routes/editor/scenes/SceneList.tsx";
 import {BookOverview} from "@src/routes/editor/BookOverview.tsx";
+import {Header} from "@src/routes/editor/Header.tsx";
 
 
 
@@ -28,15 +24,6 @@ export const Editor = () => {
     const { book_id } = useParams();
 
     const { isLoading, isError, data: book } = bookBroker.fetch(book_id as string);
-
-
-    const { colorScheme, toggleColorScheme } = useMantineColorScheme();
-
-    const theme = useMantineTheme();
-
-    const [opened, { open, close }] = useDisclosure(false);
-
-    // const [navOpened, {openNav:open, closeNav:close}] = useDisclosure(true)
 
     const editorContextValue = useMemo(()=>({
         book
@@ -67,43 +54,11 @@ export const Editor = () => {
 
 
 
-    const header = (
-        <AppShell.Header>
-            <SettingsDrawer opened={opened} close={close} />
-            <Space w="xl"/>
-            <Group align="center" justify="space-between">
-                <Title order={1}>{book.title}</Title>
-                <Group>
-                    <ActionIcon onClick={open}>
-                        <IconSettings />
-                    </ActionIcon>
-                    <Switch
-                        checked={colorScheme === "dark"}
-                        onChange={toggleColorScheme}
-                        size="lg"
-                        onLabel={
-                            <IconMoonStars color={theme.white} size="1.25rem" stroke={1.5} />
-                        }
-                        offLabel={
-                            <IconSun
-                                color={theme.colors.gray[6]}
-                                size="1.25rem"
-                                stroke={1.5}
-                            />
-                        }
-                    />
-                </Group>
-            </Group>
-        </AppShell.Header>
-    );
-
-
-
     return (
         <EditorContext.Provider value={editorContextValue}>
-            <AppShell header={{height:64}}
+            <AppShell header={{height:90}}
                 navbar={{width:260, breakpoint:"md" }}>
-                {header}
+                <Header book={book} />
                 {<NavBar book={book}/>}
                 <AppShell.Main>
                     <Routes>
