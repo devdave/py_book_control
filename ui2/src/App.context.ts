@@ -5,6 +5,7 @@ import APIBridge from '@src/lib/remote'
 import { SettingsManagerReturn } from '@src/lib/use-settings'
 import { SceneStatusBrokerFunctions } from '@src/brokers/SceneStatusBroker'
 import { BookBrokerReturnFunctions } from '@src/brokers/BookBroker'
+import { ChapterBrokerFunctions } from "@src/brokers/ChapterBroker.ts";
 import { Switchboard } from '@src/lib/switchboard'
 import { ChatBrokerFunctions } from '@src/brokers/ChatBroker'
 
@@ -15,6 +16,7 @@ export interface AppContextValue {
     fonts: Set<string>
 
     bookBroker: BookBrokerReturnFunctions
+    chapterBroker: ChapterBrokerFunctions
     sceneStatusBroker: SceneStatusBrokerFunctions
     chatBroker: ChatBrokerFunctions
 }
