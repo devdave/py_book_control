@@ -162,8 +162,8 @@ class APIBridge {
         return this.boundary.remote('fetch_character', book_uid, character_uid);
     }
 
-    async update_character(changed_character:Character):Promise<Character> {
-        return this.boundary.remote('update_character', changed_character);
+    async update_character(bookId:UniqueId, changed_character:Character):Promise<Character> {
+        return this.boundary.remote('update_character', bookId, changed_character);
     }
 
     async delete_character(character_uid:UniqueId):Promise<boolean> {
