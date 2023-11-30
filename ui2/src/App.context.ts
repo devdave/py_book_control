@@ -8,6 +8,7 @@ import { BookBrokerReturnFunctions } from '@src/brokers/BookBroker'
 import { ChapterBrokerFunctions } from "@src/brokers/ChapterBroker.ts";
 import { Switchboard } from '@src/lib/switchboard'
 import { ChatBrokerFunctions } from '@src/brokers/ChatBroker'
+import {CharacterBrokerFunctions} from "@src/brokers/CharacterBroker.ts";
 
 export interface AppContextValue {
     api: APIBridge
@@ -17,6 +18,7 @@ export interface AppContextValue {
 
     bookBroker: BookBrokerReturnFunctions
     chapterBroker: ChapterBrokerFunctions
+    characterBroker: CharacterBrokerFunctions
     sceneStatusBroker: SceneStatusBrokerFunctions
     chatBroker: ChatBrokerFunctions
 }

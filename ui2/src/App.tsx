@@ -15,6 +15,7 @@ import { WebRoot } from "@src/routes/WebRoot.tsx";
 import { LoadingOverlay } from "@mantine/core";
 import { forEach } from "lodash";
 import {ChapterBroker} from "@src/brokers/ChapterBroker.ts";
+import {CharacterBroker} from "@src/brokers/CharacterBroker.ts";
 
 let appIsReady = false;
 
@@ -41,6 +42,8 @@ export const App = () => {
     const chatBroker = ChatBroker("http://127.0.0.1:8000/");
 
     const chapterBroker = ChapterBroker({api, queryClient})
+
+    const characterBroker = CharacterBroker({api, queryClient})
 
     /**
    * Application settings
@@ -142,6 +145,7 @@ export const App = () => {
             switchBoard,
             fonts,
             bookBroker,
+            characterBroker,
             chapterBroker,
             sceneStatusBroker,
             chatBroker,
