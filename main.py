@@ -126,10 +126,11 @@ def main():
     )
 
     if result.transform_api is not None:
+        print(f"Transforming {result.transform_api}")
         assert (
             result.transform_api.parent.exists()
-            and result.transform_api.parent.is_dir()
-        )
+        ), f"{result.transform_api.exists()=},{result.transform_api.parent.exists()=}"
+        assert result.transform_api.parent.is_dir()
         transform_api(result.transform_api)
 
     if result.dev is True:
