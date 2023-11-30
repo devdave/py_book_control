@@ -1,5 +1,5 @@
 export type UniqueId = string
-export type UID = UniqueId
+export type UID = string
 
 export type Setter<TTarget> = (val: TTarget | undefined | ((update: TTarget) => void)) => void
 export type CharacterLocation = [string, string, string, string]
