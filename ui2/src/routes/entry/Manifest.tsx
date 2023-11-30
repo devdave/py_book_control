@@ -5,6 +5,7 @@ import {
     LoadingOverlay,
     Paper,
     Skeleton,
+    Stack,
     Switch,
     Table,
     Text,
@@ -18,10 +19,14 @@ import { useAppContext } from "@src/App.context.ts";
 import { UID } from "@src/types.ts";
 import React, { MouseEventHandler, useState } from "react";
 
+import {BookNameModal} from "./BookNameModal.tsx"
+import { ShowError } from '@src/widget/ShowErrorNotification'
+
+
 import classes from "./manifest.module.css";
 
 import {
-    IconMoonStars,
+    IconMoonStars, IconPlus,
     IconSettings,
     IconSun,
     IconX,
@@ -44,6 +49,24 @@ export const Manifest = () => {
 
     const { data: highlightedBook } = bookBroker.fetch(highlightBookID as UID);
 
+
+    const doMakeNewbook = async () => {
+        const newName = await BookNameModal()
+
+        if (!newName || newName.length <= 2) {
+            ShowError('Invalid', 'A book name needs to be at least 3 characters long.')
+            return
+        }
+
+        const newBook = await bookBroker.createManaged(newName)
+        navigate(`/book/${newBook.id}`)
+    }
+
+    const handleClickedImport = () => {
+        //TODO
+    }
+
+
     const handleMouseEnter: MouseEventHandler<HTMLElement> = (evt) => {
         evt.currentTarget.classList.add("highlight");
         setHighLightBookID(evt.currentTarget.dataset.bookId);
@@ -60,6 +83,12 @@ export const Manifest = () => {
         }
         evt.preventDefault(); 
     };
+
+
+
+
+
+
 
     if (booksAreLoading) {
         return (
@@ -108,25 +137,70 @@ export const Manifest = () => {
             {header}
 
             <AppShell.Main>
-                <fieldset>
-                    <legend>Books</legend>
-                    <Table
-                        stickyHeader
-                        stickyHeaderOffset={60}
-                        className={classes.bookList}
-                    >
-                        <Table.Thead>
-                            <Table.Tr>
-                                <Table.Th>Title</Table.Th>
-                                <Table.Th>Word count</Table.Th>
-                                <Table.Th>Type</Table.Th>
-                                <Table.Th>Chapters</Table.Th>
-                                <Table.Th>Updated at</Table.Th>
-                                <Table.Th>Created at</Table.Th>
-                            </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>
-                            {books &&
+                <Stack p="md">
+                    <fieldset>
+                        <legend>New book options</legend>
+                        <Group
+                            justify="space-evenly"
+                            align='start'
+                        >
+                            <Paper
+                                className='shadowBoxes'
+                                shadow='xl'
+                                withBorder
+                                p='md'
+                                onClick={doMakeNewbook}
+                            >
+                                <IconPlus className='plusBox' />
+                                <Title order={5}>New book</Title>
+                                <Text size='sm'>Create a completely new book</Text>
+                            </Paper>
+                            <Paper
+                                className='shadowBoxes'
+                                shadow='xl'
+                                withBorder
+                                p='md'
+                                onClick={handleClickedImport}
+                            >
+                                <IconPlus className='plusBox' />
+                                <Title order={5}>Import a book</Title>
+                                <Text size='sm'>Copy a formatted book in another format into the app.</Text>
+                            </Paper>
+                            <Paper
+                                className='shadowBoxes'
+                                shadow='xl'
+                                withBorder
+                                p='md'
+                            >
+                                <IconPlus className='plusBox' />
+                                <Title order={5}>Annotate a book</Title>
+                                <Text>
+                                Shadow copy an external project. Intended for adding markup but leaving the
+                                source material alone.
+                                </Text>
+                            </Paper>
+                        </Group>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Books</legend>
+                        <Table
+                            stickyHeader
+                            stickyHeaderOffset={60}
+                            className={classes.bookList}
+                        >
+                            <Table.Thead>
+                                <Table.Tr>
+                                    <Table.Th>Title</Table.Th>
+                                    <Table.Th>Word count</Table.Th>
+                                    <Table.Th>Type</Table.Th>
+                                    <Table.Th>Chapters</Table.Th>
+                                    <Table.Th>Updated at</Table.Th>
+                                    <Table.Th>Created at</Table.Th>
+                                </Table.Tr>
+                            </Table.Thead>
+                            <Table.Tbody>
+                                {books &&
                 books.map((book) => (
                     <Table.Tr
                         className="bookRow"
@@ -157,27 +231,28 @@ export const Manifest = () => {
                         </Table.Td>
                     </Table.Tr>
                 ))}
-                        </Table.Tbody>
-                    </Table>
-                </fieldset>
+                            </Table.Tbody>
+                        </Table>
+                    </fieldset>
 
-                <Title order={5}>Chapter notes</Title>
-                <Paper shadow="lg" p="md" withBorder>
-                    {(function quick() {
-                        if (highlightBookID === undefined) {
-                            return <Text>Hover over a book to see its notes</Text>;
-                        }
-                        if (highlightedBook) {
-                            if (highlightedBook.notes.length <= 0) {
-                                return <Text>There are no notes</Text>;
+                    <Title order={5}>Chapter notes</Title>
+                    <Paper shadow="lg" p="md" withBorder>
+                        {(function quick() {
+                            if (highlightBookID === undefined) {
+                                return <Text>Hover over a book to see its notes</Text>;
                             }
-                            if (highlightedBook.notes.length > 0) {
-                                return <Text>Notes: {highlightedBook.notes}</Text>;
+                            if (highlightedBook) {
+                                if (highlightedBook.notes.length <= 0) {
+                                    return <Text>There are no notes</Text>;
+                                }
+                                if (highlightedBook.notes.length > 0) {
+                                    return <Text>Notes: {highlightedBook.notes}</Text>;
+                                }
                             }
-                        }
-                        return <Text>Failed to fetch book notes.</Text>;
-                    })()}
-                </Paper>
+                            return <Text>Failed to fetch book notes.</Text>;
+                        })()}
+                    </Paper>
+                </Stack>
             </AppShell.Main>
         </AppShell>
     );
