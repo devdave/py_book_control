@@ -42,10 +42,10 @@ export const BookBroker = ({
 
     const _changeBook = useMutation<Book, Error, Book>(
         { mutationFn: (book) => api.update_book(book),
-        onSuccess: (updated: Book) => {
-            queryClient.invalidateQueries({queryKey: ['book', updated.id, 'index']}).then()
-        }
-    })
+            onSuccess: (updated: Book) => {
+                queryClient.invalidateQueries({queryKey: ['book', updated.id]}).then()
+            }
+        })
 
     const updateBook: (book: Partial<Book>) => Promise<Book> = useCallback(
         (book: Partial<Book>) =>
