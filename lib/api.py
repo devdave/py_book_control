@@ -367,7 +367,9 @@ class BCAPI:
             toon = models.Character.Fetch_by_Uid_and_Book(session, book, character_uid)
             return toon.asdict(extended=True)
 
-    def update_character(self, changed_character: Character) -> Character:
+    def update_character(
+        self, bookId: UniqueId, changed_character: Character
+    ) -> Character:
         with self.app.get_db() as session:
             character = models.Character.Fetch_by_Uid(
                 session, changed_character["id"]
