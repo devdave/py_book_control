@@ -15,6 +15,8 @@ import {NavBar} from "@src/routes/editor/NavBar.tsx";
 import {SceneList} from "@src/routes/editor/detailed/SceneList.tsx";
 import {BookOverview} from "@src/routes/editor/BookOverview.tsx";
 import {Header} from "@src/routes/editor/Header.tsx";
+import {Characters} from "@src/routes/editor/Characters.tsx";
+import {Statuses} from "@src/routes/editor/Statuses.tsx";
 
 
 
@@ -58,12 +60,14 @@ export const Editor = () => {
         <EditorContext.Provider value={editorContextValue}>
             <AppShell header={{height:90}}
                 navbar={{width:260, breakpoint:"md" }}>
-                <Header book={book} />
+                <Header key={book.updated_on} book={book} />
                 {<NavBar book={book}/>}
                 <AppShell.Main>
                     <Routes>
+                        <Route path="characters" element={<Characters book={book}/>}/>
+                        <Route path="statuses" element={<Statuses book={book}/>}/>
                         <Route path="chapter/:chapter_id" element={<SceneList/>} />
-                        <Route path="*" element={<BookOverview book={book}/>}/>
+                        <Route path="*" element={<BookOverview key={book.updated_on} book={book}/>}/>
                     </Routes>
                     <Outlet/>
                 </AppShell.Main>
