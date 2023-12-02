@@ -57,6 +57,7 @@ class BCAPI:
             ]
 
     def get_current_book(self, stripped: bool = True) -> T.Optional[models.Book]:
+        raise Exception("No longer supported")
         if self.app.has_active_book:
             with self.app.get_db() as session:
                 book = self.app.get_book(session)
@@ -65,6 +66,7 @@ class BCAPI:
         return None
 
     def set_current_book(self, book_uid: UniqueId) -> Book:
+        raise Exception("No longer supported")
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, book_uid)
             self.app.book_id = book.id
@@ -160,18 +162,21 @@ class BCAPI:
 
         return []
 
-    def create_chapter(self, new_chapter: Chapter) -> T.Optional[Chapter]:
+    def create_chapter(
+        self, book_id: UniqueId, new_chapter: Chapter
+    ) -> T.Optional[Chapter]:
         with self.app.get_db() as session:
             chapter = models.Chapter(
                 title=new_chapter["title"], uid=models.generate_id(12)
             )
-            book = self.app.get_book(session)
+            book = models.Book.Fetch_by_UID(session, book_id)
             if book is not None:
                 book.chapters.append(chapter)
                 session.add(chapter)
                 session.commit()
                 return chapter.asdict()
             else:
+                self.log.error("Failed to append new chapter")
                 return None
 
     # def save_reordered_chapters(self, chapters: list[Chapter]):
