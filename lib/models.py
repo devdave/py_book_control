@@ -234,10 +234,10 @@ class Chapter(Base):
     )
     """The source file from which this chapter and its scenes were imported from"""
 
-    source_size: Mapped[int] = mapped_column(default=None)
+    source_size: Mapped[int] = mapped_column(default=0)
     """Ideally kilobytes but the actual value doesn't matter as this is fed from file stat"""
 
-    source_modified: Mapped[int] = mapped_column(default=None)
+    source_modified: Mapped[int] = mapped_column(default=0)
     """The actual value doesn't matter as this is fed from file stat"""
 
     last_imported: Mapped[T.Optional[DT.datetime]] = mapped_column(default=None)
