@@ -32,6 +32,8 @@ export const App = () => {
 
     const switchBoard = useMemo(() => new Switchboard(), []);
 
+    const [viewMode, setViewMode] = useState("flow")
+
     /**
    * Brokers
    */
@@ -149,6 +151,8 @@ export const App = () => {
             chapterBroker,
             sceneStatusBroker,
             chatBroker,
+            viewMode,
+            setViewMode
         }),
         [
             api,

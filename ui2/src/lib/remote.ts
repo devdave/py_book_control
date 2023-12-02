@@ -94,8 +94,8 @@ class APIBridge {
         return this.boundary.remote('fetch_stripped_chapters', book_uid);
     }
 
-    async create_chapter(new_chapter:Chapter):Promise<Chapter | undefined > {
-        return this.boundary.remote('create_chapter', new_chapter);
+    async create_chapter(book_id:UniqueId, new_chapter:Chapter):Promise<Chapter | undefined > {
+        return this.boundary.remote('create_chapter', book_id, new_chapter);
     }
 
     async fetch_scene(scene_uid:UniqueId):Promise<Scene> {

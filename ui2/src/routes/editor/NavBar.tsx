@@ -3,7 +3,10 @@ import {Box, Button, Center, Divider, Group, NavLink, SegmentedControl} from "@m
 import {Book, Chapter, Scene} from "@src/types.ts";
 import {AppShell} from "@mantine/core";
 import {IconArticle, IconBook, IconFlagFilled, IconList, IconPlus, IconUsers} from "@tabler/icons-react";
-import {useState} from "react";
+
+import {useAppContext} from "@src/App.context.ts";
+import {useCallback} from "react";
+import {NewChapterModal} from "@src/routes/editor/widget/NewChapterModal.tsx";
 
 
 interface NavBarParams {
@@ -12,9 +15,17 @@ interface NavBarParams {
 
 export const NavBar:React.FC<NavBarParams> = ({book}) => {
 
-    const [editMode, setEditMode] = useState("Detailed")
+    const {viewMode, setViewMode, chapterBroker} = useAppContext()
 
     const params = useParams<{chapter_id?:string}>()
+
+    const handleNewChapter = useCallback( async (_evt)=>{
+        const [chapterName, _chapterMode] = await NewChapterModal()
+        if(chapterName && chapterName.length >= 3 ){
+            chapterBroker.create(book.id, chapterName).then()
+        }
+
+    },[book])
 
     console.log("Params", params)
 
@@ -23,11 +34,11 @@ export const NavBar:React.FC<NavBarParams> = ({book}) => {
             <Group>
                 <SegmentedControl
 
-                    value={editMode}
-                    onChange={setEditMode}
+                    value={viewMode}
+                    onChange={setViewMode}
                     data={[
                         {
-                            value: "Detailed",
+                            value: "detailed",
                             label: (
                                 <Center>
                                     <IconList />
@@ -36,7 +47,7 @@ export const NavBar:React.FC<NavBarParams> = ({book}) => {
                             )
                         },
                         {
-                            value: "Flow",
+                            value: "flow",
                             label: (
                                 <Center>
                                     <IconArticle />
@@ -47,7 +58,7 @@ export const NavBar:React.FC<NavBarParams> = ({book}) => {
                     ]}
                 />
             </Group>
-            <Button><IconPlus />Create new chapter</Button>
+            <Button onClick={handleNewChapter}><IconPlus />Create new chapter</Button>
             <NavLink leftSection={<IconBook/>} label={`Book: ${book.title}`} component={RoutedLink} to={`/book/${book.id}`}/>
             <NavLink
                 childrenOffset={1}

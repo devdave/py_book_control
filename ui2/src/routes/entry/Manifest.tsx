@@ -77,14 +77,19 @@ export const Manifest = () => {
         setHighLightBookID(undefined);
     };
 
-    const handleClick: React.MouseEventHandler<HTMLElement> = (evt) => {
+    const handleClick: React.MouseEventHandler<HTMLTableCellElement> = (evt) => {
         if (highlightedBook) {
             navigate(`/book/${highlightedBook.id}`);
         }
         evt.preventDefault(); 
     };
 
-
+    const handleDelete: React.MouseEventHandler<HTMLButtonElement> = (evt) => {
+        if (highlightedBook){
+            bookBroker.delete(highlightedBook.id).then()
+        }
+        evt.preventDefault()
+    }
 
 
 
@@ -209,11 +214,12 @@ export const Manifest = () => {
                         data-book-id={book.id}
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
-                        onClick={handleClick}
+
                     >
                         <Table.Td
                             data-book-id={book.id}
                             style={{ cursor: "pointer" }}
+                            onClick={handleClick}
                         >
                             {book.title}
                         </Table.Td>
@@ -225,7 +231,7 @@ export const Manifest = () => {
                         <Table.Td>{book.updated_on}</Table.Td>
                         <Table.Td>{book.created_on}</Table.Td>
                         <Table.Td>
-                            <ActionIcon>
+                            <ActionIcon onClick={handleDelete}>
                                 <IconX />
                             </ActionIcon>
                         </Table.Td>

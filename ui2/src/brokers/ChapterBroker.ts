@@ -59,16 +59,16 @@ export const ChapterBroker = ({
     const _createChapter = useMutation<
     Chapter | undefined,
     Error,
-    Partial<Chapter>
+    {book_id: Book['id'], newChapter: Partial<Chapter>}
   >({
-      mutationFn: (newChapter: Partial<Chapter>) =>
-          api.create_chapter(newChapter as Chapter),
+      mutationFn: ({book_id, newChapter}:{book_id: Book['id'], newChapter: Partial<Chapter>}) =>
+          api.create_chapter(book_id, newChapter as Chapter),
       onSuccess: (response) => {
           console.log(response);
           if (response) {
               queryClient
                   .invalidateQueries({
-                      queryKey: ["book", response.book_id, "index"],
+                      queryKey: ["book", response.book_id],
                       exact: true,
                       refetchType: "active",
                   })
@@ -80,11 +80,11 @@ export const ChapterBroker = ({
     const createChapter = (book_id: Book["id"], ChapterTitle: Chapter["title"]) =>
         new Promise<Chapter | undefined>((resolve, reject) => {
             _createChapter.mutate(
-        { book_id, title: ChapterTitle } as Partial<Chapter>,
-        {
-            onSuccess: resolve,
-            onError: reject,
-        },
+                {book_id: book_id, newChapter:{ book_id, title: ChapterTitle } as Partial<Chapter>},
+                {
+                    onSuccess: resolve,
+                    onError: reject,
+                },
             );
         });
 

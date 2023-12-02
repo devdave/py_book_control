@@ -21,6 +21,8 @@ export interface AppContextValue {
     characterBroker: CharacterBrokerFunctions
     sceneStatusBroker: SceneStatusBrokerFunctions
     chatBroker: ChatBrokerFunctions
+    viewMode: string,
+    setViewMode: (mode:string)=>void
 }
 
 export const AppContext = createContext<AppContextValue>({} as AppContextValue)
