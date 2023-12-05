@@ -57,7 +57,6 @@ class BCAPI:
             ]
 
     def get_current_book(self, stripped: bool = True) -> T.Optional[models.Book]:
-        raise Exception("No longer supported")
         if self.app.has_active_book:
             with self.app.get_db() as session:
                 book = self.app.get_book(session)
@@ -66,7 +65,6 @@ class BCAPI:
         return None
 
     def set_current_book(self, book_uid: UniqueId) -> Book:
-        raise Exception("No longer supported")
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, book_uid)
             self.app.book_id = book.id
