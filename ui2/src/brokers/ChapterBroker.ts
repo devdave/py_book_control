@@ -6,9 +6,7 @@ import {
     UseQueryResult,
 } from "@tanstack/react-query";
 import { useCallback } from "react";
-import { InputModal } from "@src/widget/input_modal";
 import APIBridge from "@src/lib/remote";
-import { ShowError } from "@src/widget/ShowErrorNotification";
 
 export interface ChapterBrokerFunctions {
   clearChapterCache: (
@@ -56,31 +54,24 @@ export const ChapterBroker = ({
         });
     };
 
-    const _createChapter = useMutation<
-    Chapter | undefined,
-    Error,
-    {book_id: Book['id'], newChapter: Partial<Chapter>}
-  >({
-      mutationFn: ({book_id, newChapter}:{book_id: Book['id'], newChapter: Partial<Chapter>}) =>
-          api.create_chapter(book_id, newChapter as Chapter),
-      onSuccess: (response) => {
-          console.log(response);
-          if (response) {
-              queryClient
-                  .invalidateQueries({
-                      queryKey: ["book", response.book_id],
-                      exact: true,
-                      refetchType: "active",
-                  })
-                  .then();
-          }
-      },
-  });
+    const _createChapter = useMutation({
+        mutationFn: (newChapter:Partial<Chapter>) => api.create_chapter(newChapter['book_id'] as string, newChapter as Chapter),
+        onSuccess: (response) => {
+            if (response) {
+                queryClient
+                    .invalidateQueries({
+                        queryKey: ["book", response.book_id],
+                        exact: true,
+                        refetchType: "active",
+                    })
+                    .then();
+            }
+        },
+    });
 
     const createChapter = (book_id: Book["id"], ChapterTitle: Chapter["title"]) =>
         new Promise<Chapter | undefined>((resolve, reject) => {
-            _createChapter.mutate(
-                {book_id: book_id, newChapter:{ book_id, title: ChapterTitle } as Partial<Chapter>},
+            _createChapter.mutate({ book_id, title: ChapterTitle } as Partial<Chapter>,
                 {
                     onSuccess: resolve,
                     onError: reject,
@@ -88,25 +79,22 @@ export const ChapterBroker = ({
             );
         });
 
-    useCallback(
-        async (book: Book) => {
-            console.log("addChapter is !DEPRECATED!");
-
-            const chapterTitle: string = await InputModal.Show("New chapter.title");
-            if (chapterTitle.trim().length <= 2) {
-                ShowError(
-                    "Error",
-                    "Chapter's must have a title longer than 2 characters.",
-                );
-                return undefined;
-            }
-            return _createChapter.mutate({
-                book_id: book.id,
-                title: chapterTitle,
-            } as Partial<Chapter>);
-        },
-        [_createChapter],
-    );
+    // useCallback(
+    //     async (book: Book) => {
+    //         console.log("addChapter is !DEPRECATED!");
+    //
+    //         const chapterTitle: string = await InputModal.Show("New chapter.title");
+    //         if (chapterTitle.trim().length <= 2) {
+    //             ShowError(
+    //                 "Error",
+    //                 "Chapter's must have a title longer than 2 characters.",
+    //             );
+    //             return undefined;
+    //         }
+    //         return _createChapter.mutate({ book_id: book.id, title: chapterTitle} as Partial<Chapter>);
+    //     },
+    //     [_createChapter],
+    // );
 
     const getChapter: (
     chapterId: Chapter["id"],

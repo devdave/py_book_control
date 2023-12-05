@@ -1,4 +1,4 @@
-import {useLocation, useParams} from "react-router-dom";
+import {useParams} from "react-router-dom";
 import {useAppContext} from "@src/App.context.ts";
 import {Scene, UniqueId} from "@src/types.ts";
 import {LoadingOverlay} from "@mantine/core";
@@ -7,7 +7,7 @@ import {SceneElement} from "@src/routes/editor/detailed/SceneElement.tsx";
 
 export const SceneList = () => {
 
-    const {hash:sceneId} = useLocation()
+
 
     const params = useParams<{book_id:UniqueId, chapter_id:UniqueId}>()
 
@@ -25,9 +25,9 @@ export const SceneList = () => {
 
     return (
         <>
-            <div>SID: {sceneId.slice(1)}</div>
+            <pre>{JSON.stringify(chapter, null, 4)}</pre>
             {chapter?.scenes.map((scene:Scene)=>(
-                <div id={scene.id}>
+                <div key={`${scene.id}_${scene.updated_on}`} id={scene.id}>
                     <br/>
                     <br/>
                     <br/>

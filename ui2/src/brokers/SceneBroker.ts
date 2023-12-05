@@ -12,13 +12,9 @@ import { QueryClient, useMutation, UseMutationResult, useQuery, UseQueryResult }
 
 import APIBridge from '@src/lib/remote'
 
-import { ChapterBrokerFunctions } from '@src/brokers/ChapterBroker'
 
 export interface SceneBrokerProps {
     api: APIBridge
-
-    getChapter: ChapterBrokerFunctions['get']
-    // getChapter: (id: Chapter['id']) => Promise<Chapter>
 
     queryClient: QueryClient
 }
@@ -54,8 +50,9 @@ export interface SceneBrokerFunctions {
 
 export const SceneBroker = ({
     api,
-    queryClient
+    queryClient,
 }: SceneBrokerProps): SceneBrokerFunctions => {
+
     const fetchScene = useCallback(
         (
             book_id: Book['id'],
@@ -76,7 +73,10 @@ export const SceneBroker = ({
         mutationFn: (newScene: Scene) =>
             api.create_scene(newScene.chapterId as UniqueId, newScene.title as string, newScene.order),
         onSuccess: () => {
+            queryClient.invalidateQueries({queryKey:['book'], refetchType:'active'}).then()
+
             /**
+
 
             queryClient
                 .invalidateQueries({
@@ -117,7 +117,7 @@ export const SceneBroker = ({
         order = -1,
         content = ''
     ) =>
-        new Promise((resolve) => {
+        new Promise((resolve, reject) => {
             const new_scene = {
                 chapterId,
                 title: sceneTitle,
@@ -126,7 +126,8 @@ export const SceneBroker = ({
             }
 
             _addScene.mutate(new_scene as Scene, {
-                onSuccess: (response) => resolve(response)
+                onSuccess: (response) => resolve(response),
+                onError: reject
             })
         })
 

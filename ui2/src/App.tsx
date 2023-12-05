@@ -16,6 +16,7 @@ import { LoadingOverlay } from "@mantine/core";
 import { forEach } from "lodash";
 import {ChapterBroker} from "@src/brokers/ChapterBroker.ts";
 import {CharacterBroker} from "@src/brokers/CharacterBroker.ts";
+import {SceneBroker} from "@src/brokers/SceneBroker.ts";
 
 let appIsReady = false;
 
@@ -44,6 +45,8 @@ export const App = () => {
     const chatBroker = ChatBroker("http://127.0.0.1:8000/");
 
     const chapterBroker = ChapterBroker({api, queryClient})
+
+    const sceneBroker = SceneBroker({api, queryClient})
 
     const characterBroker = CharacterBroker({api, queryClient})
 
@@ -149,20 +152,13 @@ export const App = () => {
             bookBroker,
             characterBroker,
             chapterBroker,
+            sceneBroker,
             sceneStatusBroker,
             chatBroker,
             viewMode,
             setViewMode
         }),
-        [
-            api,
-            settings,
-            switchBoard,
-            fonts,
-            bookBroker,
-            sceneStatusBroker,
-            chatBroker,
-        ],
+        [api, settings, switchBoard, fonts, bookBroker, characterBroker, chapterBroker, sceneBroker, sceneStatusBroker, chatBroker, viewMode],
     );
 
     console.log("Appcontext: ", appContextValue);

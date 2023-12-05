@@ -59,7 +59,7 @@ export const Editor = () => {
     return (
         <EditorContext.Provider value={editorContextValue}>
             <AppShell header={{height:90}}
-                navbar={{width:260, breakpoint:"md" }}>
+                navbar={{width:260, breakpoint:"sm"}}>
                 <Header key={book.updated_on} book={book} />
                 {<NavBar book={book}/>}
                 <AppShell.Main>
