@@ -6,7 +6,7 @@ import argparse
 import logging
 import typing as T
 
-import webview
+import webview  # type: ignore
 from tap import Tap
 
 from lib.application import BCApplication
@@ -119,8 +119,8 @@ def main():
 
     default_win_settings = dict(
         min_size=(
-            800,
-            480,
+            1800,
+            920,
         ),
         js_api=api,
     )
