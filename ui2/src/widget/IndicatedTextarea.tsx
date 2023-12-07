@@ -1,4 +1,3 @@
-import { UseFormReturnType } from "@mantine/form";
 import React from "react";
 import { Indicator, Textarea } from "@mantine/core";
 import { TextareaProps } from "@mantine/core";
@@ -6,8 +5,7 @@ import { TextareaProps } from "@mantine/core";
 import classes from "./indicated_textarea.module.css";
 
 interface IndicatedTextAreaProps {
-  form: UseFormReturnType<unknown>;
-  formField: string;
+  isDirty: ()=>boolean
   inputProps?: TextareaProps & React.RefAttributes<HTMLTextAreaElement>;
   indicatorStyle?: object;
   textStyle?: object;
@@ -15,8 +13,7 @@ interface IndicatedTextAreaProps {
 }
  
 export const IndicatedTextarea: React.FC<IndicatedTextAreaProps> = ({
-    form,
-    formField,
+    isDirty,
     inputProps,
     onKeyUp,
 }) => {
@@ -25,7 +22,7 @@ export const IndicatedTextarea: React.FC<IndicatedTextAreaProps> = ({
             processing
             color="red"
             position="top-start"
-            disabled={!form.isDirty(formField)}
+            disabled={!isDirty()}
             style={{ height: "100%", boxSizing: "border-box" }}
         >
             <Textarea
@@ -37,7 +34,6 @@ export const IndicatedTextarea: React.FC<IndicatedTextAreaProps> = ({
                     wrapper: classes.max_out,
                     input: classes.max_out,
                 }}
-                {...form.getInputProps(formField)}
                 {...inputProps}
             />
         </Indicator>
