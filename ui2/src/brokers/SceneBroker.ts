@@ -144,7 +144,6 @@ export const SceneBroker = ({
         onSuccess: ([scene, chapter]: [Scene, Chapter]) => {
             console.log('changed scene', scene)
 
-
             queryClient.setQueryData(
                 ['book', chapter.book_id, 'chapter', chapter.id, 'scene', scene.id],
                 (prior: Scene | undefined): Scene => {
@@ -175,8 +174,8 @@ export const SceneBroker = ({
                 .then()
             queryClient
                 .invalidateQueries({
-                    queryKey: ['book', chapter.book_id, 'index'],
-                    exact: true,
+                    queryKey: ['book', chapter.book_id],
+                    exact: false,
                     refetchType: 'active'
                 })
                 .then()
