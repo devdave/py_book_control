@@ -165,3 +165,12 @@ export interface ImportedBook {
     dir_name: string
     documents: DocumentFile[]
 }
+
+export interface SceneFormValues {
+    title: string
+    content: string
+    summary: string
+    notes: string
+    characters: Character[]
+    location: string
+}
