@@ -66,6 +66,7 @@ export const Editor = () => {
                     <Routes>
                         <Route path="characters" element={<Characters book={book}/>}/>
                         <Route path="statuses" element={<Statuses book={book}/>}/>
+                        <Route path="chapter/:chapter_id.:mode" element={<SceneList/>} />
                         <Route path="chapter/:chapter_id" element={<SceneList/>} />
                         <Route path="*" element={<BookOverview key={book.updated_on} book={book}/>}/>
                     </Routes>
