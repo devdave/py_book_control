@@ -1,34 +1,43 @@
-import {Scene} from "@src/types.ts";
-import {useLocation} from "react-router-dom";
-import {Paper, Textarea, TextInput} from "@mantine/core";
+import {Scene, SceneFormValues, type UniqueId} from "@src/types.ts";
+import {Tabs} from "@mantine/core";
+
+import {SceneTextContent} from "@src/routes/editor/detailed/subviews/SceneTextContent.tsx";
+import {SceneSummary} from "@src/routes/editor/detailed/subviews/SceneSummary.tsx";
 import {useForm} from "@mantine/form";
-import {useAppContext} from "@src/App.context.ts";
 import {useDebouncedEffect} from "@src/lib/useDebouncedEffect.ts";
+import {useAppContext} from "@src/App.context.ts";
+import {isEqual} from "lodash";
+import {useParams} from "react-router-dom";
+import {useEffect, useState} from "react";
 
 
 export const SceneElement = ({scene}:{scene:Scene}) => {
 
-    const {hash} = useLocation()
+    const params = useParams<{book_id:UniqueId, chapter_id:UniqueId, mode:string|undefined}>()
 
     const {sceneBroker, settings} = useAppContext()
     const [debounceTime] = settings.makeState('debounceTime')
 
-    const form = useForm({
-        initialValues: {
+    const [tabState, setTabState] = useState(params.mode || "content")
+
+    const form = useForm<SceneFormValues>({
+        initialValues:{
             title: scene.title,
-            content: scene.content
+            content: scene.content,
+            summary: scene.summary,
+            notes: scene.notes,
+            location: scene.location,
+            characters: scene.characters,
         }
     })
 
+    useEffect(() => {
+        window.history.replaceState(null, "", `/${params?.book_id}/${params?.chapter_id}.${tabState}#${scene.id}`)
+    }, [tabState]);
+
     useDebouncedEffect(()=>{
-        const newScene = structuredClone(scene)
-        let shouldUpdate = false;
-
-        if(newScene.title != form.values.title) {shouldUpdate = true}
-        newScene.title = form.values.title
-
-        if(newScene.content != form.values.content) {shouldUpdate = true}
-        newScene.content = form.values.content
+        const newScene = {...scene, ...form.values}
+        const shouldUpdate = !isEqual(scene, form.values)
 
         if(shouldUpdate) {
             sceneBroker.update(newScene as Scene).then(() => {
@@ -38,15 +47,27 @@ export const SceneElement = ({scene}:{scene:Scene}) => {
             form.resetDirty()
         }
 
-    }, [form.values.title, form.values.content], {delay:debounceTime || 800})
+    }, [form.values], {delay:debounceTime || 800})
 
 
     return (
-        <Paper id={scene.id} p="xl" style={{minHeight:"80vh"}}>
-            <TextInput label={"Title"} {...form.getInputProps("title")} />
-            <Textarea autosize autoFocus={scene.id === hash.slice(1)} {...form.getInputProps("content")}></Textarea>
-            <pre>{JSON.stringify(scene, null, 4)}</pre>
-        </Paper>
+        <>
+            <Tabs value={tabState} onChange={(tab) => setTabState(tab||"content")}>
+                <Tabs.List grow>
+                    <Tabs.Tab value={'content'}>Content</Tabs.Tab>
+                    <Tabs.Tab value={'summary'}>Summary</Tabs.Tab>
+                    <Tabs.Tab value={'notes'}>Notes</Tabs.Tab>
+                    <Tabs.Tab value={'toons_loc'}>Characters & Location</Tabs.Tab>
+                </Tabs.List>
+                <Tabs.Panel value={'content'}>
+                    <SceneTextContent key={`${scene.id}_${scene.updated_on}`} scene={scene} form={form}/>
+                </Tabs.Panel>
+                <Tabs.Panel value={'summary'}><SceneSummary key={`${scene.id}_${scene.updated_on}`} scene={scene} form={form}/></Tabs.Panel>
+                <Tabs.Panel value={'notes'}>Notes</Tabs.Panel>
+                <Tabs.Panel value={'toons_loc'}>Toons and location</Tabs.Panel>
+            </Tabs>
+
+        </>
     )
 
 
