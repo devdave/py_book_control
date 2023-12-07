@@ -1,14 +1,15 @@
-import {Scene, SceneFormValues, type UniqueId} from "@src/types.ts";
+import {Book, Scene, SceneFormValues, type UniqueId} from "@src/types.ts";
 import {Tabs} from "@mantine/core";
 
 import {SceneTextContent} from "@src/routes/editor/detailed/subviews/SceneTextContent.tsx";
-import {SceneSummary} from "@src/routes/editor/detailed/subviews/SceneSummary.tsx";
 import {useForm} from "@mantine/form";
 import {useDebouncedEffect} from "@src/lib/useDebouncedEffect.ts";
 import {useAppContext} from "@src/App.context.ts";
 import {isEqual} from "lodash";
 import {useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
+import {IndicatedTextarea} from "@src/widget/IndicatedTextarea.tsx";
+import {SceneCharacters} from "@src/routes/editor/detailed/subviews/SceneCharacters.tsx";
 
 
 export const SceneElement = ({scene}:{scene:Scene}) => {
@@ -62,9 +63,11 @@ export const SceneElement = ({scene}:{scene:Scene}) => {
                 <Tabs.Panel value={'content'}>
                     <SceneTextContent key={`${scene.id}_${scene.updated_on}`} scene={scene} form={form}/>
                 </Tabs.Panel>
-                <Tabs.Panel value={'summary'}><SceneSummary key={`${scene.id}_${scene.updated_on}`} scene={scene} form={form}/></Tabs.Panel>
-                <Tabs.Panel value={'notes'}>Notes</Tabs.Panel>
-                <Tabs.Panel value={'toons_loc'}>Toons and location</Tabs.Panel>
+                <Tabs.Panel value={'summary'}><IndicatedTextarea isDirty={()=>form.isDirty("summary")} inputProps={form.getInputProps("summary")}/></Tabs.Panel>
+                <Tabs.Panel value={'notes'}><IndicatedTextarea isDirty={()=>form.isDirty("notes")} inputProps={form.getInputProps("notes")}/></Tabs.Panel>
+                <Tabs.Panel value={'toons_loc'}>
+                    <SceneCharacters key={`${scene.id}_${scene.updated_on}_${scene.characters.length}`} book={{id:params.book_id} as Book} scene={scene} />
+                </Tabs.Panel>
             </Tabs>
 
         </>
