@@ -124,8 +124,8 @@ export const CharacterBroker = ({
 
             queryClient
                 .invalidateQueries({
-                    queryKey: ['book', book.id, 'chapter', scene.chapterId, 'scene', scene.id],
-                    exact: true,
+                    queryKey: ['book', book.id],
+                    exact: false,
                     refetchType: 'active'
                 })
                 .then()
@@ -166,8 +166,8 @@ export const CharacterBroker = ({
 
                 queryClient
                     .invalidateQueries({
-                        queryKey: ['book', activeBook.id, 'scene', scene.id, 'characters'],
-                        exact: true,
+                        queryKey: ['book', activeBook.id],
+                        exact: false,
                         refetchType: 'active'
                     })
                     .then()
