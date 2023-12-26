@@ -54,9 +54,9 @@ export const ChapterBroker = ({
         });
     };
 
-    const _createChapter = useMutation({
-        mutationFn: (newChapter:Partial<Chapter>) => api.create_chapter(newChapter['book_id'] as string, newChapter as Chapter),
-        onSuccess: (response) => {
+    const _createChapter = useMutation<Chapter | undefined, Promise<Chapter | undefined>, Partial<Chapter>>({
+        mutationFn: (newChapter:Partial<Chapter>) => api.chapter_create(newChapter['book_id'] as string, newChapter as Chapter),
+        onSuccess: (response:Chapter|undefined) => {
             if (response) {
                 queryClient
                     .invalidateQueries({
