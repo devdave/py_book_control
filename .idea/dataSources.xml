@@ -2,7 +2,7 @@
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
     <data-source source="LOCAL" name="test" uuid="48ef338d-14fb-46fe-a249-f10776a33530">
-      <driver-ref>sqlite.xerial</driver-ref>
+      <driver-ref>78c4b9e7-90ac-451a-93e6-d79ea3678260</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:C:\Users\lived\Google Drive\projects\py_book_control\test.sqlite3</jdbc-url>
