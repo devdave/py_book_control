@@ -6,6 +6,9 @@
     <option name="sdkName" value="Pipenv (py_book_control)" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Pipenv (pychatbroker)" project-jdk-type="Python SDK" />
+  <component name="PythonCompatibilityInspectionAdvertiser">
+    <option name="version" value="3" />
+  </component>
   <component name="ViteConfiguration">
     <option name="mode" value="AUTO" />
     <option name="path" value="$PROJECT_DIR$/ui/vite.config.js" />
