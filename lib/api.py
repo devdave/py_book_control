@@ -88,10 +88,14 @@ class BCAPI:
             session.commit()
             return book.asdict(True)
 
+    def book_change_title(self, book_uid: UniqueId, new_title: str) -> Book:
+        return self.update_book_title(book_uid, new_title)
+
     def update_book_title(self, book_uid: UniqueId, new_title: str) -> Book:
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, book_uid)
             book.title = new_title
+            self.writer.CheckBook(session, book_uid)
             session.commit()
             return book.asdict(True)
 
@@ -105,12 +109,15 @@ class BCAPI:
         with self.app.get_db() as session:
             book = models.Book(title=book_name, operation_type=BookTypes.managed)
             session.add(book)
+            self.writer.CheckBook(session, None)
             session.commit()
             return book.asdict()
 
     def book_delete(self, book_uid: UniqueId) -> bool:
         with self.app.get_db() as session:
             models.Book.Delete(session, book_uid)
+
+            self.writer.CheckBook(session, book_uid)
             session.commit()
             return True
 
@@ -148,6 +155,7 @@ class BCAPI:
         with self.app.get_db() as session:
             chapter = models.Chapter.Fetch_by_uid(session, chapter_id)
             chapter.update(chapter_data)
+            self.writer.CheckChapter(session, chapter.book_id, chapter.id)
             session.commit()
             return chapter.asdict()
 
@@ -158,6 +166,7 @@ class BCAPI:
                 floating = book.chapters.pop(from_pos)
                 book.chapters.insert(to_pos, floating)
                 book.chapters.reorder()
+                self.writer.CheckBook(session, book.id)
                 session.commit()
                 return True
 
@@ -171,6 +180,11 @@ class BCAPI:
 
         return []
 
+    def chapter_create(
+        self, book_uid: UniqueId, new_chapter: Chapter
+    ) -> T.Optional[Chapter]:
+        return self.create_chapter(book_uid, new_chapter)
+
     def create_chapter(
         self, book_id: UniqueId, new_chapter: Chapter
     ) -> T.Optional[Chapter]:
@@ -182,6 +196,8 @@ class BCAPI:
             if book is not None:
                 book.chapters.append(chapter)
                 session.add(chapter)
+
+                self.writer.CheckBook(session, book.id)
                 session.commit()
                 return chapter.asdict()
             else:
