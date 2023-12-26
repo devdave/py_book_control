@@ -13,6 +13,7 @@ import { QueryClient, useMutation, UseMutationResult, useQuery, UseQueryResult }
 import APIBridge from '@src/lib/remote'
 
 
+
 export interface SceneBrokerProps {
     api: APIBridge
 
@@ -54,6 +55,19 @@ export const SceneBroker = ({
     queryClient,
 }: SceneBrokerProps): SceneBrokerFunctions => {
 
+    const clearAllBooks = useCallback(
+        async (): Promise<void> => {
+            await queryClient.invalidateQueries({queryKey: ['book'], refetchType:"all"})
+            await queryClient.invalidateQueries({queryKey: ['books'], refetchType:"all"})
+        }, [queryClient]
+    )
+
+    const clearBookCache = useCallback(
+        async (book_id: Book['id']): Promise<void> => {
+            await queryClient.invalidateQueries({queryKey: ['book', book_id], refetchType:"all"})
+        }, [queryClient]
+    )
+
     const fetchScene = useCallback(
         (
             book_id: Book['id'],
@@ -74,36 +88,8 @@ export const SceneBroker = ({
         mutationFn: (newScene: Scene) =>
             api.create_scene(newScene.chapterId as UniqueId, newScene.title as string, newScene.order),
         onSuccess: () => {
-            queryClient.invalidateQueries({queryKey:['book'], refetchType:'active'}).then()
+            clearAllBooks().then()
 
-            /**
-
-
-            queryClient
-                .invalidateQueries({
-                    queryKey: ['book', chapter.book_id, 'chapter', data.chapter.id, 'scene', data.scene.id],
-                    exact: true,
-                    refetchType: 'active'
-                })
-                .then(() => console.log('AddScene - invalidated scene'))
-
-            queryClient
-                .invalidateQueries({
-                    queryKey: ['book', data.book_id, 'chapter', newSceneParts.chapterId],
-                    exact: true,
-                    refetchType: 'active'
-                })
-                .then(() => console.log('AddScene - invalidated chapter'))
-
-            queryClient
-                .invalidateQueries({
-                    queryKey: ['book', chapter.book_id, 'index'],
-                    exact: true,
-                    refetchType: 'active'
-                })
-                .then(() => console.log('Add scene - invalidated index'))
-                *
-             */
         }
     })
 
@@ -129,7 +115,7 @@ export const SceneBroker = ({
             }
 
             const invalidateAndResolve = (response:[Scene,Chapter]) => {
-                queryClient.invalidateQueries({queryKey:["book", bookId]}).then(()=>resolve(response))
+                clearBookCache(bookId).then(()=>resolve(response))
             }
 
             _addScene.mutate(new_scene as Scene, {
