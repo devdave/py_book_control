@@ -50,6 +50,10 @@ class APIBridge {
         return this.boundary.remote('book_update', book_uid, changeset);
     }
 
+    async book_change_title(book_uid:UniqueId, new_title:string):Promise<Book> {
+        return this.boundary.remote('book_change_title', book_uid, new_title);
+    }
+
     async update_book_title(book_uid:UniqueId, new_title:string):Promise<Book> {
         return this.boundary.remote('update_book_title', book_uid, new_title);
     }
@@ -96,6 +100,10 @@ class APIBridge {
 
     async fetch_stripped_chapters(book_uid:UniqueId):Promise<Chapter[]> {
         return this.boundary.remote('fetch_stripped_chapters', book_uid);
+    }
+
+    async chapter_create(book_uid:UniqueId, new_chapter:Chapter):Promise<Chapter | undefined > {
+        return this.boundary.remote('chapter_create', book_uid, new_chapter);
     }
 
     async create_chapter(book_id:UniqueId, new_chapter:Chapter):Promise<Chapter | undefined > {
