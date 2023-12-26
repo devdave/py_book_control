@@ -15,12 +15,17 @@ export interface CharacterBrokerFunctions {
         character_id: Character['id'],
         enabled: boolean
     ) => UseQueryResult<Character, Error>
+    // getWithRefs: (
+    //     book_id: Book["id"],
+    //     character_id: Character['id'],
+    //     enabled: boolean
+    // ) => UseQueryResult<Character, Error>
     list: (book: Book) => UseQueryResult<Character[], Error>
     listByScene: (book:Book, scene: Scene) => UseQueryResult<Character[], Error>
     update: (book: Book, changeset: Character) => void
     delete: (book:Book, character_id: Character['id']) => void
     assign2Scene: (book:Book, scene: Scene, char_id: Character['id']) => string
-    removeFromScene: (characterId: Character['id'], sceneId: Scene['id']) => Promise<boolean>
+    removeFromScene: (book_id: Book['id'], characterId: Character['id'], sceneId: Scene['id']) => Promise<boolean|void>
 }
 
 export const CharacterBroker = ({
@@ -197,10 +202,19 @@ export const CharacterBroker = ({
         [api]
     )
 
-    const removeCharacterFromScene: (characterId: Character['id'], sceneId: Scene['id']) => Promise<boolean> =
+    const removeCharacterFromScene: (book_id:Book['id'], characterId: Character['id'], sceneId: Scene['id']) => Promise<boolean|void> =
         useCallback(
-            async (characterId: Character['id'], sceneId: Scene['id']) =>
-                api.remove_character_from_scene(characterId, sceneId),
+            async (book_id:Book['id'], characterId: Character['id'], sceneId: Scene['id']) =>
+                api.remove_character_from_scene(characterId, sceneId).then(()=>{
+                    queryClient
+                        .invalidateQueries({
+                            queryKey: ['book', book_id],
+                            exact: false,
+                            refetchType: 'active'
+                        })
+                        .then()
+                    return true
+                }),
             [api]
         )
 
