@@ -4,6 +4,15 @@ import mistune
 import typing as T
 
 
+class SceneResult(T.Dict):
+    status: T.Literal["success", "error", "split"]
+    title: str
+    content: str
+    split_title: T.Optional[str]
+    split_content: T.Optional[str]
+    markdown: T.Optional[str]
+
+
 class RawScene:
     pass
 
@@ -21,7 +30,7 @@ def get_text(element):
 
 
 class SceneProcessor2:
-    status: str
+    status: T.Literal["error", "split", "success"]
     msg: str
     title: T.Optional[str]
     body: T.List[str]
@@ -66,7 +75,7 @@ class SceneProcessor2:
 
 {content}"""
 
-    def walk(self, raw_txt: str):
+    def walk(self, raw_txt: str) -> SceneResult:
         self.ast = self.parser(raw_txt)
 
         if len(self.ast[0]) <= 0:
@@ -113,10 +122,10 @@ class SceneProcessor2:
             if self.status == "error":
                 self.status = "success"
 
-        # TODO - get rid of the status field and just rely on exceptions
-        response = dict(
+        response = SceneResult(
             status=self.status, title=self.title, content="\n".join(self.content)
         )
+        # TODO - get rid of the status field and just rely on exceptions
 
         if self.status == "split":
             response["split_title"] = self.split_title
