@@ -73,9 +73,9 @@ def db_with():
         yield session
 
 
-def connect(db_path: pathlib.Path):
+def connect(db_path: pathlib.Path, echo=False):
     engine = create_engine(
-        f"sqlite:///{db_path}", echo=False, pool_size=10, max_overflow=20
+        f"sqlite:///{db_path}", echo=echo, pool_size=10, max_overflow=20
     )
     Base.metadata.create_all(engine, checkfirst=True)
 
@@ -451,6 +451,10 @@ class Character(Base):
     def Get_All(cls, session):
         stmt = select(cls)
         return session.scalars(stmt)
+
+    @classmethod
+    def Get_All_Composite(cls, session):
+        pass
 
     @classmethod
     def Search(cls, session: Session, query: str) -> Sequence["Character"]:
