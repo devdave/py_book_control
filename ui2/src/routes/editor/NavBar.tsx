@@ -33,7 +33,7 @@ export const NavBar:React.FC<NavBarParams> = ({book}) => {
         if(chapterName && chapterName.length >= 3 ){
             chapterBroker.create(book.id, chapterName).then((newChapter)=>{
                 if(newChapter){
-                    sceneBroker.create(newChapter.id, "New scene").then((val)=>{
+                    sceneBroker.create(book.id, newChapter.id, "New scene").then((val)=>{
                         console.log("New chapter and scene created!", newChapter, val)
                     })
                 }
@@ -41,15 +41,17 @@ export const NavBar:React.FC<NavBarParams> = ({book}) => {
         }
     },[book])
 
-    const handleNewScene = useCallback(async ()=>{
+    const handleNewScene = useCallback(async (chapterId:Chapter['id'])=>{
         const newScenename = await NewSceneModal()
-        if(newScenename && newScenename.length >= 3 && params.chapter_id) {
-            sceneBroker.create(params.chapter_id, newScenename).then()
+        if(newScenename && newScenename.length >= 3) {
+            await sceneBroker.create(book.id, chapterId, newScenename)
+        } else {
+            console.log(newScenename, newScenename.length, params.chapter_id)
         }
     },[book, params])
 
-    console.log("Params", params)
 
+    
     return (
         <AppShell.Navbar>
             <AppShell.Section>
@@ -81,8 +83,14 @@ export const NavBar:React.FC<NavBarParams> = ({book}) => {
                     />
                 </Group>
                 <Button onClick={handleNewChapter}><IconPlus />Create new chapter</Button>
-                <NavLink leftSection={<IconBook/>} label={`Book: ${book.title}`} component={RoutedLink} to={`/book/${book.id}`}/>
                 <NavLink
+                    state={{title:"Book overview"}}
+                    leftSection={<IconBook/>}
+                    label={`Book: ${book.title}`}
+                    component={RoutedLink}
+                    to={`/book/${book.id}/overview`}/>
+                <NavLink
+                    state={{title:"Characters"}}
                     childrenOffset={1}
                     label='Characters'
                     component={RoutedLink}
@@ -98,6 +106,7 @@ export const NavBar:React.FC<NavBarParams> = ({book}) => {
                 />
                 <NavLink
                     childrenOffset={1}
+                    state={{title:"Book statuses"}}
                     label='Statuses'
                     component={RoutedLink}
                     to={`/book/${book.id}/statuses`}
@@ -114,12 +123,23 @@ export const NavBar:React.FC<NavBarParams> = ({book}) => {
                 />
 
                 { book.chapters.map((chapter:Chapter, idx)=>
-                    <NavLink leftSection={<IconGripVertical size='1rem' />} label={`${idx+1}. Chapter: ${chapter.title}`} component={RoutedLink} to={`/book/${book.id}/chapter/${chapter.id}`}>
+                    <NavLink
+                        state={{title:`Chapter #${idx+1}`}}
+                        key={chapter.id}
+                        leftSection={<IconGripVertical size='1rem' />}
+                        label={`${idx+1}. Chapter: ${chapter.title}`}
+                        component={RoutedLink}
+                        to={`/book/${book.id}/chapter/${chapter.id}`}>
                         {chapter.scenes.length == 0 &&
-                    <Button onClick={handleNewScene}><IconPlus />Add new scene</Button>
+                            <Button onClick={()=>handleNewScene(chapter.id)}><IconPlus />Add new scene</Button>
                         }
                         {chapter.scenes.length > 0 && chapter.scenes.map((scene:Scene)=>
-                            <NavLink label={scene.title} component={RoutedLink} to={`/book/${book.id}/chapter/${chapter.id}#${scene.id}`}
+                            <NavLink
+                                key={scene.id}
+                                label={scene.title}
+                                component={RoutedLink}
+                                state={{title:`Chapter #${idx+1} - Scene: ${scene.title}`}}
+                                to={`/book/${book.id}/${viewMode}/chapter/${chapter.id}#${scene.id}`}
                                 rightSection={<IconFlagFilled style={{color:scene?.status?.color}}/>}
                             />
                         )}

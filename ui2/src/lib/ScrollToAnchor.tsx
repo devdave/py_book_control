@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 //Sourced from https://dev.to/mindactuate/scroll-to-anchor-element-with-react-router-v6-38op
 function ScrollToAnchor() {
-    const yOffset = -290
+    const yOffset = 290
     const location = useLocation();
     const lastHash = useRef('');
 
@@ -19,9 +19,11 @@ function ScrollToAnchor() {
                 const element = document.getElementById(lastHash.current)
                 if(element){
                     const y = element.getBoundingClientRect().top + window.scrollY + yOffset;
+                    console.log("Scrolled to", element.getBoundingClientRect().top, window.scrollY, yOffset, y)
                     // @ts-expect-error top is not recognized but it is correct
                     element.scrollIntoView({ top: y, behavior: 'smooth'});
                     lastHash.current = '';
+
                 }
 
             }, 100);

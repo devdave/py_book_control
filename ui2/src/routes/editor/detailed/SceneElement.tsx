@@ -6,7 +6,7 @@ import {useForm} from "@mantine/form";
 import {useDebouncedEffect} from "@src/lib/useDebouncedEffect.ts";
 import {useAppContext} from "@src/App.context.ts";
 import {isEqual} from "lodash";
-import {useParams} from "react-router-dom";
+import {useLocation, useNavigate, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import {IndicatedTextarea} from "@src/widget/IndicatedTextarea.tsx";
 import {SceneCharacters} from "@src/routes/editor/detailed/subviews/SceneCharacters.tsx";
@@ -14,7 +14,11 @@ import {SceneCharacters} from "@src/routes/editor/detailed/subviews/SceneCharact
 
 export const SceneElement = ({scene}:{scene:Scene}) => {
 
+    const navigate = useNavigate()
+
     const params = useParams<{book_id:UniqueId, chapter_id:UniqueId, mode:string|undefined}>()
+
+    const {hash} = useLocation()
 
     const {sceneBroker, settings} = useAppContext()
     const [debounceTime] = settings.makeState('debounceTime')
@@ -33,7 +37,9 @@ export const SceneElement = ({scene}:{scene:Scene}) => {
     })
 
     useEffect(() => {
-        window.history.replaceState(null, "", `/${params?.book_id}/${params?.chapter_id}.${tabState}#${scene.id}`)
+        const path = `/book/${params?.book_id}/detailed/chapter/${params?.chapter_id}.${tabState}#${hash.slice(1)}`
+        // window.history.replaceState(null, "", path )
+        navigate(path, {replace:true})
     }, [tabState]);
 
     useDebouncedEffect(()=>{

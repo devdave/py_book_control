@@ -10,12 +10,17 @@ interface IndicatedTextAreaProps {
   indicatorStyle?: object;
   textStyle?: object;
   onKeyUp?: React.KeyboardEventHandler<HTMLTextAreaElement>;
+  label?: string
+    rows?: number
 }
  
 export const IndicatedTextarea: React.FC<IndicatedTextAreaProps> = ({
     isDirty,
     inputProps,
     onKeyUp,
+    label,
+    rows,
+
 }) => {
     return (
         <Indicator
@@ -23,12 +28,15 @@ export const IndicatedTextarea: React.FC<IndicatedTextAreaProps> = ({
             color="red"
             position="top-start"
             disabled={!isDirty()}
+
             style={{ height: "100%", boxSizing: "border-box" }}
         >
             <Textarea
                 autosize
-                minRows={5}
+                minRows={rows||5}
                 onKeyUp={onKeyUp}
+                label={label || null}
+                rows={rows}
                 classNames={{
                     root: classes.max_out,
                     wrapper: classes.max_out,

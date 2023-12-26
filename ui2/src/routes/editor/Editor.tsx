@@ -12,7 +12,8 @@ import { useMemo} from "react";
 import {EditorContext} from "@src/routes/editor/Editor.context.ts";
 
 import {NavBar} from "@src/routes/editor/NavBar.tsx";
-import {SceneList} from "@src/routes/editor/detailed/SceneList.tsx";
+import {SceneList as DetailedSceneList} from "@src/routes/editor/detailed/SceneList.tsx";
+import {FlowSceneList as FlowSceneList} from "./flow/FlowSceneList.tsx";
 import {BookOverview} from "@src/routes/editor/BookOverview.tsx";
 import {Header} from "@src/routes/editor/Header.tsx";
 import {Characters} from "@src/routes/editor/Characters.tsx";
@@ -31,11 +32,6 @@ export const Editor = () => {
         book
     }),[book])
 
-
-
-
-
-    console.log("Editor got ", book);
 
     if(isLoading){
         return (
@@ -58,7 +54,7 @@ export const Editor = () => {
 
     return (
         <EditorContext.Provider value={editorContextValue}>
-            <AppShell header={{height:90}}
+            <AppShell padding={"md"} header={{height:110}}
                 navbar={{width:260, breakpoint:"sm"}}>
                 <Header key={book.updated_on} book={book} />
                 {<NavBar book={book}/>}
@@ -66,8 +62,9 @@ export const Editor = () => {
                     <Routes>
                         <Route path="characters" element={<Characters book={book}/>}/>
                         <Route path="statuses" element={<Statuses book={book}/>}/>
-                        <Route path="chapter/:chapter_id.:mode" element={<SceneList/>} />
-                        <Route path="chapter/:chapter_id" element={<SceneList/>} />
+                        <Route path="detailed/chapter/:chapter_id" element={<DetailedSceneList/>} />
+                        <Route path="flow/chapter/:chapter_id" element={<FlowSceneList/>} />
+                        <Route path="overview/" element={<BookOverview key={book.updated_on} book={book}/>}/>
                         <Route path="*" element={<BookOverview key={book.updated_on} book={book}/>}/>
                     </Routes>
                     <Outlet/>

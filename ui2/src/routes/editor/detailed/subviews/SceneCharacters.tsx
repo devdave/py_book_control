@@ -1,9 +1,10 @@
-import {Combobox, InputBase, Table, useCombobox} from "@mantine/core";
+import {ActionIcon, Combobox, InputBase, Table, useCombobox} from "@mantine/core";
 import {useState} from "react";
 
-import {Book, type Character, Scene} from "@src/types.ts";
+import {Book, Scene} from "@src/types.ts";
 import {useAppContext} from "@src/App.context.ts";
 import {map} from "lodash";
+import {IconEdit, IconPlugConnected} from "@tabler/icons-react";
 
 
 export const SceneCharacters = ({book, scene}:{book:Book, scene:Scene}) => {
@@ -33,7 +34,7 @@ export const SceneCharacters = ({book, scene}:{book:Book, scene:Scene}) => {
         <Combobox.Option value={item.id} key={item.id}>{item.name}</Combobox.Option>
     ))
 
-    const createOnEnter = (evt) => {
+    const createOnEnter = (evt: { code: string; }) => {
         if(evt.code.toLowerCase() === 'enter') {
             const shouldMakeNew = options ? options.length <= 0 : false
             console.log(search, value, shouldMakeNew)
@@ -66,6 +67,7 @@ export const SceneCharacters = ({book, scene}:{book:Book, scene:Scene}) => {
                         console.log("Selected ", search, val)
                         setValue(val)
                         setSearch(search)
+                        characterBroker.assign2Scene(book, scene, val)
                     }
                     combobox.closeDropdown()
                 }}
@@ -103,16 +105,29 @@ export const SceneCharacters = ({book, scene}:{book:Book, scene:Scene}) => {
 
             </Combobox>
 
-            <Table>
+            <Table maw={"30vw"}>
                 <Table.Thead>
                     <Table.Tr>
                         <Table.Th>Name</Table.Th>
+                        <Table.Th>Edit</Table.Th>
+                        <Table.Th>Disconnect</Table.Th>
                     </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
                     {map(scene.characters, (toon)=>(
                         <Table.Tr key={`${toon.id}_${toon.updated_on}`}>
                             <Table.Td>{toon.name}</Table.Td>
+                            <Table.Td>
+                                <ActionIcon onClick={()=>console.log("todo edit toon")}>
+                                    <IconEdit/>
+                                </ActionIcon>
+                            </Table.Td>
+                            <Table.Td>
+                                <ActionIcon onClick={()=>characterBroker.removeFromScene(book.id, toon.id, scene.id).then()}>
+                                    <IconPlugConnected/>
+                                </ActionIcon>
+                            </Table.Td>
+
                         </Table.Tr>
                     ))}
                 </Table.Tbody>

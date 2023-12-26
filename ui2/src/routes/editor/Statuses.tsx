@@ -1,6 +1,6 @@
 import {Book} from "@src/types.ts";
 import {useAppContext} from "@src/App.context.ts";
-import {ActionIcon, Button, LoadingOverlay, Radio} from "@mantine/core";
+import {ActionIcon, Button, LoadingOverlay, Radio, Table} from "@mantine/core";
 import {createSceneStatus, editSceneStatus} from "@src/common/SceneStatusModals.tsx";
 import { ShowError } from '@src/widget/ShowErrorNotification'
 import {IconEdit, IconFlagFilled, IconX} from "@tabler/icons-react";
@@ -48,19 +48,23 @@ export const Statuses = ({book}:{book:Book}) => {
             >
                 Create new status
             </Button>
+            <Radio.Group
+                name='defaultSceneStatus'
+                value={defaultSceneStatus}
+                onChange={(value) => {
+                    setDefaultSceneStatus(value)
+                }}
+            >
+                <Table>
+                    <Table.Thead>
+                        <Table.Tr>
+                            <Table.Th align='left'>Default status</Table.Th>
+                            <Table.Th>Color</Table.Th>
+                            <Table.Th colSpan={2}>Actions</Table.Th>
+                        </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
 
-            <table>
-                <tr>
-                    <th align='left'>Default status</th>
-                </tr>
-                <tbody>
-                    <Radio.Group
-                        name='defaultSceneStatus'
-                        value={defaultSceneStatus}
-                        onChange={(value) => {
-                            setDefaultSceneStatus(value)
-                        }}
-                    >
                         <tr>
                             <td>
                                 <Radio
@@ -100,20 +104,21 @@ export const Statuses = ({book}:{book:Book}) => {
                                         <IconEdit />
                                     </ActionIcon>
                                 </td>
-
-                                <ActionIcon
-                                    onClick={() => {
-                                        sceneStatusBroker.delete(book.id, sstatus.id)
-                                    }}
-                                >
-                                    <IconX />
-                                </ActionIcon>
-                                <td />
+                                <td>
+                                    <ActionIcon
+                                        onClick={() => {
+                                            sceneStatusBroker.delete(book.id, sstatus.id)
+                                        }}
+                                    >
+                                        <IconX />
+                                    </ActionIcon>
+                                </td>
                             </tr>
                         ))}
-                    </Radio.Group>
-                </tbody>
-            </table>
+
+                    </Table.Tbody>
+                </Table>
+            </Radio.Group>
 
         </>
     )
