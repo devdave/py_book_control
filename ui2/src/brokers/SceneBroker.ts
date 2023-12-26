@@ -35,6 +35,7 @@ export interface SceneBrokerFunctions {
     ) => UseQueryResult<Scene, Error>
     update: (scene: Scene) => Promise<[Scene, Chapter] | undefined>
     create: (
+        bookIe: Book['id'],
         chapterId: Scene['chapterId'],
         sceneTitle: Scene['title'],
         position?: Scene['order'],
@@ -107,11 +108,13 @@ export const SceneBroker = ({
     })
 
     const createScene: (
+        bookId: Book["id"],
         chapterId: string,
         sceneTitle: string,
         order?: number,
         content?: string
     ) => Promise<[Scene, Chapter]> = async (
+        bookId: Book["id"],
         chapterId: string,
         sceneTitle: string,
         order = -1,
@@ -125,9 +128,13 @@ export const SceneBroker = ({
                 content
             }
 
+            const invalidateAndResolve = (response:[Scene,Chapter]) => {
+                queryClient.invalidateQueries({queryKey:["book", bookId]}).then(()=>resolve(response))
+            }
+
             _addScene.mutate(new_scene as Scene, {
-                onSuccess: (response) => resolve(response),
-                onError: reject
+                onError: reject,
+                onSuccess: invalidateAndResolve
             })
         })
 
