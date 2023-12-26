@@ -7,6 +7,7 @@ import time
 import webview  # type: ignore
 from sqlalchemy.exc import IntegrityError
 
+from .book2disk import Book2Disk
 from .app_types import BatchSettings, ImportMessage, ImportChapter
 from .scene_processor import SceneProcessor2 as SceneProcessor
 from .application import BCApplication
@@ -37,6 +38,7 @@ class BCAPI:
     app: BCApplication
     data_store: T.Dict[str, str]
     log: logging.Logger
+    writer: Book2Disk
 
     def __init__(self, app: BCApplication):
         self.app = app
@@ -74,6 +76,15 @@ class BCAPI:
         with self.app.get_db() as session:
             book = models.Book.Fetch_by_UID(session, changed_book["id"])  # type: ignore
             book.update(changed_book)
+            self.writer.CheckBook(session, changed_book["id"])
+            session.commit()
+            return book.asdict(True)
+
+    def book_update(self, book_uid: UniqueId, changeset: Book) -> Book:
+        with self.app.get_db() as session:
+            book = models.Book.Fetch_by_UID(session, book_uid)
+            book.update(changeset)
+            self.writer.CheckBook(session, book_uid)
             session.commit()
             return book.asdict(True)
 
@@ -209,6 +220,19 @@ class BCAPI:
             response = dict(status="error", message=str(exc.args))
 
         return response
+
+    def scene_handle_markdown(self, scene_uid: UniqueId, raw_text: str):
+        if len(raw_text.strip()) == 0:
+            return dict(status="empty", markdown=raw_text)
+
+        processor = SceneProcessor()
+        try:
+            response = processor.walk(raw_text)
+        except ValueError as exc:
+            return dict(status="error", message=str(exc.args))
+
+        if response["status"] == "split":
+            scene = models.Scene(title=response["title"], content=response["content"])
 
     def update_scene(
         self, scene_uid: UniqueId, new_data: Scene
