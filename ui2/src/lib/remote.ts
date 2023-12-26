@@ -46,6 +46,10 @@ class APIBridge {
         return this.boundary.remote('update_book', changed_book);
     }
 
+    async book_update(book_uid:UniqueId, changeset:Book):Promise<Book> {
+        return this.boundary.remote('book_update', book_uid, changeset);
+    }
+
     async update_book_title(book_uid:UniqueId, new_title:string):Promise<Book> {
         return this.boundary.remote('update_book_title', book_uid, new_title);
     }
@@ -108,6 +112,10 @@ class APIBridge {
 
     async process_scene_markdown(scene_uid:UniqueId, raw_text:string) {
         return this.boundary.remote('process_scene_markdown', scene_uid, raw_text);
+    }
+
+    async scene_handle_markdown(scene_uid:UniqueId, raw_text:string) {
+        return this.boundary.remote('scene_handle_markdown', scene_uid, raw_text);
     }
 
     async update_scene(scene_uid:UniqueId, new_data:Scene) {
