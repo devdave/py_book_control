@@ -34,16 +34,21 @@ export const BookBroker = ({
         })
     }
 
+    const clearBookId = async (book_id: Book['id']): Promise<void> => {
+        await clearCache()
+        await queryClient.invalidateQueries({queryKey: ["book", book_id], refetchType: "active"})
+    }
+
     const createManagedBook = async (book_name: string): Promise<Book> => {
         const newBook = await api.create_managed_book(book_name)
-        await queryClient.invalidateQueries({ queryKey: ['books', 'index'] })
+        await clearCache()
         return newBook
     }
 
     const _changeBook = useMutation<Book, Error, Book>(
-        { mutationFn: (book) => api.update_book(book),
+        { mutationFn: (book) => api.book_update(book['id'], book),
             onSuccess: (updated: Book) => {
-                queryClient.invalidateQueries({queryKey: ['book', updated.id]}).then()
+                clearBookId(updated.id).then()
             }
         })
 
@@ -83,7 +88,7 @@ export const BookBroker = ({
     const deleteBook = useCallback(
         async (book_id: Book['id']) => {
             await api.book_delete(book_id)
-            await clearCache()
+            await clearBookId(book_id)
         },
         [api, clearCache]
     )
