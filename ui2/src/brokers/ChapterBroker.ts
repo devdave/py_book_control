@@ -79,22 +79,6 @@ export const ChapterBroker = ({
             );
         });
 
-    // useCallback(
-    //     async (book: Book) => {
-    //         console.log("addChapter is !DEPRECATED!");
-    //
-    //         const chapterTitle: string = await InputModal.Show("New chapter.title");
-    //         if (chapterTitle.trim().length <= 2) {
-    //             ShowError(
-    //                 "Error",
-    //                 "Chapter's must have a title longer than 2 characters.",
-    //             );
-    //             return undefined;
-    //         }
-    //         return _createChapter.mutate({ book_id: book.id, title: chapterTitle} as Partial<Chapter>);
-    //     },
-    //     [_createChapter],
-    // );
 
     const getChapter: (
     chapterId: Chapter["id"],
