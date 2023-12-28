@@ -1,4 +1,5 @@
 import pathlib
+import tomllib
 import typing as T
 import json
 
@@ -11,31 +12,24 @@ from contextlib import contextmanager
 
 class BCApplication:
     database_path: pathlib.Path
-    main_window: webview.Window
-    book_id: int
+    main_window: T.Optional[webview.Window]
+    book_id: T.Optional[int]
+    here: pathlib.Path
+
     Session: models.scoped_session
 
     _batch: T.Optional[dict[str, str]]
 
-    def __init__(self, database_path: pathlib.Path):
+    def __init__(self, database_path: pathlib.Path, here: pathlib.Path = None):
         self.database_path = database_path
         self.main_window = None
         self.book_id = None
+        self.here = here
 
         # Makes sure we can connect
         self.engine, self.Session = models.connect(self.database_path)
 
         self._batch = None
-
-    @property
-    def has_active_book(self):
-        return self.book_id is not None
-
-    def get_book(self, session: models.Session) -> models.Book | None:
-        if self.has_active_book:
-            return models.Book.Fetch_by_Id(session, self.book_id)
-
-        return None
 
     def set_window(self, main_window):
         self.main_window = main_window
@@ -72,3 +66,33 @@ class BCApplication:
         script = "window.callBack('{0}', {1})".format(identifierID, payload)
         print(f"callback `{script}`")
         self.main_window.evaluate_js(script)
+
+    def ensure_db_ready(self):
+        def mk_setting(key, value):
+            setting = None
+            match type(value):  # type: type
+                case thing if isinstance(thing, str):
+                    setting = models.Setting(name=key, value=value, type="string")
+                case thing if isinstance(thing, int):
+                    setting = models.Setting(name=key, value=value, type="number")
+                case thing if isinstance(thing, bool):
+                    setting = models.Setting(name=key, value=value, type="boolean")
+                case _:
+                    setting = models.Setting(name=key, value=value, type="string")
+
+            return setting
+
+        try:
+            defaults = tomllib.load(self.here / "defaults.settings.toml")
+        except FileNotFoundError:
+            defaults = dict()
+
+        with self.get_db() as session:
+            for key, value in defaults.items():
+                setting = models.Setting.Get(session=session, name=key)
+                if setting is None:
+                    new_setting = mk_setting(key, value)
+                    if new_setting is not None:
+                        session.add(new_setting)
+
+            session.commit()
