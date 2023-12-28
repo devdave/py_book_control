@@ -40,6 +40,8 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.orm import MappedAsDataclass
 
+from .book2disk import TextFile, ListFile, RawFile
+
 from .sa_pathlike import SAPathlike
 from .log_helper import getLogger
 from .app_types import (
@@ -123,6 +125,9 @@ class Base(DeclarativeBase):
         for safe_key in getattr(self, "SAFE_KEYS"):
             if safe_key in changeset:
                 setattr(self, safe_key, changeset[safe_key])
+
+    def serialize(self) -> T.List[RawFile]:
+        raise NotImplementedError("Serialization not implemented")
 
 
 class Book(Base):
@@ -220,6 +225,13 @@ class Book(Base):
     def words(self):
         return sum([chapter.words for chapter in self.chapters])
 
+    def serialize(self) -> T.List[RawFile]:
+        items = ListFile(self.id)
+        for key in self.SAFE_KEYS:
+            items.add(key, getattr(self, key))
+
+        return [items]
+
 
 class Chapter(Base):
     uid: Mapped[UniqueId] = mapped_column(default=lambda: generate_id(GEN_LEN))
@@ -307,13 +319,18 @@ class Chapter(Base):
 
         session.commit()
 
-    # def update(self, chapter_data: dict[str, str]):
-    #
-    #
-    #
-    #     for key, value in chapter_data.items():
-    #         if key in VALID:
-    #             setattr(self, key, value)
+    def serialize(self) -> T.List[RawFile]:
+        items = ListFile(self.id)
+        for key in self.SAFE_KEYS:
+            items.add(key, getattr(self, key))
+
+        toons = ListFile(f"{self.id}-toons")
+        # TODO make into a join
+        for scene in self.scenes:  # type: Scene
+            for toon in scene.characters:  # type: Character
+                toons.add(toon.id, toon.name)
+
+        return [items, toons]
 
 
 Scenes2Characters = Table(
@@ -432,6 +449,17 @@ class Scene(Base):
         scene = cls.Fetch_by_uid(session, scene_uid)
         return scene.characters
 
+    def serialize(self) -> T.List[RawFile]:
+        items = ListFile(f"{self.id}__{self.title}")
+        for key in self.SAFE_KEYS:
+            items.add(key, getattr(self, key))
+
+        content = TextFile(f"{self.id}__content", self.content)
+        summary = TextFile(f"{self.id}__summary", self.summary)
+        notes = TextFile(f"{self.id}__notes", self.notes)
+
+        return [items, content, summary, notes]
+
 
 class Character(Base):
     uid: Mapped[UniqueId] = mapped_column(default=lambda: generate_id(GEN_LEN))
@@ -511,6 +539,12 @@ class Character(Base):
         stmt = delete(cls).where(cls.uid == character_uid)
         return session.execute(stmt)
 
+    def serialize(self) -> T.List[RawFile]:
+        items = ListFile(f"{self.id}__character__{self.name}")
+        items.add("Name", self.name)
+        items.add("Notes", self.notes)
+        return [items]
+
 
 class Setting(Base):
     name: Mapped[str] = mapped_column(unique=True)
@@ -540,12 +574,12 @@ class Setting(Base):
                 return value
 
     @classmethod
-    def Get(cls, session: Session, val_name: str) -> common_setting_type:
-        stmt = select(cls).where(cls.name == val_name)
+    def Get(cls, session: Session, name: str) -> common_setting_type:
+        stmt = select(cls).where(cls.name == name)
         try:
             rec = session.execute(stmt).scalars().one()  # type: 'Setting'
         except NoResultFound:
-            log.error(f"Failed to fetch: {val_name}")
+            log.error(f"Failed to fetch: {name}")
             raise
 
         return cls._CastVal2Type(rec.type, rec.val)
@@ -578,11 +612,12 @@ class Setting(Base):
             cls.Set(session, name, item["value"])
 
     def asdict(self) -> SettingType:
-        data = dict(
+        data = SettingType(
+            id=self.id,
             name=self.name,
             type=self.type,
             value=self._CastVal2Type(self.type, self.val),
-        )  # type: T.Dict[str, common_setting_type]
+        )
 
         return data
 
@@ -616,7 +651,10 @@ class SceneStatus(Base):
     SAFE_KEYS = ["name", "color"]
 
     def asdict(self, stripped=True) -> SceneStatusType:
-        return dict(id=self.uid, name=self.name, color=self.color, book_id=self.book_id)
+        return SceneStatusType(
+            id=self.uid, name=self.name, color=self.color, book_id=self.book_id
+        )
+        # return dict(id=self.uid, name=self.name, color=self.color, book_id=self.book_id)
 
     @classmethod
     def Fetch_by_Uid(cls, session, scene_uid: UniqueId) -> "SceneStatus":
