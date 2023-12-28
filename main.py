@@ -112,7 +112,8 @@ def main():
     LOG.debug(f"{result.transform_api=}")
     LOG.debug(f"{result.database.as_posix()=}")
 
-    app = BCApplication(result.database)
+    app = BCApplication(result.database, here=HERE)
+
     api = BCAPI(app)
 
     worker = None
