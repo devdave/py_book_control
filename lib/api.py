@@ -2,6 +2,8 @@ import pathlib
 import typing as T
 import logging
 import datetime as DT
+import warnings
+
 import time
 
 import webview  # type: ignore
@@ -99,13 +101,21 @@ class BCAPI:
             session.commit()
             return book.asdict(True)
 
+    def book_simple_fetch(self, book_uid: UniqueId) -> Book:
+        return self.fetch_book_simple(book_uid)
+
     def fetch_book_simple(self, book_uid: UniqueId) -> Book:
+        warnings.warn("To deprecate", DeprecationWarning)
         with self.app.get_db() as session:
             self.log.info("book_ui == `{}`", book_uid)
             book = models.Book.Fetch_by_UID(session, book_uid)
             return book.asdict(stripped=True)
 
+    def book_create_managed(self, book_name: str) -> Book:
+        return self.create_managed_book(book_name)
+
     def create_managed_book(self, book_name: str) -> Book:
+        warnings.warn("To deprecate", DeprecationWarning)
         with self.app.get_db() as session:
             book = models.Book(title=book_name, operation_type=BookTypes.managed)
             session.add(book)
@@ -135,7 +145,15 @@ class BCAPI:
                 "No file was loaded or created, a save dialog will appear the next time you try to save."
             )
 
+    def chapters_fetch(self, book_id: UniqueId) -> list[Chapter]:
+        with self.app.get_db() as session:
+            return [
+                chapter.asdict()
+                for chapter in models.Book.Fetch_by_UID(book_id).chapters
+            ]
+
     def fetch_chapters(self) -> list[Chapter]:
+        warnings.warn("To deprecate", DeprecationWarning)
         if self.app.has_active_book:
             with self.app.get_db() as session:
                 return [
@@ -144,7 +162,15 @@ class BCAPI:
 
         return []
 
+    def chapter_fetch(self, chapter_uid: UniqueId, stripped: bool = False) -> Chapter:
+        with self.app.get_db() as session:
+            return models.Chapter.Fetch_by_uid(session, chapter_uid).asdict(stripped)
+
+    def chapter_fetch_index(self, chapter_uid: UniqueId) -> Chapter:
+        return self.chapter_fetch(chapter_uid, True)
+
     def fetch_chapter(self, chapter_id: UniqueId, stripped: bool = False) -> Chapter:
+        warnings.warn("To deprecate", DeprecationWarning)
         with self.app.get_db() as session:
             return models.Chapter.Fetch_by_uid(session, chapter_id).asdict(stripped)
 
