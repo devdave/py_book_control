@@ -2,14 +2,14 @@ import typing as T
 from enum import Enum
 
 UID = str
-UniqueId = str
+UniqueId = T.Union[str, int]
 common_setting_type = T.Union[str, bool, int, None]
 
 
 class SettingType(T.TypedDict):
     id: UniqueId
     name: str
-    type: T.Literal["boolean", "string", "number"]
+    type: T.Union[T.Literal["boolean", "string", "number"], str]
     value: common_setting_type
 
 
