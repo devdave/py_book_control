@@ -1,0 +1,11 @@
+
+fontName = "Calibri"
+lineHeight = 150
+fontSize = 18
+fontWeight = 400
+debounceTime = 800
+dontAskOnSplit = false
+dontAskOnClear2Delete = false
+defaultSceneStatus = "-1"
+lastImportedPath = ""
+save2Disk = false
