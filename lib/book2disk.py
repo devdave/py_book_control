@@ -1,9 +1,44 @@
+from typing import Tuple
+
 from sqlalchemy.orm import Session
 
 from app_types import UniqueId
 from log_helper import getLogger
 
 LOG = getLogger(__name__)
+
+
+class RawFile:
+    pass
+
+
+class TextFile(RawFile):
+    body: str
+
+    def __init__(self, identity, body):
+        self.body = body
+
+    def write(self, fileobj):
+        fileobj.write(self.body)
+
+
+class ListFile(RawFile):
+    items: [str]
+
+    def __init__(self, identity):
+        self.items = []
+
+    def add(self, name, value) -> None:
+        self.items.append(
+            (
+                name,
+                value,
+            )
+        )
+
+    def write(self, fileobj):
+        for name, value in self.items:
+            fileobj.write(f"{name}:\t{value}\n\n")
 
 
 class Book2Disk(object):
