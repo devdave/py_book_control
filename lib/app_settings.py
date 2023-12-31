@@ -12,3 +12,4 @@ class AppSettingValues(TypedDict):
     defaultSceneStatus: str
     lastImportedPath: str
     save2Disk: bool
+    saveInterval: int
