@@ -3,7 +3,7 @@ import tomllib
 import typing as T
 import json
 
-import webview
+import webview  # type: ignore
 
 from .app_types import BatchSettings
 from . import models
@@ -12,7 +12,7 @@ from contextlib import contextmanager
 
 class BCApplication:
     database_path: pathlib.Path
-    main_window: T.Optional[webview.Window]
+    main_window: webview.Window
     book_id: T.Optional[int]
     here: pathlib.Path
 
@@ -69,18 +69,15 @@ class BCApplication:
 
     def ensure_db_ready(self):
         def mk_setting(key, value):
-            setting = None
-            match type(value):  # type: type
+            match type(value):
                 case thing if isinstance(thing, str):
-                    setting = models.Setting(name=key, value=value, type="string")
+                    return models.Setting(name=key, value=value, type="string")
                 case thing if isinstance(thing, int):
-                    setting = models.Setting(name=key, value=value, type="number")
+                    return models.Setting(name=key, value=value, type="number")
                 case thing if isinstance(thing, bool):
-                    setting = models.Setting(name=key, value=value, type="boolean")
+                    return models.Setting(name=key, value=value, type="boolean")
                 case _:
-                    setting = models.Setting(name=key, value=value, type="string")
-
-            return setting
+                    return models.Setting(name=key, value=value, type="string")
 
         try:
             defaults = tomllib.load(self.here / "defaults.settings.toml")
@@ -89,7 +86,7 @@ class BCApplication:
 
         with self.get_db() as session:
             for key, value in defaults.items():
-                setting = models.Setting.Get(session=session, name=key)
+                setting = models.Setting.Fetch_by_Name(session=session, name=key)
                 if setting is None:
                     new_setting = mk_setting(key, value)
                     if new_setting is not None:
