@@ -574,13 +574,13 @@ class Setting(Base):
                 return value
 
     @classmethod
-    def Get(cls, session: Session, name: str) -> common_setting_type:
+    def Fetch_by_Name(cls, session: Session, name: str) -> common_setting_type:
         stmt = select(cls).where(cls.name == name)
         try:
             rec = session.execute(stmt).scalars().one()  # type: 'Setting'
         except NoResultFound:
             log.error(f"Failed to fetch: {name}")
-            raise
+            return None
 
         return cls._CastVal2Type(rec.type, rec.val)
 
