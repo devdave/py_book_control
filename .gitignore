@@ -1,4 +1,4 @@
-
+raw_books/*
 node_modules/*
 *.pyc
 *.sqlite3
