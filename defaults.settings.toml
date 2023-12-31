@@ -9,3 +9,4 @@ dontAskOnClear2Delete = false
 defaultSceneStatus = "-1"
 lastImportedPath = ""
 save2Disk = false
+saveInterval = 2
